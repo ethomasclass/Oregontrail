@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Westward</title>
+  <meta name="description" content="A classroom game about westward expansion, 1849 to 1854.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- The scene sits behind every screen: painted layers, weather, and the wagon. -->
+  <div id="scene" class="scene" aria-hidden="true"></div>
+  <main id="app" class="app" aria-live="polite"></main>
+  <aside id="teacher" class="teacher" hidden></aside>
+
+  <!-- Content (teacher-editable) -->
+  <script src="data/config.js"></script>
+  <script src="data/families.js"></script>
+  <script src="data/route.js"></script>
+  <script src="data/stores.js"></script>
+  <script src="data/cards.js"></script>
+  <script src="data/landmarks.js"></script>
+  <script src="data/endings.js"></script>
+  <script src="data/art.js"></script>
+  <!-- Game -->
+  <script src="js/engine.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

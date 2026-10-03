@@ -12,12 +12,13 @@
 // Optional beats are skipped automatically when a group runs behind schedule.
 // "byFamily" swaps in a different card for one family at that stop.
 // "families" limits a beat to the listed families.
+// Places with "rations: true" feed travelers on the way (ship passage included food).
 // "target" is the minute (from family pick) a group should reach this beat.
 window.WESTWARD = window.WESTWARD || {};
 
 WESTWARD.places = {
   independence: { name: "Independence, Missouri", miles: 0, scene: "town" },
-  kansasriver: { name: "Kansas River crossing", miles: 100, scene: "river" },
+  kansasriver: { name: "Kansas River crossing", miles: 100, scene: "river", weather: "rain" },
   platte: { name: "Platte River valley", miles: 250, scene: "prairie" },
   fortkearny: { name: "Fort Kearny", miles: 320, scene: "fort" },
   chimneyrock: { name: "Chimney Rock", miles: 570, scene: "rock" },
@@ -31,15 +32,15 @@ WESTWARD.places = {
   willamette: { name: "Willamette Valley", miles: 1950, scene: "valley" },
 
   // California branch
-  fortymile: { name: "Humboldt River and the Forty Mile Desert", miles: 1700, scene: "desert" },
-  sierra: { name: "Sierra Nevada", miles: 1900, scene: "mountains" },
-  goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields" },
+  fortymile: { name: "Humboldt River and the Forty Mile Desert", miles: 1700, scene: "desert", weather: "heat" },
+  sierra: { name: "Sierra Nevada", miles: 1900, scene: "mountains", weather: "snow" },
+  goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields", days: 5 },
 
   // Sea route (the Chan cousins)
-  hongkong: { name: "Hong Kong harbor", scene: "harbor" },
-  pacific: { name: "The Pacific crossing", scene: "sea" },
-  sanfrancisco: { name: "San Francisco", scene: "harbor" },
-  sacramento: { name: "Sacramento, on the way to the mines", scene: "river" }
+  hongkong: { name: "Hong Kong harbor", scene: "harbor", days: 0 },
+  pacific: { name: "The Pacific crossing", scene: "sea", days: 50, rations: true },
+  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10 },
+  sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4 }
 };
 
 WESTWARD.routes = {
