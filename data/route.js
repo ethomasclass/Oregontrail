@@ -16,6 +16,7 @@
 // Places with "rations: true" feed travelers on the way (ship passage included food).
 // Places with "market" sell food (dollars a pound) when a group runs out: forts charge
 // about three times Independence prices, mining camps far more.
+// "minutes" (optional) overrides how long a stop usually takes (minigames take longer).
 // "target" is the minute (from family pick) a group should reach this beat.
 window.WESTWARD = window.WESTWARD || {};
 
@@ -66,7 +67,7 @@ WESTWARD.routes = {
 
   oregon: [
     { type: "river", at: "threeisland", river: "snake", target: 27.5, optional: true },
-    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 29 },
+    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 29, minutes: 3.2 },
     { type: "card", at: "willamette", card: "oregon-land-claim", target: 31,
       byFamily: { black: "oregon-exclusion" } },
     { type: "card", at: "willamette", card: "kalapuya-neighbors", target: 33 },
@@ -78,7 +79,7 @@ WESTWARD.routes = {
   california: [
     { type: "card", at: "fortymile", card: "forty-mile-desert", target: 28 },
     { type: "card", at: "sierra", card: "sierra-crossing", target: 30, optional: true },
-    { type: "card", at: "goldfields", card: "making-a-living", target: 32 },
+    { type: "card", at: "goldfields", card: "making-a-living", target: 32, minutes: 3.2 },
     { type: "card", at: "goldfields", card: "californio-rancho", target: 33.5 },
     { type: "card", at: "goldfields", card: "militia-news", target: 34.5, optional: true },
     { type: "card", at: "goldfields", card: "cross-chan-tax", target: 35.5 },
@@ -90,7 +91,7 @@ WESTWARD.routes = {
     { type: "card", at: "pacific", card: "pacific-voyage", target: 10 },
     { type: "card", at: "sanfrancisco", card: "sf-arrival", target: 13 },
     { type: "landmark", at: "sacramento", landmark: "sacramento-letter", target: 15.5, optional: true },
-    { type: "card", at: "goldfields", card: "making-a-living", target: 18.5 },
+    { type: "card", at: "goldfields", card: "making-a-living", target: 18.5, minutes: 3.2 },
     { type: "card", at: "goldfields", card: "tax-collector", target: 21.5 },
     { type: "card", at: "goldfields", card: "cross-chan-overlanders", target: 24.5 },
     { type: "card", at: "goldfields", card: "no-testimony", target: 27.5 },

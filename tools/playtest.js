@@ -96,16 +96,23 @@ W.families.forEach(function (fam) {
       // Simulate a group: time at the last stop by its kind, about 0.4 min per trail event.
       var lastBeat = state.beats[state.index] || { type: "store" };
       var span = { store: [2.5, 3.5], river: [1.25, 2], landmark: [0.8, 1.5], fork: [1.5, 2.5] }[lastBeat.type] || [1.75, 3];
+      if (lastBeat.minutes) span = [lastBeat.minutes - 0.6, lastBeat.minutes + 0.6];
       now += (span[0] + E.rand(state) * (span[1] - span[0])) * 60000;
       var trip = E.advance(state, now);
       if (!trip) { fail(fam.id + " seed " + seed + ": ran out of beats without an ending"); break; }
       var trip = state.trip;
+      // the trip on screen: travel animation plus the arrival title
+      if (trip && trip.days) {
+        var ts = W.config.travelSeconds;
+        var sec = trip.miles ? ts.min + trip.miles / 100 * ts.per100Miles : ts.min + Math.min(4, trip.days / 15);
+        now += (Math.min(ts.max, sec) + 2.7) * 1000;
+      }
       E.pickTripEvents(state, now).forEach(function (ev) {
         if (/\{\w+\}/.test(ev.title + ev.text + JSON.stringify(ev.choices))) fail("Unfilled slot in trail event " + ev.id);
         var okc = E.choices(state, ev).filter(function (x) { return x.ok; });
         E.resolveEvent(state, ev, okc[Math.floor(E.rand(state) * okc.length)].index);
         s.events++;
-        now += (0.3 + E.rand(state) * 0.2) * 60000;
+        now += (0.3 + E.rand(state) * 0.2) * 60000 + 5000; // reading and deciding, plus the build-up
       });
       // live the days of the trip; a cautious group switches to meager when food runs low
       while (trip && trip.day < trip.days) {

@@ -25,15 +25,15 @@ WESTWARD.scenes = {
   },
   river: {
     terrain: "river", sky: "#e6e2d6", ground: "#92a06e", ground2: "#7f8f60", soil: "#7d6448", trail: "#c2a57c", light: "day", weather: "rain",
-    features: [["river", 1, { x: -14, width: 12, color: "#7f9aa3" }], ["cottonwood", 16], ["grass", 120], ["hills", 3], ["rocks", 8]]
+    features: [["river", 1, { x: -26, width: 26, color: "#6f8a86", current: 0.4, depth: 3 }], ["cottonwood", 16], ["grass", 120], ["hills", 3], ["rocks", 8]]
   },
   greenriver: {
     terrain: "river", sky: "#e9e6dc", ground: "#aaa77e", ground2: "#9b9870", soil: "#7d6a52", trail: "#c6b28e", light: "day",
-    features: [["river", 1, { x: -14, width: 10, color: "#6f97a6" }], ["bluffs", 4], ["sage", 70], ["cottonwood", 6], ["rocks", 10]]
+    features: [["river", 1, { x: -24, width: 22, color: "#5f8fa6", current: 0.6, depth: 3.5 }], ["bluffs", 4], ["sage", 70], ["cottonwood", 6], ["rocks", 10]]
   },
   snake: {
     terrain: "river", sky: "#ece6d8", ground: "#a49c78", ground2: "#958d6c", soil: "#5f5546", trail: "#c0aa86", light: "gold",
-    features: [["river", 1, { x: -14, width: 16, color: "#6a93a2" }], ["rocks", 30], ["sage", 60], ["bluffs", 3]]
+    features: [["river", 1, { x: -28, width: 30, color: "#4f7f94", current: 0.85, depth: 4.5 }], ["rocks", 30], ["sage", 60], ["bluffs", 3]]
   },
   prairie: {
     terrain: "plains", sky: "#f1e4c4", ground: "#b8b475", ground2: "#a8a868", soil: "#8a6f4e", trail: "#cdb98f", light: "gold",

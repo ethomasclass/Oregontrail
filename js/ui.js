@@ -62,7 +62,16 @@
     return Object.assign({ weather: p.weather, month: month(), vehicle: vehicle(), party: S.members, family: S.familyId }, extra || {});
   }
   function setScene(placeId, opts) {
-    scene.set(E.place(placeId).scene, sceneOpts(opts));
+    var p = E.place(placeId);
+    scene.set(p.scene, sceneOpts(opts));
+    soundFor(p.scene, p.weather);
+  }
+  // What a place sounds like: wind, a river's roar, the sea, or a fire at night.
+  function soundFor(sceneKey, weather) {
+    if (!W.sound) return;
+    var d = W.scenes[sceneKey] || {}, river = (d.features || []).filter(function (f) { return f[0] === "river" && !(f[2] || {}).along; })[0];
+    var kind = d.terrain === "sea" ? "sea" : river ? "river" : d.light === "night" ? "fire" : "wind";
+    W.sound.ambient(kind, river ? (river[2].current || 0.4) : 0.5, weather || d.weather);
   }
 
   // ------------------------------------------------------------ save / resume
@@ -372,6 +381,36 @@
     })();
   }
 
+  // ------------------------------------------------------------ drama helpers
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function sfx(name, arg) { if (W.sound) W.sound.play(name, arg); }
+  // A one-line headline over the scene before a card appears.
+  function headline(text, tone) {
+    var el = document.createElement("div");
+    el.className = "headline " + (tone || "");
+    el.textContent = text;
+    document.body.appendChild(el);
+    return wait(1500).then(function () { el.classList.add("out"); return wait(450); }).then(function () { el.remove(); });
+  }
+  // Arriving somewhere new: a chapter title, like the start of a new part of the story.
+  function chapter(placeName, date) {
+    var el = document.createElement("div");
+    el.className = "chapter";
+    el.innerHTML = '<div class="chapter-date">' + esc(date) + '</div><div class="chapter-name">' + esc(placeName) + "</div>";
+    document.body.appendChild(el);
+    sfx("arrive");
+    return wait(2100).then(function () { el.classList.add("out"); return wait(600); }).then(function () { el.remove(); });
+  }
+  // The family's journal: dated lines that stay on screen while traveling.
+  function journal(text) {
+    if (text) S.journal = (S.journal || []).concat([{ date: E.formatDate(E.dateOf(S)).replace(/, \d{4}$/, ""), text: text }]).slice(-4);
+    var box = document.getElementById("journal");
+    if (!box) return;
+    box.innerHTML = (S.journal || []).slice(-3).map(function (j, i, arr) {
+      return '<div class="jline' + (i === arr.length - 1 ? " new" : "") + '"><span>' + esc(j.date) + "</span> " + esc(j.text) + "</div>";
+    }).join("");
+  }
+
   // ------------------------------------------------------------ travel, day by day
   var busy = false;
   // How long the crossing takes on screen: longer legs take longer.
@@ -390,11 +429,14 @@
     var ms = travelMs(trip);
     screenName = "travel";
     var lastWeather = null;
-    function rolling(msg) {
-      app.className = "app";
-      app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to.split(":")[0]) + "</h2>" +
-        '<div class="ticker" id="ticker">' + esc(msg || "") + "</div></div>";
+    function rolling() {
+      app.className = "app top";
+      app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to.split(":")[0]) + "</h2></div>" +
+        '<div class="journal" id="journal" aria-live="polite"></div>';
+      journal(started ? null : "Set out for " + trip.to.split(":")[0].split(",")[0] + ".");
+      started = true;
     }
+    var started = false;
     rolling();
     scene.dim(null);
     renderPanel();
@@ -403,10 +445,8 @@
       while (trip.day < target) {
         var d = E.stepDay(S, trip);
         if (d.weather.kind !== lastWeather && scene.weather) { lastWeather = d.weather.kind; scene.weather(d.weather.kind); }
-        if (d.messages.length) {
-          var t = document.getElementById("ticker");
-          if (t) { t.textContent = d.messages.join(" "); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash"); }
-        }
+        d.messages.forEach(function (m) { journal(m); });
+        if (d.sick.length) sfx("sick");
         if (d.deaths.length) { renderPanel(); return deathNotice(d.deaths).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); }); }
         if (eventDays.length && trip.day >= eventDays[0]) {
           eventDays.shift();
@@ -418,21 +458,40 @@
       renderPanel();
       return null;
     }
-    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), ms, {
-      onProgress: function (k) { return liveUntil(Math.floor(k * trip.days)); }
+    var arriving = E.beat(S), extra = {};
+    if (arriving && arriving.type === "river") {
+      var rv = W.rivers[arriving.river];
+      extra.river = { depth: E.riverDepth(S, rv), current: rv.current };
+    }
+    soundFor(E.place(S.place).scene, E.place(S.place).weather);
+    if (W.sound) W.sound.travel(true);
+    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(extra), ms, {
+      onProgress: function (k) {
+        var hold = liveUntil(Math.floor(k * trip.days));
+        if (hold && W.sound) { W.sound.travel(false); hold = hold.then(function () { W.sound.travel(true); }); }
+        return hold;
+      }
     });
     travelling.then(function finish() {
       var pause = liveUntil(trip.days);
       if (pause) return pause.then(finish);
-      busy = false;
       if (scene.weather) scene.weather(null);
+      if (W.sound) W.sound.travel(false);
       if (trip.notes.length || (trip.skipped && trip.skipped.length)) S._trip = trip;
-      beatScreen();
+      app.innerHTML = "";
+      chapter(trip.to.split(":")[0], E.formatDate(E.dateOf(S))).then(function () {
+        busy = false;
+        beatScreen();
+      });
     });
   }
 
   function deathNotice(deaths) {
-    return new Promise(function (resolve) {
+    scene.focus(true);
+    sfx("death");
+    return wait(900).then(function () {
+      return headline(deaths.map(function (m) { return m.name; }).join(" and ") + " has died.", "somber");
+    }).then(function () { return new Promise(function (resolve) {
       scene.react("grave");
       app.className = "app top";
       app.innerHTML = '<div class="card event"><h2>' + esc(deaths.map(function (m) { return m.name; }).join(" and ")) + " has died.</h2>" +
@@ -440,17 +499,28 @@
         '<div class="actions"><button class="primary" id="roll">Continue</button></div></div>';
       var btn = document.getElementById("roll");
       btn.focus({ preventScroll: true });
-      function done() { keyHandlers = {}; resolve(); }
+      function done() { keyHandlers = {}; scene.focus(false); dismissCard().then(resolve); }
       btn.addEventListener("click", done);
       keyHandlers = { Enter: done };
       save();
-    });
+    }); });
+  }
+
+  function dismissCard() {
+    var card = app.querySelector(".card");
+    if (card) card.classList.add("leave");
+    return wait(380).then(function () { app.innerHTML = ""; });
   }
 
   // A trail event: a small card over the live diorama, decided quickly.
   function tripEvent(ev) {
-    return new Promise(function (resolve) {
-      scene.react(ev.react);
+    // 1. the wagon has coasted to a stop; 2. the trouble happens in the scene;
+    // 3. the camera eases in; 4. a headline; 5. the card slides up.
+    scene.react(ev.react);
+    scene.focus(true);
+    sfx("event", ev.react);
+    return wait(1100).then(function () { return headline(ev.headline || ev.title); }).then(function () {
+     return new Promise(function (resolve) {
       var list = E.choices(S, ev);
       app.className = "app top";
       app.innerHTML =
@@ -476,7 +546,11 @@
           '<div class="actions"><button class="primary" id="roll">Continue on the trail</button></div>';
         var btn = document.getElementById("roll");
         btn.focus({ preventScroll: true });
-        function done() { keyHandlers = {}; resolve(); }
+        function done() {
+          keyHandlers = {};
+          // the card slides away, the family deals with it, the camera eases back out
+          dismissCard().then(function () { return scene.settle(1600); }).then(function () { scene.focus(false); return wait(500); }).then(resolve);
+        }
         btn.addEventListener("click", done);
         keyHandlers = { Enter: done };
         save();
@@ -486,7 +560,7 @@
       });
       keyHandlers = {};
       list.forEach(function (ch, i) { if (ch.ok) keyHandlers[String(i + 1)] = function () { decideEvent(ch.index); }; });
-    });
+    }); });
   }
 
   // ------------------------------------------------------------ beats
@@ -578,7 +652,7 @@
     var list = E.riverOptions(S, r), depth = E.riverDepth(S, r);
     var danger = depth >= 3 ? "Too deep to ford safely." : depth >= 2.5 ? "Fording will soak the supplies." : "Shallow enough to ford.";
     show(
-      '<div class="card"><div class="chips"><span class="chip lead">Mouse: ' + roleLabel("navigator") + '</span><span class="chip vote">Group vote</span>' + draftChip(r) + "</div>" +
+      '<div class="card river-card"><div class="chips"><span class="chip lead">Mouse: ' + roleLabel("navigator") + '</span><span class="chip vote">Group vote</span>' + draftChip(r) + "</div>" +
       '<div class="eyebrow">' + esc(E.place(S.place).name) + " \u00b7 " + E.formatDate(E.dateOf(S)) + "</div>" +
       "<h2>Crossing " + esc(r.name) + "</h2>" + tripNotes() + (note ? '<p class="result">' + esc(note) + "</p>" : "") +
       "<p>" + esc(r.text) + "</p>" +
@@ -590,14 +664,22 @@
         return '<button data-choice="' + o.id + '"' + (o.ok ? "" : " disabled") + '><span class="key">' + (i + 1) + "</span>" + esc(o.label) +
           (o.ok ? "" : '<span class="why">You don\u2019t have what this needs.</span>') + "</button>";
       }).join("") + "</div></div>",
-      { panel: true }
+      { panel: true, top: true }
     );
+    if (W.sound) W.sound.ambient("river", r.current);
     function cross(id) {
       var rep = E.crossRiver(S, r, id);
-      renderPanel();
-      if (!rep.crossed) return riverScreen(b, rep.result);
-      scene.react(rep.deaths.length || /tips/.test(rep.result) ? "storm" : "stop");
-      result({ title: "Crossing " + r.name }, Object.assign(rep, { choice: list.filter(function (o) { return o.id === id; })[0].label }));
+      if (!rep.crossed) { renderPanel(); return riverScreen(b, rep.result); }
+      keyHandlers = {};
+      scene.dim(null);
+      sfx("splash");
+      // the card slides away and the crossing plays out before the result
+      dismissCard().then(function () { return scene.cross(id === "guideCash" ? "guide" : id, rep.upset); }).then(function () {
+        renderPanel();
+        if (rep.upset) sfx("event", "storm");
+        if (rep.deaths.length) sfx("death");
+        result({ title: "Crossing " + r.name }, Object.assign(rep, { choice: list.filter(function (o) { return o.id === id; })[0].label }));
+      });
     }
     on("[data-choice]", function (el) { cross(el.getAttribute("data-choice")); });
     keyHandlers = {};

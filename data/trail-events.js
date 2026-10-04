@@ -5,7 +5,8 @@
 // more of trail life; a group that is behind meets none (see config.js).
 //
 // Each template:
-//   id, weight (how likely), title, text, lead (role at the mouse),
+//   id, weight (how likely), headline (shown big over the scene first), title, text,
+//   lead (role at the mouse),
 //   when: { terrain: [...], months: [...], route: "trail" | "sea" | "walk", has: { parts: 1 } }
 //     terrain is one of: plains, river, mountains, desert, valley, goldfields, sea, town
 //   react: what the diorama shows (stop, wheel, ox, storm, grave, goods, snow, dust, calm)
@@ -22,7 +23,7 @@ WESTWARD.oxNames = ["Buck", "Bright", "Duke", "Dime", "Star", "Brindle", "Old To
 WESTWARD.trailEvents = [
   // ------------------------------------------------------------ the wagon
   {
-    id: "loose-rims", weight: 3, lead: "quartermaster", react: "wheel",
+    id: "loose-rims", headline: "The wheels are rattling apart!", weight: 3, lead: "quartermaster", react: "wheel",
     when: { route: "trail", terrain: ["plains", "mountains", "desert"] },
     title: "Loose wheel rims",
     text: "The dry air has shrunk the wooden wheels, and the iron rims are rattling loose. One more rut and a wheel could come apart.",
@@ -35,7 +36,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "broken-wheel", weight: 3, lead: "quartermaster", react: "wheel",
+    id: "broken-wheel", headline: "Crack! A wheel gives way.", weight: 3, lead: "quartermaster", react: "wheel",
     when: { route: "trail", terrain: ["plains", "mountains", "desert", "river"] },
     title: "A broken wheel",
     text: "A hidden rock catches the front wheel. Three spokes snap and the wagon lurches to a stop.",
@@ -45,7 +46,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "broken-tongue", weight: 2, lead: "quartermaster", react: "stop",
+    id: "broken-tongue", headline: "The wagon tongue splits!", weight: 2, lead: "quartermaster", react: "stop",
     when: { route: "trail", terrain: ["mountains", "plains"] },
     title: "The wagon tongue cracks",
     text: "Going down a steep bank, the long pole between the oxen and the wagon cracks.",
@@ -55,7 +56,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "steep-descent", weight: 2, lead: "navigator", react: "stop",
+    id: "steep-descent", headline: "The trail drops off a cliff.", weight: 2, lead: "navigator", react: "stop",
     when: { route: "trail", terrain: ["mountains"] },
     title: "A steep hill",
     text: "The trail drops down a slope so steep the wagon could run over the oxen.",
@@ -70,7 +71,7 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ the oxen
   {
-    id: "lame-ox", weight: 3, lead: "quartermaster", react: "ox",
+    id: "lame-ox", headline: "{ox} stumbles and limps.", weight: 3, lead: "quartermaster", react: "ox",
     when: { route: "trail" },
     title: "{ox} is limping",
     text: "{ox} has a sore hoof from the rocky trail and can barely walk.",
@@ -83,7 +84,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "alkali-water", weight: 3, lead: "quartermaster", react: "ox",
+    id: "alkali-water", headline: "The water here is poison.", weight: 3, lead: "quartermaster", react: "ox",
     when: { route: "trail", terrain: ["desert", "plains", "mountains"] },
     title: "Bad water",
     text: "The pools here are white with alkali. Thirsty oxen will drink it, and it can kill them.",
@@ -96,7 +97,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "stampede", weight: 2, lead: "navigator", react: "storm",
+    id: "stampede", headline: "Thunder! The oxen bolt!", weight: 2, lead: "navigator", react: "storm",
     when: { route: "trail", terrain: ["plains"] },
     title: "Stampede",
     text: "Thunder cracks overhead and the oxen bolt into the dark.",
@@ -106,7 +107,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "strayed-ox", weight: 2, lead: "navigator", react: "ox",
+    id: "strayed-ox", headline: "{ox} is gone.", weight: 2, lead: "navigator", react: "ox",
     when: { route: "trail", terrain: ["plains", "valley", "mountains"] },
     title: "{ox} wandered off",
     text: "In the morning {ox} is gone, wandered off in the night looking for grass.",
@@ -121,14 +122,14 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ weather
   {
-    id: "hailstorm", weight: 2, lead: "doctor", react: "storm",
+    id: "hailstorm", headline: "Hail!", weight: 2, lead: "doctor", react: "storm",
     when: { route: "trail", terrain: ["plains"], months: [4, 5, 6, 7] },
     title: "Hail",
     text: "The sky turns green-black. Hailstones the size of eggs drum on the wagon cover.",
     outcome: { result: "Everyone crowds under the wagon. The cover is torn, and some flour gets wet.", effects: { food: -30 } }
   },
   {
-    id: "flooded-creek", weight: 2, lead: "navigator", react: "storm",
+    id: "flooded-creek", headline: "The creek is a torrent.", weight: 2, lead: "navigator", react: "storm",
     when: { route: "trail", terrain: ["plains", "river", "valley"] },
     title: "A creek in flood",
     text: "Last night's rain has turned a small creek into a muddy torrent.",
@@ -141,14 +142,14 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "quicksand", weight: 1, lead: "navigator", react: "stop",
+    id: "quicksand", headline: "The wheels are sinking!", weight: 1, lead: "navigator", react: "stop",
     when: { route: "trail", terrain: ["plains", "river"] },
     title: "Quicksand",
     text: "The wheels sink into the soft sand of the riverbed and the wagon will not move.",
     outcome: { result: "You double the team and dig for hours. The wagon finally comes free.", effects: { days: 1 } }
   },
   {
-    id: "dust", weight: 2, lead: "doctor", react: "dust",
+    id: "dust", headline: "A wall of dust.", weight: 2, lead: "doctor", react: "dust",
     when: { route: "trail", terrain: ["plains", "desert", "mountains"], months: [6, 7, 8] },
     title: "Dust",
     text: "Hundreds of wagons ahead have ground the trail to powder. Dust coats everything, even your teeth.",
@@ -158,7 +159,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "early-snow", weight: 2, lead: "doctor", react: "snow",
+    id: "early-snow", headline: "Snow, and it is only fall.", weight: 2, lead: "doctor", react: "snow",
     when: { route: "trail", terrain: ["mountains"], months: [8, 9, 10] },
     title: "Snow in the mountains",
     text: "A cold wind brings snow. Everyone remembers the Donner Party.",
@@ -170,14 +171,14 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ health
   {
-    id: "rattlesnake", weight: 2, lead: "doctor", react: "stop",
+    id: "rattlesnake", headline: "A rattle in the sage!", weight: 2, lead: "doctor", react: "stop",
     when: { route: "trail", terrain: ["plains", "desert", "mountains"] },
     title: "Rattlesnake",
     text: "{child} jumps back from a rattlesnake coiled in the sagebrush.",
     outcome: { result: "No bite, just a scare. From now on, everyone watches where they step.", effects: {} }
   },
   {
-    id: "crushed-foot", weight: 2, lead: "doctor", react: "stop",
+    id: "crushed-foot", headline: "A scream from under the wagon.", weight: 2, lead: "doctor", react: "stop",
     when: { route: "trail" },
     title: "Under the wheel",
     text: "{member} slips while climbing down from the moving wagon, and a wheel rolls over a foot. Accidents like this were common.",
@@ -187,7 +188,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "mountain-fever", weight: 2, lead: "doctor", react: "stop",
+    id: "mountain-fever", headline: "{member} is burning with fever.", weight: 2, lead: "doctor", react: "stop",
     when: { route: "trail", terrain: ["mountains", "desert"] },
     title: "Mountain fever",
     text: "{member} wakes up burning with fever and aching all over.",
@@ -197,7 +198,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "lost-child", weight: 1, lead: "navigator", react: "stop",
+    id: "lost-child", headline: "Where is {child}?", weight: 1, lead: "navigator", react: "stop",
     when: { route: "trail", terrain: ["plains", "valley"] },
     title: "{child} is missing",
     text: "At the noon stop, {child} wandered off to pick berries. Now no one can find them.",
@@ -206,14 +207,14 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ the trail itself
   {
-    id: "grave", weight: 3, lead: "journal", react: "grave",
+    id: "grave", headline: "A fresh grave.", weight: 3, lead: "journal", react: "grave",
     when: { route: "trail", terrain: ["plains", "mountains", "desert", "river"] },
     title: "A grave by the trail",
     text: "A wooden board marks a fresh grave. The name is carved by hand, with the words: died of cholera, aged 9 years.",
     outcome: { result: "{member} reads the name aloud. Some emigrants counted the graves they passed each day.", effects: {} }
   },
   {
-    id: "bone-express", weight: 2, lead: "journal", react: "stop",
+    id: "bone-express", headline: "A message on a skull.", weight: 2, lead: "journal", react: "stop",
     when: { route: "trail", terrain: ["plains", "mountains"] },
     title: "The bone express",
     text: "A bison skull by the trail has writing on it: a message from one wagon company to another. Emigrants called these the bone express.",
@@ -223,7 +224,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "discarded-goods", weight: 3, lead: "quartermaster", react: "goods",
+    id: "discarded-goods", headline: "A trail of things left behind.", weight: 3, lead: "quartermaster", react: "goods",
     when: { route: "trail", terrain: ["plains", "mountains", "desert"] },
     title: "Things left behind",
     text: "The trail is littered with things other families threw away to lighten their wagons: a cookstove, a rocking chair, barrels of flour.",
@@ -233,7 +234,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "go-backs", weight: 2, lead: "journal", react: "stop",
+    id: "go-backs", headline: "A wagon heading the wrong way.", weight: 2, lead: "journal", react: "stop",
     when: { route: "trail", terrain: ["plains", "mountains"] },
     title: "Turning back",
     text: "A family passes going the other way, back east. They say they have had enough of the trail.",
@@ -243,21 +244,21 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "buffalo-chips", weight: 2, lead: "quartermaster", react: "stop",
+    id: "buffalo-chips", headline: "Not a tree for fifty miles.", weight: 2, lead: "quartermaster", react: "stop",
     when: { route: "trail", terrain: ["plains"] },
     title: "No firewood",
     text: "There are no trees here, only grass. Other emigrants are collecting dried bison dung to burn.",
     outcome: { result: "{child} gathers a sack of buffalo chips. They burn hot and fast. Supper is cooked.", effects: {} }
   },
   {
-    id: "good-day", weight: 3, lead: "navigator", react: "none",
+    id: "good-day", headline: "A good day on the trail.", weight: 3, lead: "navigator", react: "none",
     when: { route: "trail", terrain: ["plains", "valley", "mountains"] },
     title: "A good day",
     text: "Firm ground, cool air, and good grass. The oxen walk well.",
     outcome: { result: "You make twenty miles before sunset.", effects: { days: -1 } }
   },
   {
-    id: "native-traders", weight: 2, lead: "quartermaster", react: "stop",
+    id: "native-traders", headline: "Riders approach.", weight: 2, lead: "quartermaster", react: "stop",
     when: { route: "trail", terrain: ["plains", "mountains", "river"] },
     title: "Traders on the trail",
     text: "A family from a nearby village rides up to trade. They offer fresh meat and moccasins.",
@@ -268,7 +269,7 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "mosquitoes", weight: 1, lead: "doctor", react: "stop",
+    id: "mosquitoes", headline: "The air is thick with mosquitoes.", weight: 1, lead: "doctor", react: "stop",
     when: { route: "trail", terrain: ["river", "plains"], months: [5, 6, 7] },
     title: "Mosquitoes",
     text: "Clouds of mosquitoes rise from the river bottom. No one sleeps.",
@@ -277,28 +278,28 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ at sea
   {
-    id: "sea-storm", weight: 3, lead: "doctor", react: "storm",
+    id: "sea-storm", headline: "Storm!", weight: 3, lead: "doctor", react: "storm",
     when: { route: "sea" },
     title: "Storm at sea",
     text: "Waves crash over the deck. The hatches are shut, and everyone below deck is thrown about in the dark.",
     outcome: { result: "Two days of storm. When it passes, everyone is bruised and seasick, but alive.", effects: { days: 2, sick: { chance: 0.08, cause: "the storm" } } }
   },
   {
-    id: "becalmed", weight: 2, lead: "quartermaster", react: "calm",
+    id: "becalmed", headline: "The wind dies.", weight: 2, lead: "quartermaster", react: "calm",
     when: { route: "sea" },
     title: "No wind",
     text: "The sails hang limp. The ship sits still on a glassy sea, and the water ration is cut.",
     outcome: { result: "Five days drifting. Then a breeze, and the ship moves again.", effects: { days: 5 } }
   },
   {
-    id: "rain-water", weight: 2, lead: "quartermaster", react: "storm",
+    id: "rain-water", headline: "Rain at last.", weight: 2, lead: "quartermaster", react: "storm",
     when: { route: "sea" },
     title: "Rain",
     text: "A warm rain squall passes over the ship.",
     outcome: { result: "{member} catches rainwater in every pot the cousins own. Fresh water, at last.", effects: {} }
   },
   {
-    id: "crowded-hold", weight: 2, lead: "doctor", react: "none",
+    id: "crowded-hold", headline: "No air below deck.", weight: 2, lead: "doctor", react: "none",
     when: { route: "sea" },
     title: "Below deck",
     text: "Hundreds of passengers are packed below deck. The air is hot and stale.",
@@ -310,14 +311,14 @@ WESTWARD.trailEvents = [
 
   // ------------------------------------------------------------ walking to and in the gold country
   {
-    id: "river-rises", weight: 2, lead: "navigator", react: "storm",
+    id: "river-rises", headline: "The river is rising!", weight: 2, lead: "navigator", react: "storm",
     when: { route: "walk", terrain: ["goldfields", "river"] },
     title: "The river rises",
     text: "Rain in the mountains sends the river over its banks, right where you were digging.",
     outcome: { result: "You save your tools, but the claim is underwater for days.", effects: { days: 3 } }
   },
   {
-    id: "broken-rocker", weight: 2, lead: "quartermaster", react: "stop",
+    id: "broken-rocker", headline: "The rocker splits.", weight: 2, lead: "quartermaster", react: "stop",
     when: { route: "walk", terrain: ["goldfields"] },
     title: "A broken rocker",
     text: "The wooden rocker you use to wash gold from gravel splits down the middle.",
@@ -327,14 +328,14 @@ WESTWARD.trailEvents = [
     ]
   },
   {
-    id: "district-help", weight: 2, lead: "journal", react: "none",
+    id: "district-help", headline: "Voices from home.", weight: 2, lead: "journal", react: "none",
     when: { route: "walk" },
     title: "Men from home",
     text: "On the road you meet men from your own district. They share rice and news from home.",
     outcome: { result: "{member} writes a letter home and sends it with them.", effects: { food: 20 } }
   },
   {
-    id: "hostile-miners", weight: 2, lead: "navigator", react: "stop",
+    id: "hostile-miners", headline: "\"Foreigners, get out!\"", weight: 2, lead: "navigator", react: "stop",
     when: { route: "walk", terrain: ["goldfields"] },
     title: "Not welcome",
     text: "Miners at a camp shout that foreigners are not allowed to dig here.",

@@ -85,18 +85,39 @@
   function inFlat(x, z) {
     for (var i = 0; i < flatZones.length; i++) {
       var f = flatZones[i];
+      if (f.bed) continue;
       var d = f.along ? Math.abs(z - f.z) - f.w / 2 : Math.abs(x - f.x) - f.w / 2;
       if (d < 1.5) return d < 0 ? 0 : d / 1.5;
     }
     return 1;
   }
+  // A river crossing cuts a trench right through the slab: banks slope down to the bed.
+  function crossingAt(x) {
+    for (var i = 0; i < flatZones.length; i++) {
+      var f = flatZones[i];
+      if (!f.bed) continue;
+      var d = Math.abs(x - f.x) - f.w / 2;
+      if (d < 1.5) return { d: d, bed: f.bed };
+    }
+    return null;
+  }
   function groundH(x, z, seed) {
+    var c = crossingAt(x);
+    if (c && c.d < 0) { var u = Math.min(1, -c.d / 2.5); return -c.bed * u * u * (3 - 2 * u); }
     var s = seed % 1000;
     var h = 0.55 * Math.sin(x * 0.11 + s) * Math.cos(z * 0.13 + s * 0.7) + 0.35 * Math.sin(x * 0.27 + z * 0.19 + s * 1.3);
     h = 0.6 * (h + 0.9);
     var flat = Math.min(1, Math.max(0, (Math.abs(z) - 3) / 6));
     var edge = Math.min(1, (SLAB_L / 2 - Math.abs(x)) / 3, (SLAB_D / 2 - Math.abs(z)) / 3);
-    return h * flat * Math.max(0, edge) * inFlat(x, z);
+    return h * flat * Math.max(0, edge) * inFlat(x, z) * (c ? c.d / 1.5 : 1);
+  }
+  // Height on a built slab (each slab remembers its own rivers).
+  function heightOn(slab, x, z) {
+    var keep = flatZones;
+    flatZones = slab.userData.zones || [];
+    var h = groundH(x, z, slab.userData.seed);
+    flatZones = keep;
+    return h;
   }
 
   // ------------------------------------------------------------------ the slab
@@ -116,34 +137,39 @@
     return { x: (R() - 0.5) * SLAB_L * 0.9, z: side === "back" ? -10 : 10 };
   }
 
-  function buildSlab(key, variant) {
+  function buildSlab(key, variant, riverNow) {
     var def = W.scenes[key] || W.scenes.prairie;
     var seed = hash(key + ":" + (variant || 0));
     var R = rng(seed);
     var g = new T.Group();
-    g.userData = { key: key, anim: [] };
+    g.userData = { key: key, anim: [], seed: seed };
     var taken = [{ x: 0, z: 0, r: 0 }];
     var allSea = (def.features || []).some(function (f) { return f[0] === "sea" && f[2] && f[2].all; });
     flatZones = [];
     (def.features || []).forEach(function (f) {
       var o = f[2] || {};
-      if (f[0] === "river") flatZones.push(o.along ? { along: true, z: o.z, w: o.width || 4 } : { x: o.x || -14, w: o.width || 10 });
+      if (f[0] === "river") flatZones.push(o.along ? { along: true, z: o.z, w: o.width || 4 } :
+        { x: o.x || -26, w: o.width || 24, bed: 0.7 + 0.32 * ((riverNow && riverNow.depth) || o.depth || 3.5), current: (riverNow && riverNow.current) || o.current || 0.4, depthFt: (riverNow && riverNow.depth) || o.depth || 3.5 });
       if (f[0] === "sea" && !o.all) flatZones.push({ along: true, z: SLAB_D / 4 + 1, w: SLAB_D / 2 + 2 });
     });
 
+    g.userData.zones = flatZones.slice();
+    var deepest = flatZones.reduce(function (m, f) { return Math.max(m, f.bed || 0); }, 0);
+    var bodyTop = deepest ? -deepest - 0.35 : -0.01;
     // body of the slab: soil sides and a darker base, like a museum diorama
     var body = box(SLAB_L, SLAB_T, SLAB_D, allSea ? def.soil : def.soil);
-    body.position.y = -SLAB_T / 2 - 0.01;
+    body.position.y = bodyTop - SLAB_T / 2;
     body.castShadow = false;
     g.add(body);
     var base = box(SLAB_L + 0.6, 0.5, SLAB_D + 0.6, shade(def.soil, 0.7));
-    base.position.y = -SLAB_T - 0.25;
+    base.position.y = bodyTop - SLAB_T - 0.25;
+    if (deepest) skirts(g, def, seed, bodyTop);
     base.castShadow = false;
     g.add(base);
 
     if (!allSea) {
       // the top: low-poly patches of two ground colors
-      var geo = new T.PlaneGeometry(SLAB_L, SLAB_D, 36, 20).toNonIndexed();
+      var geo = new T.PlaneGeometry(SLAB_L, SLAB_D, 56, 24).toNonIndexed();
       geo.rotateX(-Math.PI / 2);
       var pos = geo.attributes.position, cols = [];
       for (var i = 0; i < pos.count; i++) pos.setY(i, groundH(pos.getX(i), pos.getZ(i), seed));
@@ -161,13 +187,27 @@
 
     // the trail: a worn strip with two wheel ruts
     if (def.trail) {
-      var trail = mesh(new T.PlaneGeometry(SLAB_L, 3.2), def.trail);
-      trail.rotation.x = -Math.PI / 2; trail.position.y = 0.03; trail.castShadow = false;
-      g.add(trail);
-      [-0.95, 0.95].forEach(function (z) {
-        var rut = mesh(new T.PlaneGeometry(SLAB_L, 0.32), shade(def.trail, 0.82));
-        rut.rotation.x = -Math.PI / 2; rut.position.set(0, 0.06, z); rut.castShadow = false;
-        g.add(rut);
+      // trail pieces between river banks
+      var spans = [[-SLAB_L / 2, SLAB_L / 2]];
+      flatZones.forEach(function (f) {
+        if (!f.bed) return;
+        var a = f.x - f.w / 2 - 0.5, b = f.x + f.w / 2 + 0.5;
+        spans = spans.reduce(function (out, sp) {
+          if (b <= sp[0] || a >= sp[1]) out.push(sp);
+          else { if (a > sp[0]) out.push([sp[0], a]); if (b < sp[1]) out.push([b, sp[1]]); }
+          return out;
+        }, []);
+      });
+      spans.forEach(function (sp) {
+        var len = sp[1] - sp[0], cx = (sp[0] + sp[1]) / 2;
+        var trail = mesh(new T.PlaneGeometry(len, 3.2), def.trail);
+        trail.rotation.x = -Math.PI / 2; trail.position.set(cx, 0.03, 0); trail.castShadow = false;
+        g.add(trail);
+        [-0.95, 0.95].forEach(function (z) {
+          var rut = mesh(new T.PlaneGeometry(len, 0.32), shade(def.trail, 0.82));
+          rut.rotation.x = -Math.PI / 2; rut.position.set(cx, 0.06, z); rut.castShadow = false;
+          g.add(rut);
+        });
       });
     }
 
@@ -179,6 +219,108 @@
   }
 
   function groundY(x, z, seed) { return groundH(x, z, seed); }
+
+  // Soil walls around the slab's edges, from the ground down to the body, so a
+  // river trench shows as a clean cutaway instead of a hole.
+  function skirts(g, def, seed, bottom) {
+    var mat = new T.MeshPhongMaterial({ color: new T.Color(def.soil), flatShading: true, shininess: 0, specular: 0, side: T.DoubleSide });
+    [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(function (side) {
+      var alongX = side[1] !== 0, n = alongX ? 60 : 24, len = alongX ? SLAB_L : SLAB_D;
+      var pos = [], idx = [];
+      for (var i = 0; i <= n; i++) {
+        var t = -len / 2 + len * i / n;
+        var x = alongX ? t : side[0] * SLAB_L / 2, z = alongX ? side[1] * SLAB_D / 2 : t;
+        pos.push(x, groundH(x, z, seed), z, x, bottom, z);
+        if (i < n) { var a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      }
+      var geo = new T.BufferGeometry();
+      geo.setAttribute("position", new T.Float32BufferAttribute(pos, 3));
+      geo.setIndex(idx); geo.computeVertexNormals();
+      g.add(new T.Mesh(geo, mat));
+    });
+  }
+
+  // A big crossing river: deep water in a trench, racing foam and logs, rapids on
+  // swift rivers, and a depth post on the near bank marked in feet.
+  function bigRiver(g, zone, color, R) {
+    var waterY = -0.6, w = zone.w + 0.6, cur = zone.current;
+    // water surface, darker in the deep middle
+    var geo = new T.PlaneGeometry(w, SLAB_D, 16, 34);
+    geo.rotateX(-Math.PI / 2);
+    var cols = [], base = new T.Color(color), deep = base.clone().multiplyScalar(0.62), c = new T.Color();
+    var pa = geo.attributes.position;
+    for (var i = 0; i < pa.count; i++) {
+      var u = 1 - Math.abs(pa.getX(i)) / (w / 2);
+      c.copy(base).lerp(deep, Math.min(1, u * 1.4));
+      cols.push(c.r, c.g, c.b);
+    }
+    geo.setAttribute("color", new T.Float32BufferAttribute(cols, 3));
+    var water = new T.Mesh(geo, new T.MeshPhongMaterial({ vertexColors: true, flatShading: true, shininess: 50, specular: 0x445055, transparent: true, opacity: 0.93 }));
+    water.receiveShadow = true;
+    g.add(at(water, zone.x, waterY, 0));
+    var basePos = Float32Array.from(geo.attributes.position.array);
+    var phase = new Float32Array(pa.count);
+    for (var ph = 0; ph < pa.count; ph++) phase[ph] = R() * 6.28;
+    // the body of water, seen in cutaway at the slab's front and back
+    var bodyW = new T.Mesh(new T.BoxGeometry(w - 0.4, zone.bed + waterY + 0.1, SLAB_D - 0.05), new T.MeshPhongMaterial({ color: deep, transparent: true, opacity: 0.55, flatShading: true }));
+    g.add(at(bodyW, zone.x, (-zone.bed + waterY) / 2, 0));
+    // foam streaks racing downstream (toward the front, +z)
+    var foam = new T.InstancedMesh(new T.BoxGeometry(0.7, 0.05, 0.22), new T.MeshBasicMaterial({ color: 0xf4f6f2, transparent: true, opacity: 0.8 }), 90);
+    var specks = [];
+    for (var f = 0; f < 90; f++) specks.push({ x: (R() - 0.5) * (w - 2), z: (R() - 0.5) * SLAB_D, s: 0.6 + R() * 1.2, ph: R() * 6 });
+    g.add(at(foam, zone.x, waterY + 0.06, 0));
+    // logs and branches swept along
+    var logs = [];
+    for (var l = 0; l < 3; l++) {
+      var log = mesh(new T.CylinderGeometry(0.22, 0.25, 3 + R() * 2, 6), "#5a4330");
+      log.rotation.z = Math.PI / 2; log.rotation.y = R() * 3;
+      var holder = new T.Group(); holder.add(log);
+      g.add(at(holder, zone.x + (R() - 0.5) * (w - 4), waterY + 0.05, (R() - 0.5) * SLAB_D));
+      logs.push({ g: holder, spin: (R() - 0.5) * 0.6 });
+    }
+    // rapids: rocks with white water around them
+    if (cur > 0.65) {
+      for (var r = 0; r < 9; r++) {
+        var rx = zone.x + (R() - 0.5) * (w - 4), rz = (R() - 0.5) * (SLAB_D - 6);
+        if (Math.abs(rz) < 3) rz += 6;
+        var rock = mesh(new T.DodecahedronGeometry(0.6 + R() * 0.7, 0), "#6f6a62"); rock.scale.y = 0.7;
+        g.add(at(rock, rx, waterY, rz));
+        var ring = new T.Mesh(new T.TorusGeometry(1.1, 0.12, 3, 10), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 }));
+        ring.rotation.x = Math.PI / 2; ring.scale.set(1, 1.6, 1);
+        g.add(at(ring, rx, waterY + 0.04, rz + 0.4));
+      }
+    }
+    // the depth post on the near bank, one stripe per foot
+    var postX = zone.x + zone.w / 2 - 1.6, post = new T.Group(), ft = 0.32, feet = Math.ceil(zone.depthFt) + 3;
+    post.add(at(box(0.32, feet * ft + 0.4, 0.32, "#efe9dc"), 0, (feet * ft + 0.4) / 2, 0));
+    for (var k = 0; k < feet; k += 1) post.add(at(box(0.38, 0.12, 0.38, k % 5 === 4 ? "#a5402f" : "#22262e"), 0, (k + 1) * ft, 0));
+    g.add(at(post, postX, waterY - zone.depthFt * ft, -3.4));
+    // motion
+    var m4 = new T.Matrix4(), q = new T.Quaternion(), sc = new T.Vector3(), pv = new T.Vector3(), t = 0, speed = 2.5 + cur * 9;
+    g.userData.anim.push(function (dt) {
+      t += dt;
+      var p = geo.attributes.position, amp = 0.06 + cur * 0.16;
+      for (var i = 0; i < p.count; i++) {
+        var x = basePos[i * 3], z = basePos[i * 3 + 2];
+        p.setY(i, amp * (0.55 * Math.sin(z * 0.7 - t * (2 + cur * 5) + phase[i]) + 0.45 * Math.sin(t * 2.3 + phase[i] * 1.7)));
+      }
+      p.needsUpdate = true;
+      specks.forEach(function (sp, i) {
+        sp.z += dt * speed * sp.s;
+        if (sp.z > SLAB_D / 2) { sp.z = -SLAB_D / 2; sp.x = (Math.random() - 0.5) * (w - 2); }
+        pv.set(sp.x + Math.sin(t * 2 + sp.ph) * 0.3, 0, sp.z); sc.set(sp.s, 1, 1 + sp.s);
+        q.setFromAxisAngle(new T.Vector3(0, 1, 0), Math.PI / 2 + Math.sin(t + sp.ph) * 0.3);
+        m4.compose(pv, q, sc); foam.setMatrixAt(i, m4);
+      });
+      foam.instanceMatrix.needsUpdate = true;
+      logs.forEach(function (lg) {
+        lg.g.position.z += dt * speed * 0.6;
+        lg.g.rotation.y += dt * lg.spin;
+        lg.g.position.y = waterY + 0.06 * Math.sin(t * 2 + lg.spin * 10);
+        if (lg.g.position.z > SLAB_D / 2 + 2) lg.g.position.z = -SLAB_D / 2 - 2;
+      });
+    });
+  }
 
   // instanced scatter of a small shape, colored per instance
   function scatter(g, geo, n, colors, R, opt, taken, seed, sy) {
@@ -403,17 +545,11 @@
         // keep big things off the water
         for (var x = -SLAB_L / 2; x < SLAB_L / 2; x += 6) taken.push({ x: x, z: opt.z, r: (opt.width || 4) / 2 + 1 });
       } else {
-        w = waterMesh(opt.width || 10, SLAB_D, opt.color || "#8a9a90", 6, 30);
-        g.add(at(w, opt.x || -14, 0.15, 0));
-        for (var z = -SLAB_D / 2; z < SLAB_D / 2; z += 5) taken.push({ x: opt.x || -14, z: z, r: (opt.width || 10) / 2 + 1 });
-        // a flat ferry at the crossing
-        var ferry = new T.Group();
-        ferry.add(at(box(5, 0.35, 3.2, "#7a5a3c"), 0, 0.3, 0));
-        ferry.add(at(cyl(0.08, 0.08, 1.8, 5, "#5a4330"), 2.2, 1.1, 1.4));
-        ferry.add(at(cyl(0.08, 0.08, 1.8, 5, "#5a4330"), -2.2, 1.1, 1.4));
-        g.add(at(ferry, (opt.x || -14) + 1, 0, 0));
-        var t0 = 0;
-        g.userData.anim.push(function (dt) { t0 += dt; ferry.position.y = 0.05 * Math.sin(t0 * 1.5); ferry.rotation.z = 0.02 * Math.sin(t0); });
+        var zone = g.userData.zones.filter(function (z) { return z.bed; })[0];
+        for (var z = -SLAB_D / 2; z < SLAB_D / 2; z += 4) taken.push({ x: zone.x, z: z, r: zone.w / 2 + 1.5 });
+        bigRiver(g, zone, opt.color || "#6f8f9a", R);
+        g.userData.crossing = zone;
+        return;
       }
       var t = 0;
       g.userData.anim.push(function (dt) { t += dt; w.userData.wave(t, 0.06); });
@@ -873,6 +1009,16 @@
     night: { hemi: [0x8090c0, 0x3a332c, 0.62], sun: [0xa9bce0, 0.38], dir: [0.4, 0.9, -0.3] }
   };
   var SEASON = { 6: 0xfff4e0, 7: 0xffecd0, 8: 0xfbe4c6, 9: 0xf3dcc4, 10: 0xe8e2dc, 11: 0xdde2ea, 0: 0xdde2ea, 1: 0xe2e6ea };
+  // Across a day's travel the sun climbs and falls: cool morning, bright noon, gold evening.
+  var baseSun = { pos: new T.Vector3(), color: new T.Color(), intensity: 1 };
+  function timeOfDay(k) {
+    if (k == null || !current.def || current.def.light === "night" || current.def.light === "overcast") return;
+    var a = (k - 0.5) * 2.2;                     // -1.1 morning .. +1.1 evening
+    sun.position.set(baseSun.pos.x * Math.cos(a) - 60 * Math.sin(a), Math.max(18, baseSun.pos.y * Math.cos(a * 0.8)), baseSun.pos.z);
+    var warm = Math.abs(a) / 1.1;
+    sun.color.copy(baseSun.color).lerp(new T.Color(0xffb878), warm * 0.45);
+    sun.intensity = baseSun.intensity * (1 - 0.18 * warm);
+  }
   function applyLight(def, month) {
     var L = LIGHT[def.light] || LIGHT.day;
     hemi.color.setHex(L.hemi[0]); hemi.groundColor.setHex(L.hemi[1]); hemi.intensity = L.hemi[2];
@@ -880,6 +1026,7 @@
     if (SEASON[month] && def.light !== "night") sun.color.multiply(new T.Color(SEASON[month]));
     if (def.honest) { sun.intensity *= 0.8; hemi.color.lerp(new T.Color(0xd8d6d0), 0.4); }
     sun.position.set(L.dir[0] * 80, L.dir[1] * 80, L.dir[2] * 80);
+    baseSun.pos.copy(sun.position); baseSun.color.copy(sun.color); baseSun.intensity = sun.intensity;
     var sky = new T.Color(def.sky), top = sky.clone().lerp(new T.Color(def.light === "night" ? 0x141a26 : 0xffffff), 0.35);
     root.style.background = "linear-gradient(to bottom, #" + top.getHexString() + ", #" + sky.getHexString() + " 60%, " + shade(def.sky, 0.93) + ")";
     clouds.forEach(function (c) {
@@ -888,23 +1035,25 @@
   }
 
   // ------------------------------------------------------------------ camera
-  var view = { az: Math.PI / 4, el: 0.62, size: 25, zoom: 1, zoomTo: 1, showcase: false, t: 0 };
+  var view = { az: Math.PI / 4, el: 0.62, size: 25, zoom: 1, zoomTo: 1, showcase: false, t: 0, focus: 0, focusTo: 0, travelK: null, drift: 0 };
   function placeCamera() {
     var w = root.clientWidth || window.innerWidth, h = root.clientHeight || window.innerHeight;
     var aspect = w / h;
-    var halfH = view.size / view.zoom * (aspect < 1 ? 1.5 : 1);
+    var zoom = view.zoom * (1 + 0.38 * view.focus) * (1 + 0.05 * view.drift);
+    var halfH = view.size / zoom * (aspect < 1 ? 1.5 : 1);
     var halfW = halfH * aspect;
     camera.left = -halfW; camera.right = halfW; camera.top = halfH; camera.bottom = -halfH;
-    var az = view.az + (view.showcase && !reduce ? 0.35 * Math.sin(view.t * 0.12) : 0);
-    var dir = new T.Vector3(Math.cos(view.el) * Math.cos(az), Math.sin(view.el), Math.cos(view.el) * Math.sin(az));
+    var az = view.az + (view.showcase && !reduce ? 0.35 * Math.sin(view.t * 0.12) : 0) + 0.07 * view.drift * Math.sin(view.t * 0.15);
+    var el = view.el - 0.12 * view.focus - (view.low || 0);
+    var dir = new T.Vector3(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
     // frame the wagon a little left of and below the center, leaving room for cards
-    var target = new T.Vector3(-1.5, 0, 0);
+    var target = new T.Vector3(-1.5 + (view.focusX || 0), 0, rigG.position.z * 0.5);
     camera.position.copy(target).addScaledVector(dir, 200);
     camera.lookAt(target);
     camera.updateMatrixWorld();
     var up = new T.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
     var right = new T.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-    target.addScaledVector(up, halfH * 0.28).addScaledVector(right, halfW * 0.12);
+    target.addScaledVector(up, halfH * 0.28 * (1 - 0.35 * view.focus)).addScaledVector(right, halfW * 0.12);
     camera.position.copy(target).addScaledVector(dir, 200);
     camera.lookAt(target);
     camera.updateProjectionMatrix();
@@ -944,9 +1093,9 @@
     snow.visible = kind === "snow";
   }
 
-  function newSlab(key) {
+  function newSlab(key, river) {
     current.visits[key] = (current.visits[key] || 0) + 1;
-    return buildSlab(key, current.visits[key] > 1 ? current.visits[key] : 0);
+    return buildSlab(key, current.visits[key] > 1 ? current.visits[key] : 0, river);
   }
 
   function rigKey(opts) {
@@ -962,7 +1111,7 @@
     view.showcase = !!opts.showcase;
     if (current.key !== key || opts.force || !current.slab) {
       if (current.slab) disposeSlab(current.slab);
-      current.slab = newSlab(key);
+      current.slab = newSlab(key, opts.river);
       world.add(current.slab);
       current.key = key;
     }
@@ -980,57 +1129,155 @@
   }
 
   // Slide the next place in under the wagon while it walks.
-  // hooks: { stops: [0.4, 0.7], onStop(i) -> Promise, onProgress(k) }
-  // At each stop the wagon halts, the event plays out, then the trip resumes.
+  // hooks.onProgress(k) may return a Promise: the wagon coasts to a stop, waits for
+  // it (an event, a death), then pulls away again. Speed is eased, never jumped.
   function travelTo(key, opts, ms, hooks) {
     opts = opts || {}; hooks = hooks || {};
     mount();
     var rk = rigKey(opts);
     if (rk !== current.rigKey) { buildRig(opts.vehicle || "wagon", opts.party, opts.family); current.rigKey = rk; }
     view.showcase = false;
-    var next = newSlab(key);
-    next.position.x = -SLAB_L - 1.5;
-    world.add(next);
+    var next = newSlab(key, opts.river);
     var old = current.slab, def = W.scenes[key] || W.scenes.prairie;
+    var oldStart = old ? old.position.x : 0, span = SLAB_L + 1.5 - oldStart;
+    next.position.x = oldStart - SLAB_L - 1.5;
+    world.add(next);
     current.slab = next; current.key = key; current.def = def;
     current.old = old;
-    var stops = (hooks.stops || []).slice().sort();
     return new Promise(function (resolve) {
-      var done = 0, switched = false, paused = false, lastNow = null;
+      var done = 0, vel = 0, holding = false, switched = false, lastNow = null;
       travelAnim = function (now) {
         if (lastNow === null) lastNow = now;
-        var step = now - lastNow; lastNow = now;
-        if (paused) { moving = Math.max(0, moving - step / 400); return; }
-        done = Math.min(ms, done + step);
+        var step = Math.min(100, now - lastNow); lastNow = now;
+        var remain = ms - done;
+        var target = holding ? 0 : Math.max(0.06, Math.min(1, remain / 1400));
+        vel += (target - vel) * Math.min(1, step / (holding ? 380 : 700));
+        done = Math.min(ms, done + step * vel);
         var k = done / ms;
-        if (stops.length && k >= stops[0]) {
-          k = stops.shift(); done = k * ms;
-          paused = true;
-          var i = (hooks.stops.length - stops.length - 1);
-          Promise.resolve(hooks.onStop ? hooks.onStop(i) : null).then(function () { clearReact(); paused = false; lastNow = null; });
-        }
-        var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-        var dx = (SLAB_L + 1.5) * e;
-        if (old) old.position.x = dx;
-        next.position.x = -SLAB_L - 1.5 + dx;
+        var dx = span * k;
+        if (old) old.position.x = oldStart + dx;
+        next.position.x = oldStart - SLAB_L - 1.5 + dx;
         current.dx = dx;
-        moving = paused ? moving : Math.min(1, moving + step / 300, k < 0.95 ? 1 : (1 - k) * 20);
-        if (hooks.onProgress) {
+        view.travelK = k;
+        moving = vel;
+        if (!holding && hooks.onProgress) {
           var hold = hooks.onProgress(k);
           if (hold && hold.then) {
-            paused = true;
-            hold.then(function () { clearReact(); paused = false; lastNow = null; });
+            holding = true;
+            hold.then(function () { holding = false; });
           }
         }
         if (!switched && k > 0.5) { switched = true; placeRig(def); applyLight(def, opts.month); setWeather(opts.weather || def.weather); }
-        if (k >= 1 && !paused) {
+        if (k >= 1 && !holding) {
           if (old) disposeSlab(old);
           current.old = null;
-          moving = 0; travelAnim = null;
+          moving = 0; travelAnim = null; view.travelK = null;
           resolve();
         }
       };
-      if (reduce && !stops.length) { lastNow = 0; travelAnim(ms); }
+      if (reduce) { ms = Math.min(ms, 2500); }
+    });
+  }
+
+  // ------------------------------------------------------------------ crossing a river
+  // The river slides under the wagon, the way the land does when traveling.
+  // how: ford, float, ferry, guide. upset: the wagon tips mid-river.
+  function cross(how, upset) {
+    var s = current.slab, zone = s && s.userData.crossing;
+    if (!zone || reduce) return Promise.resolve();
+    var start = s.position.x, far = -(zone.x - zone.w / 2 - 4), dur = 7000 + zone.w * 60;
+    var waterY = -0.6, raft = null, swept = [], tipped = false, splashT = 0;
+    if (how === "ferry" || how === "float" || how === "guide") {
+      raft = new T.Group();
+      raft.add(at(box(7.5, 0.35, 3.4, how === "ferry" ? "#7a5a3c" : "#8a6a48"), 0.6, 0.18, 0));
+      if (how === "ferry") { raft.add(at(cyl(0.07, 0.07, 2, 5, "#5a4330"), 4, 1.1, 1.5)); raft.add(at(cyl(0.07, 0.07, 2, 5, "#5a4330"), -2.8, 1.1, 1.5)); }
+      raft.visible = false;
+      rigG.add(raft);
+    }
+    view.low = 0.16; focus(true);
+    return new Promise(function (resolve) {
+      var t0 = performance.now();
+      var anim = {
+        step: function () {
+          var k = Math.min(1, (performance.now() - t0) / dur);
+          var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          s.position.x = start + far * e;
+          var localX = -s.position.x / rigG.scale.x;
+          var bed = heightOn(s, localX * rigG.scale.x, 0);
+          var inWater = bed < -0.05;
+          var frac = inWater ? Math.min(1, -bed / zone.bed) : 0;
+          moving = inWater && how !== "ford" ? 0.25 : 0.8;
+          if (raft) raft.visible = inWater || raft.visible && k < 0.98;
+          var y = how === "ford" ? bed : (inWater ? waterY - 0.15 + 0.12 * Math.sin(performance.now() / 300) : bed);
+          if (how === "ford" && frac > 0.6) y = Math.max(bed, waterY - 1.1);
+          rigG.position.y = Math.min(0, y);
+          rigG.position.z = zone.current * 2.8 * frac * (upset ? 1.8 : 1);
+          rigG.rotation.y = (how === "float" ? 0.18 : 0.06) * frac * Math.sin(performance.now() / 700);
+          if (upset && k > 0.45 && k < 0.7) {
+            rigG.rotation.x = Math.min(0.5, rigG.rotation.x + 0.02);
+            if (!tipped) { tipped = true; spill(); }
+          } else rigG.rotation.x *= 0.92;
+          splashT -= 1;
+          if (inWater && splashT <= 0) { splashT = 6; puff(1 + Math.random() * 2, waterY + 0.3, rigG.position.z + 1.6, { color: 0xffffff, vx: 0.4, vy: 1.2, vz: 1.5, life: 0.9, grow: 1.5, op: 0.7, size: 0.35 }); }
+          swept.forEach(function (o) { o.m.position.z += 0.06 + zone.current * 0.12; o.m.position.y = waterY + 0.05 * Math.sin(performance.now() / 200 + o.ph) - (o.sink ? Math.min(1.5, (performance.now() - o.t) / 2500) : 0); o.m.rotation.y += 0.02; });
+          if (k >= 1) {
+            reacted.splice(reacted.indexOf(anim), 1);
+            rigG.position.y = 0; rigG.position.z = 0; rigG.rotation.set(0, 0, 0);
+            if (raft) rigG.remove(raft);
+            swept.forEach(function (o) { scene.remove(o.m); });
+            view.low = 0; focus(false); moving = 0;
+            resolve();
+          }
+        },
+        undo: function () {}
+      };
+      reacted.push(anim);
+      // supplies float away; an ox is swept downstream
+      function spill() {
+        for (var i = 0; i < 5; i++) {
+          var crate = mesh(new T.BoxGeometry(0.7, 0.5, 0.7), i % 2 ? "#8a6a48" : "#efe6d2");
+          crate.position.set(-1 + i * 1.1, waterY, rigG.position.z + 2);
+          scene.add(crate); swept.push({ m: crate, ph: i });
+        }
+        if (rig.oxen.length > 2) {
+          var ox = rig.oxen[rig.oxen.length - 1];
+          var copy = ox.clone(); rigG.remove(ox); rig.oxen.pop();
+          copy.position.set(-7, waterY - 0.6, rigG.position.z + 1); copy.scale.setScalar(1.45);
+          scene.add(copy); swept.push({ m: copy, ph: 9, sink: true, t: performance.now() });
+          current.rigKey = null; // rebuild the team next time
+        }
+      }
+    });
+  }
+
+  // The camera eases in on the wagon when something happens, and back out after.
+  function focus(on) { view.focusTo = on ? 1 : 0; }
+
+  // The consequence beat: the family gathers at the wagon, the trouble is put right.
+  function settle(ms) {
+    return new Promise(function (resolve) {
+      var t0 = performance.now(), dur = ms || 1600;
+      var homes = rig.people.map(function (p) { return p.p.position.clone(); });
+      var anim = {
+        step: function () {
+          var k = Math.min(1, (performance.now() - t0) / dur);
+          var out = k < 0.6 ? k / 0.6 : 1 - (k - 0.6) / 0.4;
+          rig.people.forEach(function (p, i) {
+            var home = homes[i];
+            p.p.position.x = home.x + (0.6 + i * 0.5 - home.x) * out * 0.8;
+            p.p.position.z = home.z + (1.6 - home.z) * out * 0.8;
+            p.p.rotation.y = out * (i % 2 ? 0.8 : -0.8);
+          });
+          if (k > 0.55 && !anim.fixed) { anim.fixed = true; clearReact(); reacted.push(anim); }
+          if (k >= 1) {
+            rig.people.forEach(function (p, i) { p.p.position.copy(homes[i]); p.p.rotation.y = 0; });
+            reacted.splice(reacted.indexOf(anim), 1);
+            resolve();
+          }
+        },
+        undo: function () {}
+      };
+      reacted.push(anim);
     });
   }
 
@@ -1038,7 +1285,7 @@
   var reacted = [];
   function slabUnderRig() {
     // during a trip the old slab is under the wagon until the seam passes
-    if (current.old && current.dx < SLAB_L / 2) return current.old;
+    if (current.old && current.old.position.x < SLAB_L / 2) return current.old;
     return current.slab;
   }
   function dropBeside(obj, ahead) {
@@ -1143,8 +1390,12 @@
     if (travelAnim) travelAnim(now);
     reacted.forEach(function (r) { if (r.step) r.step(dt); });
 
-    // camera ease (zoom in a touch behind cards)
-    view.zoom += (view.zoomTo - view.zoom) * Math.min(1, dt * 3);
+    // camera ease: zoom in a touch behind cards, ease toward the wagon at events,
+    // and drift slowly while traveling
+    view.zoom += (view.zoomTo - view.zoom) * Math.min(1, dt * 2);
+    view.focus += (view.focusTo - view.focus) * Math.min(1, dt * 1.6);
+    view.drift += ((view.travelK != null ? 1 : 0) - view.drift) * Math.min(1, dt * 0.6);
+    timeOfDay(view.travelK);
     placeCamera();
 
     // slab life: water, smoke, flags, herds
@@ -1220,5 +1471,5 @@
   function start() { if (!raf) raf = requestAnimationFrame(frame); }
 
   W.scene2d = W.scene;
-  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, weather: function (k) { setWeather(k || (current.def && current.def.weather)); }, pause: function (p) { paused3d = !!p; }, preload: function () {}, is3d: true };
+  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, focus: focus, settle: settle, cross: cross, weather: function (k) { setWeather(k || (current.def && current.def.weather)); }, pause: function (p) { paused3d = !!p; }, preload: function () {}, is3d: true };
 })();

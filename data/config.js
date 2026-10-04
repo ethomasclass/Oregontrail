@@ -9,7 +9,7 @@ WESTWARD.config = {
   // Pacing (minutes from the moment a group picks its family).
   totalMinutes: 40,
   // How far behind schedule a group can fall before optional stops are skipped.
-  slackMinutes: 1.5,
+  slackMinutes: 0.5,
 
   // Trail events between stops (data/trail-events.js). Each one takes a group about
   // eventMinutes; a group only meets them when it is ahead of schedule.
@@ -19,9 +19,11 @@ WESTWARD.config = {
   eventReserveMinutes: 1.0,
   // How long a group usually spends at each kind of stop (minutes).
   minutesByType: { store: 3, card: 2.4, draw: 2.4, fork: 2, river: 1.6, landmark: 1.2, ending: 0 },
+  // The journey between stops on screen: travel, the arrival title, any build-up.
+  travelMinutesPerLeg: 0.3,
   eventChance: 0.85,
   // How long the wagon takes to cross between stops on screen (seconds).
-  travelSeconds: { min: 4, max: 8, per100Miles: 0.8 },
+  travelSeconds: { min: 8, max: 12, per100Miles: 1.1 },
 
   // Illness, after the 1985 Oregon Trail: the daily chance is illnessBase plus
   // health / illnessPerH (the original used 0.01 and 1500, and +20 health load per

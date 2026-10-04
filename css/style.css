@@ -121,7 +121,7 @@ body.has-panel .scene { bottom: var(--panel-h); }
 .chip.year { background: var(--ink); color: var(--paper); }
 .field-label { display: block; font-family: var(--head); font-size: 0.75em; color: var(--muted); margin: 8px 0 2px; text-align: left; }
 .note-t { font-size: 13px; background: #f6e1b0; padding: 6px 8px; border-radius: 4px; }
-.card.event { max-width: 680px; margin-top: 2vh; animation: drop 0.35s cubic-bezier(.2,.8,.2,1); }
+.card.event { max-width: 600px; margin-top: 2vh; align-self: flex-end; margin-right: 2vw; animation: slideup 0.55s cubic-bezier(.2,.8,.2,1); }
 .card.event h2 { font-size: clamp(22px, 2vw, 32px); }
 .card.event .result { margin-top: 12px; }
 @keyframes drop { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
@@ -226,6 +226,9 @@ button .key {
 .river-facts .label { display: block; font-family: var(--head); font-size: 0.55em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .river-facts strong { font-family: var(--head); font-size: 0.85em; }
 .river-note { font-size: 0.75em; margin-left: auto; }
+.card.river-card { max-width: 600px; align-self: flex-end; margin-right: 2vw; animation: slideup 0.55s cubic-bezier(.2,.8,.2,1); }
+.card.river-card .choices { gap: 8px; }
+.card.river-card .choices button { font-size: 0.66em; padding: 10px 14px; }
 
 /* ------------------------------------------------------------ size up the situation */
 .card.sizeup { max-width: 760px; padding: clamp(16px, 1.8vw, 26px); }
@@ -313,3 +316,36 @@ button.on { outline: 3px solid var(--blue); outline-offset: 1px; }
 .mg-how { font-size: 0.7em; margin: 0 0 8px; }
 .mg-controls { display: flex; justify-content: center; gap: 12px; }
 .mg-controls button { font-size: 1em; min-width: 70px; text-align: center; }
+
+/* ------------------------------------------------------------ drama: headlines, chapters, journal */
+@keyframes slideup { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+.card.leave { animation: leave 0.38s ease-in forwards; }
+@keyframes leave { to { opacity: 0; transform: translateY(40px); } }
+.headline {
+  position: fixed; left: 50%; top: 30%; transform: translate(-50%, -50%); z-index: 30;
+  font-family: var(--head); font-weight: 800; font-size: clamp(28px, 4vw, 58px); color: #fffaf0;
+  text-shadow: 0 3px 0 var(--ink), 0 0 30px rgba(0,0,0,0.5); text-align: center; white-space: nowrap; pointer-events: none;
+  animation: hl-in 0.5s cubic-bezier(.2,.8,.2,1);
+}
+.headline.somber { color: #e8e2d6; letter-spacing: 0.02em; }
+.headline.out { animation: hl-out 0.45s ease-in forwards; }
+@keyframes hl-in { from { opacity: 0; transform: translate(-50%, -40%) scale(0.92); } to { opacity: 1; transform: translate(-50%, -50%); } }
+@keyframes hl-out { to { opacity: 0; transform: translate(-50%, -60%); } }
+.chapter {
+  position: fixed; inset: 0; z-index: 30; display: grid; place-content: center; text-align: center; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(34,38,46,0.35), rgba(34,38,46,0) 65%);
+  animation: fadein 0.8s ease;
+}
+.chapter.out { animation: fadeout 0.6s ease forwards; }
+.chapter-date { font-family: var(--head); font-size: clamp(14px, 1.3vw, 20px); letter-spacing: 0.2em; text-transform: uppercase; color: #f2ede3; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.chapter-name { font-family: var(--head); font-weight: 800; font-size: clamp(34px, 5vw, 76px); color: #fffaf0; text-shadow: 0 3px 0 var(--ink), 0 0 40px rgba(0,0,0,0.45); margin-top: 6px; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeout { to { opacity: 0; } }
+.journal { position: fixed; left: 16px; bottom: calc(var(--panel-h) + 14px); width: min(460px, calc(100vw - 32px)); display: grid; gap: 6px; z-index: 4; pointer-events: none; }
+.jline { background: rgba(251,249,244,0.92); border: 2px solid var(--ink); border-radius: 4px; padding: 6px 10px; font-size: 0.62em; box-shadow: 2px 2px 0 var(--ink); opacity: 0.75; }
+.jline span { font-family: var(--head); font-size: 0.85em; color: var(--muted); margin-right: 4px; }
+.jline.new { opacity: 1; animation: slideup 0.5s cubic-bezier(.2,.8,.2,1); }
+.app.top .travel-box { margin-top: 3vh; }
+
+.sound-toggle { position: fixed; top: 10px; left: 10px; z-index: 45; font-size: 11px; padding: 5px 9px; box-shadow: 2px 2px 0 var(--ink); opacity: 0.85; }
+.sound-toggle[aria-pressed="false"] { background: #e6e1d6; }

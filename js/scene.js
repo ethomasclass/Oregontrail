@@ -375,5 +375,5 @@
     });
   }
 
-  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, react: function () {}, party: function () {}, weather: function () {}, preload: preload };
+  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, react: function () {}, party: function () {}, focus: function () {}, cross: function () { return new Promise(function (r) { setTimeout(r, 1500); }); }, settle: function () { return new Promise(function (r) { setTimeout(r, 400); }); }, weather: function () {}, preload: preload };
 })();

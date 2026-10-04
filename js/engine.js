@@ -119,8 +119,10 @@
     var minutes = elapsedMinutes(state, now);
     var skipped = [];
     var next = state.index + 1;
+    // Skip an optional stop if the group is late for it, or if the rest of the
+    // journey would run past the ending target.
     while (next < state.beats.length - 1 && state.beats[next].optional &&
-           minutes > state.beats[next].target + W.config.slackMinutes) {
+           (minutes > state.beats[next].target + W.config.slackMinutes || projectedEnd(state, next, minutes) > endTargetOf(state))) {
       skipped.push(place(state.beats[next].at).name);
       next++;
     }
@@ -314,6 +316,7 @@
     function pay(cost) { Object.keys(cost).forEach(function (k) { state[k] -= cost[k]; report.changes.push({ stat: k, amount: -cost[k] }); }); }
     function waitDays(n) { for (var i = 0; i < n; i++) { var d = stepDay(state, null, true); d.deaths.forEach(function (m) { report.deaths.push(m); }); } if (n) report.changes.push({ stat: "days", amount: n }); }
     function upset(scale) {
+      report.upset = true;
       var lost = Math.round(state.food * (0.15 + 0.25 * rand(state)) * scale);
       state.food -= lost; report.changes.push({ stat: "food", amount: -lost });
       var text = "The wagon tips in the current. You lose " + lost + " lb of food";
@@ -483,6 +486,24 @@
     state.beats = state.beats.slice(0, state.index + 1).concat(beatsFor(state, branch));
   }
 
+  // ---------------------------------------------------------------- the clock
+  function endTargetOf(state) {
+    var end = state.beats[state.beats.length - 1];
+    return end.type === "ending" ? end.target : W.routes.california[W.routes.california.length - 1].target;
+  }
+  function stopCost(list) {
+    var c = W.config;
+    return list.reduce(function (sum, x) { return sum + (x.minutes || c.minutesByType[x.type] || 0) + c.travelMinutesPerLeg; }, 0);
+  }
+  // When the group would reach the ending if it takes every stop from "from" on.
+  function projectedEnd(state, from, minutes) {
+    var rest = stopCost(state.beats.slice(from));
+    if (state.beats[state.beats.length - 1].type !== "ending") {
+      rest += Math.max(stopCost(beatsFor(state, "oregon")), stopCost(beatsFor(state, "california")));
+    }
+    return minutes + rest;
+  }
+
   // ---------------------------------------------------------------- trail events
   // Events on the way between stops, generated from templates in trail-events.js.
   // The clock decides how many: time a group has in hand becomes trail life.
@@ -502,8 +523,14 @@
     // minus the stops still required. Only the true surplus becomes trail life.
     var end = state.beats[state.beats.length - 1];
     var endTarget = end.type === "ending" ? end.target : W.routes.california[W.routes.california.length - 1].target;
-    var needed = state.beats.slice(state.index).reduce(function (sum, x) { return sum + (c.minutesByType[x.type] || 0); }, 0);
-    if (end.type !== "ending") needed += 4 * c.minutesByType.card; // the branch after the fork is not added yet
+    function cost(list) {
+      return list.reduce(function (sum, x) { return sum + (x.minutes || c.minutesByType[x.type] || 0) + c.travelMinutesPerLeg; }, 0);
+    }
+    var needed = cost(state.beats.slice(state.index));
+    if (end.type !== "ending") {
+      // the branch after the fork is not chosen yet: plan for the longer one
+      needed += Math.max(cost(beatsFor(state, "oregon")), cost(beatsFor(state, "california")));
+    }
     var elapsed = elapsedMinutes(state, now);
     var slack = Math.min(b.target - elapsed, endTarget - elapsed - needed) - c.eventReserveMinutes;
     var left = c.maxEventsPerRun - Object.keys(state.eventsSeen || {}).length;
@@ -553,7 +580,7 @@
       return o;
     }
     var choices = t.choices ? t.choices.map(fillChoice) : [fillChoice(Object.assign({ label: "Continue" }, t.outcome))];
-    return { id: t.id, title: fill(t.title), text: fill(t.text), lead: t.lead || "navigator", react: t.react || "stop",
+    return { id: t.id, headline: fill(t.headline || t.title), title: fill(t.title), text: fill(t.text), lead: t.lead || "navigator", react: t.react || "stop",
       choices: choices, slots: slots, quick: !t.choices, draft: true };
   }
   function resolveEvent(state, ev, index) {
