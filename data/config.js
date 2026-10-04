@@ -7,14 +7,18 @@ WESTWARD.config = {
   subtitle: "A family, a wagon, and a promise",
 
   // Pacing (minutes from the moment a group picks its family).
-  totalMinutes: 40,
+  totalMinutes: 42,
   // How far behind schedule a group can fall before optional stops are skipped.
   slackMinutes: 0.5,
 
   // Trail events between stops (data/trail-events.js). Each one takes a group about
   // eventMinutes; a group only meets them when it is ahead of schedule.
   maxTripEvents: 2,
-  maxEventsPerRun: 6,
+  maxEventsPerRun: 10,
+  // Every leg at least this long gets this many trail events (still subject to eventChance),
+  // even when the clock is tight; the soft timer makes up the time by skipping optional stops.
+  longLegMiles: 80,
+  eventsPerLongLeg: 1,
   eventMinutes: 0.4,
   eventReserveMinutes: 1.0,
   // How long a group usually spends at each kind of stop (minutes).

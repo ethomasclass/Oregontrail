@@ -1,5 +1,7 @@
-// Westward: the four families. One per group, assigned by the teacher.
+// Westward: the families. One per group, assigned by the teacher.
+// Three are playable. The Chan cousins are met on the California branch instead.
 // "route" is "trail" (overland from Independence) or "sea" (ship to San Francisco).
+// "playable: false" hides a family from the family pick; its members still appear as people you meet.
 // Members are listed in role order: navigator, quartermaster, journal, doctor.
 // "look" (man, woman, youth, girl, laborer) and "color" (clothing) shape the
 // little figures who walk beside the wagon in the diorama.
@@ -67,6 +69,7 @@ WESTWARD.families = [
     id: "chinese",
     name: "The Chan cousins",
     short: "Chan cousins",
+    playable: false,
     from: "Four cousins from Guangdong, China",
     route: "sea",
     startDate: "1852-03-01",

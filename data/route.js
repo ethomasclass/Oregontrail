@@ -40,52 +40,62 @@ WESTWARD.places = {
   // California branch
   fortymile: { name: "Humboldt River and the Forty Mile Desert", miles: 1700, scene: "desert", weather: "heat" },
   sierra: { name: "Sierra Nevada", miles: 1900, scene: "mountains", weather: "snow" },
+  // Sacramento, near Sutter's Fort: overland families came down from the Sierra to buy
+  // supplies here; riverboats brought miners up from San Francisco. "miles" is used on the
+  // California branch; "days" only when arriving from a place without miles (the sea route).
+  sacramento: { name: "Sacramento, on the way to the mines", miles: 1950, scene: "river", days: 4, market: 0.4 },
   goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields", days: 5, market: 0.5 },
 
-  // Sea route (the Chan cousins)
+  // Sea route (kept for reference; the Chan cousins are no longer playable)
   hongkong: { name: "Hong Kong harbor", scene: "hongkong", days: 0 },
   pacific: { name: "The Pacific crossing", scene: "sea", days: 50, rations: true },
-  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10, market: 0.25 },
-  sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4, market: 0.4 }
+  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10, market: 0.25 }
 };
 
+// Beat targets: card stops take about 2.4 minutes, minigame stops 3.2 (data/config.js).
+// The fork is at about minute 28; Oregon ends at 40, California at 42.
 WESTWARD.routes = {
   trail: [
     { type: "store", at: "independence", target: 4 },
-    { type: "river", at: "kansasriver", river: "kansas", target: 9 },
-    { type: "draw", at: "fortkearny", pool: "plains", target: 14,
+    { type: "river", at: "kansasriver", river: "kansas", target: 9.5 },
+    { type: "draw", at: "fortkearny", pool: "plains", target: 15,
       byFamily: { irish: "nativist-company", black: "free-papers" } },
-    { type: "landmark", at: "chimneyrock", landmark: "chimney-rock", target: 16, optional: true },
-    { type: "card", at: "fortlaramie", card: "fort-laramie-trade", target: 18.5,
+    { type: "landmark", at: "chimneyrock", landmark: "chimney-rock", target: 17.5, optional: true },
+    { type: "card", at: "fortlaramie", card: "fort-laramie-trade", target: 20,
       byFamily: { ohio: "cross-ohio-doyles", irish: "cross-irish-bells", black: "cross-bell-doyles" } },
-    { type: "landmark", at: "independencerock", landmark: "independence-rock", target: 21, optional: true },
-    { type: "draw", at: "southpass", pool: "mountains", target: 23.5,
+    { type: "landmark", at: "independencerock", landmark: "independence-rock", target: 22.5, optional: true },
+    { type: "draw", at: "southpass", pool: "mountains", target: 24.5,
       byFamily: { ohio: "cross-ohio-bells" } },
-    { type: "river", at: "greenriver", river: "green", target: 24.5, optional: true },
-    { type: "fork", at: "forthall", target: 26 }
+    { type: "river", at: "greenriver", river: "green", target: 26.5, optional: true },
+    { type: "fork", at: "forthall", target: 28 }
   ],
 
   oregon: [
-    { type: "river", at: "threeisland", river: "snake", target: 27.5, optional: true },
-    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 29, minutes: 3.2 },
-    { type: "card", at: "willamette", card: "oregon-land-claim", target: 31,
+    { type: "river", at: "threeisland", river: "snake", target: 30, optional: true },
+    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 32, minutes: 3.2 },
+    { type: "card", at: "willamette", card: "oregon-land-claim", target: 35,
       byFamily: { black: "oregon-exclusion" } },
-    { type: "card", at: "willamette", card: "kalapuya-neighbors", target: 33 },
-    { type: "card", at: "willamette", card: "oregon-irish-welcome", target: 35, families: ["irish"] },
-    { type: "card", at: "willamette", card: "oregon-bush-news", target: 35, families: ["black"] },
-    { type: "ending", at: "willamette", target: 36 }
+    { type: "card", at: "willamette", card: "kalapuya-neighbors", target: 37 },
+    { type: "card", at: "willamette", card: "oregon-irish-welcome", target: 39, families: ["irish"] },
+    { type: "card", at: "willamette", card: "oregon-bush-news", target: 39, families: ["black"] },
+    { type: "ending", at: "willamette", target: 40 }
   ],
 
   california: [
-    { type: "card", at: "fortymile", card: "forty-mile-desert", target: 28 },
-    { type: "card", at: "sierra", card: "sierra-crossing", target: 30, optional: true },
-    { type: "card", at: "goldfields", card: "making-a-living", target: 32, minutes: 3.2 },
-    { type: "card", at: "goldfields", card: "californio-rancho", target: 33.5 },
-    { type: "card", at: "goldfields", card: "militia-news", target: 34.5, optional: true },
-    { type: "card", at: "goldfields", card: "cross-chan-tax", target: 35.5 },
-    { type: "ending", at: "goldfields", target: 36 }
+    { type: "card", at: "fortymile", card: "forty-mile-desert", target: 30 },
+    { type: "card", at: "sierra", card: "sierra-crossing", target: 32, optional: true },
+    { type: "card", at: "sacramento", card: "chans-arrive", target: 34 },
+    { type: "card", at: "goldfields", card: "making-a-living", target: 36, minutes: 3.2 },
+    { type: "card", at: "goldfields", card: "californio-rancho", target: 38 },
+    { type: "card", at: "goldfields", card: "militia-news", target: 39, optional: true },
+    { type: "card", at: "goldfields", card: "cross-chan-tax", target: 40 },
+    { type: "card", at: "goldfields", card: "chans-witness", target: 41, optional: true,
+      byFamily: { black: "chans-witness-bell" } },
+    { type: "ending", at: "goldfields", target: 42 }
   ],
 
+  // Kept for reference only: no playable family uses the sea route now
+  // (the Chan cousins have "playable: false" in families.js).
   sea: [
     { type: "store", at: "hongkong", target: 4 },
     { type: "card", at: "pacific", card: "pacific-voyage", target: 10 },

@@ -133,7 +133,7 @@
       '<div class="card wide"><div class="eyebrow">Step 1</div><h2>Which family did your teacher give you?</h2>' +
       "<p>Every group travels west at the same time, but each family faces different rules. Pick the family your teacher assigned you.</p></div>" +
       '<div class="grid" style="margin-top:18px">' +
-      W.families.map(function (f) {
+      W.families.filter(function (f) { return f.playable !== false; }).map(function (f) {
         return '<button class="family-card" data-family="' + f.id + '"><strong>' + esc(f.name) + "</strong>" +
           '<span class="meta">' + esc(f.from) + "</span><span>" + esc(f.summary) + "</span></button>";
       }).join("") + "</div>",
@@ -319,6 +319,7 @@
       { id: "rest", label: "Stop to rest", role: "doctor", hide: sea },
       { id: "talk", label: "Talk to people", role: "journal", hide: !voices.length },
       { id: "map", label: "Look at the map", role: "navigator", hide: !W.travelMap },
+      { id: "fish", label: fishHere() === "salmon" ? "Fish for salmon (1 day)" : "Go fishing (1 day)", role: "quartermaster", hide: !fishHere() || !W.minigames },
       { id: "buy", label: "Buy 100 pounds of food ($" + Math.round((here.market || 0) * 100) + ")", role: "quartermaster", hide: !here.market }
     ].filter(function (o) { return !o.hide; });
     var panelHtml = "";
@@ -351,6 +352,7 @@
     function pickOpt(id) {
       if (id === "go") return go();
       if (id === "map") return lookAtMap().then(function () { travelScreen(null, null); });
+      if (id === "fish") return goFishing(fishHere()).then(function (note) { travelScreen({ notes: [note], skipped: [] }, null); });
       if (id === "buy") {
         var cost = Math.round(here.market * 100);
         if (S.money >= cost) { S.money -= cost; S.food += 100; } else if (S.money + S.gold >= cost) { S.gold -= cost - S.money; S.money = 0; S.food += 100; }
@@ -572,7 +574,17 @@
       var first = app.querySelector("button:not([disabled])");
       if (first) first.focus({ preventScroll: true });
       function decideEvent(index) {
-        var r = E.resolveEvent(S, ev, index);
+        var ch = ev.choices[index];
+        if (ch.minigame && W.minigames) {
+          keyHandlers = {};
+          return W.minigames.run(ch.minigame, { fish: ch.fish, pilot: ch.pilot, who: roleLabel(ev.lead) }).then(function (g) {
+            var force = ch.minigame === "fish" ? { effects: { food: g.pounds }, note: fishNote(g) } : {};
+            showEventResult(E.resolveEvent(S, ev, index, force));
+          });
+        }
+        showEventResult(E.resolveEvent(S, ev, index));
+      }
+      function showEventResult(r) {
         pin("event", ev.title, curTrip);
         renderPanel();
         app.querySelector(".choices").outerHTML =
@@ -626,7 +638,8 @@
   var GUESTS = {
     "cross-ohio-doyles": "irish", "cross-bell-doyles": "irish",
     "cross-ohio-bells": "black", "cross-irish-bells": "black",
-    "cross-chan-tax": "chinese", "cross-chan-overlanders": "ohio"
+    "cross-chan-tax": "chinese", "cross-chan-overlanders": "ohio",
+    "chans-arrive": "chinese", "chans-witness": "chinese", "chans-witness-bell": "chinese"
   };
   function cardScreen(c) {
     screenName = "card";
@@ -663,6 +676,9 @@
         if (ch.minigame === "raft") {
           force.outcome = r.hits <= (ch.pilot ? 1 : 0) ? 0 : 1;
           force.note = "Rocks hit: " + r.hits + ".";
+        } else if (ch.minigame === "fish") {
+          force.effects = { food: r.pounds };
+          force.note = fishNote(r);
         } else {
           var earned = r.gold * 3;
           force.effects = { gold: earned };
@@ -672,6 +688,29 @@
       });
     }
     result(c, E.choose(S, c, index));
+  }
+
+  function fishNote(r) {
+    return r.fish ? "You caught " + r.fish + " fish, about " + r.pounds + " pounds of fresh food." : "Nothing bit today.";
+  }
+  // Fishing from the menu: a day at the water, and whatever you catch.
+  function goFishing(kind) {
+    return W.minigames.run("fish", { fish: kind, who: roleLabel("quartermaster") }).then(function (r) {
+      S.food += r.pounds;
+      S.fished = S.fished || {}; S.fished[S.place] = true;
+      var d = E.rest(S, 1)[0];
+      if (r.fish) pin("choice", "Caught " + r.fish + " fish (" + r.pounds + " pounds)", null);
+      renderPanel();
+      var after = d && d.deaths.length ? deathNotice(d.deaths) : Promise.resolve();
+      return after.then(function () { return fishNote(r) + " A day goes by."; });
+    });
+  }
+  // Which fish live here, if any: salmon in the Snake and Columbia, trout elsewhere.
+  function fishHere() {
+    var here = E.place(S.place) || {}, sc = W.scenes[here.scene] || {};
+    var water = (sc.features || []).some(function (f) { return f[0] === "river"; });
+    if (!water || vehicle() !== "wagon" || (S.fished && S.fished[S.place])) return null;
+    return ["threeisland", "thedalles"].indexOf(S.place) >= 0 ? "salmon" : "trout";
   }
 
   var STAT_NAMES = { money: "dollars", food: "lb food", oxen: "oxen", parts: "spare parts", medicine: "medicine", trade: "trade goods", gold: "dollars in gold", land: "acres", days: "days" };
@@ -815,7 +854,7 @@
         return '<button data-jump="' + i + '" class="' + (i === S.index ? "current" : "") + '">' + (i + 1) + ". " +
           esc(E.place(x.at).name) + " · " + x.type + (x.optional ? " (optional)" : "") + "</button>";
       }).join("") + "</div>" : "") +
-      (!S.familyId ? '<h3>Families</h3>' + W.families.map(function (f) {
+      (!S.familyId ? '<h3>Families</h3>' + W.families.filter(function (f) { return f.playable !== false; }).map(function (f) {
         return '<button data-fam="' + f.id + '">' + esc(f.name) + "</button>";
       }).join("") : "");
     teacherEl.querySelectorAll("[data-t]").forEach(function (el) {

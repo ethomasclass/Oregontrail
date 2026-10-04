@@ -229,3 +229,41 @@ Copyright note: Narcissa Whitman (published 1893) and the Richey and Akin letter
 - **"1 in 10 emigrants died" stated as fact.** It is the high-end estimate. Unruh estimated closer to 4 percent. Present it as a range.
 - **"Independence Rock was named for July 4 arrivals of emigrant wagons."** It was named by fur trader William Sublette's party in 1830.
 - **Avoid "Manifest Destiny" as if all Americans believed it.** It was a political slogan from Democratic expansionists, and the essay's author is debated.
+
+---
+
+## Trail events added October 2026
+
+New random events in `data/trail-events.js`. These are short, generic scenes, not quotes. Each one rests on a kind of experience that is widely documented; specific numbers and details marked **needs checking** were not confirmed against a source in this pass. No quotes were added.
+
+Main sources: NPS, Oregon National Historic Trail and California National Historic Trail pages (nps.gov/oreg, nps.gov/cali); John D. Unruh Jr., *The Plains Across* (1979); Merrill J. Mattes, *The Great Platte River Road* (1969); John C. Frémont, *Report of the Exploring Expedition to the Rocky Mountains ... and to Oregon and North California* (1845, covering 1843 to 1844); John Phillip Reid, *Law for the Elephant: Property and Social Behavior on the Overland Trail* (1980).
+
+**Animals**
+- `bison-herd`: Emigrants on the Platte met large bison herds, and herds crossing the trail could hold up wagons for hours (Mattes). Emigrants hunted bison for food and for sport, and by the early 1850s the herds had moved away from the Platte road (see section 8: Isenberg; Richey letter, 1852; NPS "Hunting was a popular pastime"). The game says travelers "shot far more bison than they could eat"; this matches Mattes's and Isenberg's descriptions of waste, but section 8 notes that "and left them" was not found stated directly. **Needs checking** for a citable sentence. Limited to the Platte and Sweetwater stretch (to Fort Kearny through Independence Rock).
+- `grizzly`: Grizzly bears lived in the Snake River country, the Blue Mountains, and the Sierra Nevada in the 1840s, and emigrant diaries mention them. Bears raiding camps for food is plausible, but I did not confirm a specific diary account. **Needs checking.** Limited to the stretch past South Pass (to Fort Hall, Three Island, The Dalles, the Sierra). Note: the brief asked for `terrain: mountains`, but in this game terrain comes from the next stop, and only the Sierra is "mountains," so the event uses `to` only.
+- `wolves`: Wolves followed emigrant trains and howled around camp; loss of young stock is plausible. General diary theme (Mattes). Partly verified.
+- `prairie-dogs`: Prairie dog towns along the Platte were a common diary subject (Mattes). An ox hurt in a burrow is plausible, not a specific documented case.
+- `antelope`: Pronghorn are curious, and hunters lured them by waving a flag or cloth ("flagging"). Widely described in 19th-century hunting accounts. **Needs checking** for an emigrant-diary citation.
+- `mormon-crickets`: Swarms of Mormon crickets (a large flightless katydid) ate crops in the Salt Lake Valley in 1848 (the "miracle of the gulls" story), and they range across Wyoming and Idaho. Stansbury's 1849 to 1850 expedition and later emigrants describe them. Emigrants meeting swarms on the Green River to Fort Hall stretch is plausible. **Needs checking** for a diary that ties them to the emigrant road.
+- `ox-returns` (callback after `strayed-ox` or `lightning` sets `lostOx`): Stray cattle often joined other trains' loose herds and were sometimes reclaimed. Plausible; Reid discusses disputes over strayed and found stock. Partly verified.
+
+**Weather and land**
+- `lightning`: Violent thunderstorms on the Platte, with lightning that killed cattle and sometimes people, are described in many diaries (Mattes has a chapter-level discussion of Platte storms). Partly verified; **needs checking** for a specific page.
+- `prairie-fire`: Prairie fires happened on the plains, and setting a backfire (burning a break on purpose) was a standard way to protect a camp. General knowledge; **needs checking** for an emigrant example.
+- `night-travel`: Crossing the Forty Mile Desert at night is verified (section 5, Nevada SHPO marker No. 26).
+- `wild-berries`: Emigrants picked wild currants, gooseberries, and strawberries in early summer. Common in diaries. **Needs checking** for the exact places.
+
+**Places on the trail**
+- `soda-springs`: Frémont described Soda Springs (on the Bear River, about 55 miles before Fort Hall) in his 1843 report, including Beer Spring and Steamboat Spring, which hissed and spouted. Emigrants mixed the water with sugar (sometimes with syrup or citric acid) to make a soda drink. Frémont: verified as a source in general; the sugar detail is **needs checking**. Steamboat Spring is now under Alexander Reservoir (flooded in the 1920s, **needs checking** for the year).
+- `cutoff` and `cutoff-rumor`: The Greenwood (later Sublette's) Cutoff, opened 1844, left the main trail past South Pass, skipped Fort Bridger, and crossed about 45 to 50 miles without water from the Big Sandy to the Green River. Thirsty stock and dead cattle on this stretch are well documented (Unruh; NPS California Trail). Exact miles saved vary by source (often given as about 85 miles); the game says only "saves days." **Needs checking** for the miles saved. Donner Party and Hastings Cutoff: verified (section 9).
+- `mormon-ferry`: In June 1847 Brigham Young's pioneer company left men to run a ferry on the North Platte near present-day Casper, Wyoming, before Independence Rock. Mormon ferrymen worked there in later seasons, and other ferries competed. Fee: $3 a wagon is a placeholder. 1847 rates were about $1.50 a wagon (often paid in goods), and later rates were higher and varied by year and water level. **Needs checking** (comment left in the code).
+- `salmon-falls`: Shoshone people fished at Salmon Falls on the Snake River (near Hagerman, Idaho) and traded salmon with emigrants. Verified (NPS Hagerman Fossil Beds, section 6). Salmon Falls is east of (before) Three Island Crossing, so the event is limited to the trip to Three Island; the brief also listed The Dalles, but that leg comes after Salmon Falls.
+- `trout`: The trail followed the Sweetwater River for about 100 miles. Emigrants fished when they could. **Needs checking**: whether trout were native to the Sweetwater in 1849 (native cutthroat trout in the upper North Platte drainage is debated). The event text says only "fish"; the minigame uses the trout setting.
+
+**People on the trail**
+- `fourth-of-july`: Emigrants celebrated the Fourth with speeches, songs, gunfire, and special meals, and hoped to reach Independence Rock by July 4. Verified for the Independence Rock goal (section 4, WyoHistory); celebrations are a common diary theme (Unruh, Mattes).
+- `new-baby`: Births on the trail were common (NPS; Amelia Knight's eighth child was born just after the trip, section 16). Verified as a general fact.
+- `stranded-traveler` and `stranger-returns`: Generic scenes. Wagons broke down, men traveling alone or left behind were common, and emigrants helped and traded with each other. Fiction built on documented conditions.
+- `fiddle-night`: Fiddle music and dancing in camp are a common diary theme. Partly verified (general).
+- `thief-trial`: Wagon companies held their own trials, often electing a captain and jury, and punishments included banishment from the company (Reid, *Law for the Elephant*). Partly verified (from memory of Reid; check the chapter before citing a page).
+- `trail-wedding`: Weddings in wagon companies happened and were noted in diaries. Partly verified (general).

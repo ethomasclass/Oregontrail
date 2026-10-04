@@ -16,7 +16,7 @@ fs.mkdirSync(out, { recursive: true });
   if (fs.existsSync("/opt/pw-browsers/chromium")) opts.executablePath = "/opt/pw-browsers/chromium";
   var browser = await chromium.launch(opts);
   var errors = [];
-  var families = ["ohio", "irish", "black", "chinese"];
+  var families = ["ohio", "irish", "black"];
   for (var f = 0; f < families.length; f++) {
     var fam = families[f];
     var page = await browser.newPage({ viewport: { width: 1366, height: 768 } });

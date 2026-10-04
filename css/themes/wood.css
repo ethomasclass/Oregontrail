@@ -151,3 +151,5 @@ body.ui-wood .map-board { padding: 30px 40px 26px; color: var(--ink); }
 body.ui-wood .map-title { display: table; padding: 7px 62px 17px; color: var(--cream); text-shadow: 0 1px 0 #4a120d; }
 body.ui-wood .map-foot .map-date, body.ui-wood .map-foot .map-miles { font-family: var(--head); }
 body.ui-wood .map-legend { font-family: var(--body); }
+body.ui-wood .mg-card .eyebrow { color: #d9c49a; }
+body.ui-wood .mg-card h2 { color: var(--cream); text-shadow: 0 2px 2px #000; }

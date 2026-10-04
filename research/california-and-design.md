@@ -201,3 +201,33 @@ Timeline note first: overland families start 1849-05-01 and reach California aro
 6. **Teacher prep and parent notice.** Ship a one-page content advisory like Mission US's ("Preview... Set ground rules... Debrief"). The Phoenix case shows that a game used without preparation becomes the story.
 7. **Debrief, not "now you know how it felt."** End with the "Who Decided?" ledger and the NMAI inquiry question (does what happened meet the UN definition of genocide?) as an optional follow-up lesson, rather than implying students experienced it.
 8. **Group play.** Keep the rotating mouse, give every role a job off the mouse, and keep card text short enough to read aloud.
+
+---
+
+## Update, October 2026: the Chan cousins become people you meet
+
+The teacher removed the Chan cousins as a playable family. They now have `playable: false` in `data/families.js`. Families who take the California branch meet them instead. The sea route stays in `data/route.js` for reference only.
+
+**What changed in the game**
+- New stop at **Sacramento** (`miles: 1950`, between the Sierra at 1900 and the gold fields at 2000). Card `chans-arrive` (year chip 1852): the family meets Chan Ah Sing, Kwok, Fook, and Yau stepping off a riverboat from San Francisco. Flags: `metChans` (every choice), plus `guidedChans`, `soldChansFair`, or `overchargedChans`.
+- `cross-chan-tax` now refers back to Sacramento and states the **1852** tax: **$3 a month**, on every miner who was not a U.S. citizen (section 3 above). The 1850 tax ($20 a month) was repealed in 1851, so it is not used.
+- New optional card `chans-witness` (1854, Carvers and Doyles): the family is the only witness to a robbery of the Chans whose word counts in court. Flags: `testifiedForChans`, `silentWitness`.
+- New card `chans-witness-bell` (1854, Bells): the Bells cannot testify either. Flags: `foundWitness`, `warnedChans`, `bellsKeptQuiet`.
+- Ledger lines added for the Oregon Constitution's Chinese clause and for the Foreign Miners' Tax and People v. Hall.
+- Beat targets: fork at minute 28, Oregon ending 40, California ending 42. Note `totalMinutes` in `data/config.js` is still 40.
+
+**Sources**
+- *People v. Hall*, 4 Cal. 399 (1854). Extended the 1850 testimony ban to Chinese people. **verified** (see section 5). [CourtListener](https://www.courtlistener.com/opinion/5590541/people-v-hall/)
+- California, *An Act Concerning Crimes and Punishments*, passed April 16, 1850, section 14: "No black or mulatto person, or Indian, shall be allowed to give evidence in favor of, or against a white man." **partly verified**: the wording is quoted in the Hall opinion. Section 5 above calls the same law the "Criminal Proceedings Act"; which act and section number the Hall opinion actually cites **needs checking** against *Statutes of California* 1850. A similar ban for civil cases was in the 1851 Practice Act (section 394). **needs checking**.
+- When the bans ended: Black testimony was allowed again in 1863; Chinese and Native testimony with the 1872 codes. **needs checking** (section 5 lists 1872 as partly verified; the 1863 date is from memory).
+- Foreign Miners' Tax acts: 1850 ($20 a month, repealed 1851) and 1852 ($3 a month, raised to $4 in 1853). See section 3. **verified / partly verified** as marked there.
+- Oregon Constitution of 1857, Article XV, Section 8: "No Chinaman, not a resident of the State at the adoption of this Constitution, shall ever hold any real estate, or mining claim, or work any mining claim therein." Repealed 1946. **partly verified**: wording and the 1946 repeal are from standard secondary sources (Oregon Secretary of State and Oregon Encyclopedia); the exact repeal date **needs checking**. The game text says "could not own land or a mining claim," which simplifies "hold any real estate, or mining claim, or work any mining claim."
+- Chinese arrivals: about 20,000 in 1852 (section 4). Voyage "about two months" fits the six-weeks-to-three-months range in section 4.
+- Sacramento: laid out near Sutter's Fort in 1848 to 1849; boats from San Francisco ran daily by late 1849. Regular steamboat service started in fall 1849. **needs checking** (exact first steamer and date).
+- Sutter's Fort (1839) was in Nisenan homeland, and Sutter relied on Native labor, much of it coerced (Albert Hurtado, *Indian Survival on the California Frontier*, 1988). Used only in a composite voice. **partly verified**; the claim "many were made to work his fields" **needs checking** in Hurtado or California State Parks material.
+
+**Things to watch**
+- `chans-arrive` carries the year 1852 but comes before `making-a-living`, which describes 1849. The card says "On one trip, in 1852" to cover the jump. If this confuses students, move the Sacramento beat after `making-a-living`.
+- The scenes `chans-arrive`, `chans-witness`, and `chans-witness-bell` are invented. They are built on the laws above, and each has a `teacherNote` saying so.
+- The robbery outcome in `chans-witness` (the jury may still let the man go) is a design choice, not a documented case.
+- On the map (`data/map.js`), the California path runs from the Sierra straight to the gold fields. Sacramento sits on the `bay` path only, so the wagon may jump off the drawn line at that stop.

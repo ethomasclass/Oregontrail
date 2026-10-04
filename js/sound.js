@@ -103,8 +103,9 @@
 
   var SOUNDS = {
     // something goes wrong: a low, uneasy pair of notes (thunder for storms)
+    thunder: function () { thunder(); },
     event: function (kind) {
-      if (kind === "storm") return thunder();
+      if (kind === "storm" || kind === "lightning") return thunder();
       var t = ctx.currentTime;
       tone(196, "triangle", 0.22, 0.02, 1.2, t);
       tone(233, "triangle", 0.18, 0.02, 1.4, t + 0.18);

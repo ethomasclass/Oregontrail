@@ -1613,7 +1613,144 @@
       chair.rotation.z = 0.4; gd.add(at(chair, -1.1, 0, -0.2));              // a rocking chair, tipped
       gd.add(at(box(0.9, 0.5, 0.55, "#5a4636"), 0.4, 0.25, -0.9));            // a trunk
       dropBeside(gd, -8);
+    } else if (kind === "herd") {
+      // thousands of bison: a few dozen thunder across the trail ahead of the oxen, over and over
+      var herdG = new T.Group(), beasts = [], HR = rng(31);
+      var hs = slabUnderRig(), K = rigG.scale.x;
+      // ground height under a bison, in the rig's own units
+      function herdY(m) { return heightOn(hs, m.position.x * K - hs.position.x, m.position.z * K) / K; }
+      for (var b = 0; b < 30; b++) {
+        var bz = animal("bison", HR);
+        bz.rotation.y = Math.PI / 2 + (HR() - 0.5) * 0.25;
+        bz.position.set(-14 + HR() * 7, 0, -15 + HR() * 30);
+        herdG.add(bz);
+        beasts.push({ m: bz, v: 5.5 + HR() * 2.5, ph: HR() * 6 });
+      }
+      rigG.add(herdG);
+      var dustH = 0, tH = 0;
+      reacted.push({ undo: function () { rigG.remove(herdG); },
+        step: function (dt) {
+          tH += dt;
+          beasts.forEach(function (o) {
+            o.m.position.z += o.v * dt;
+            if (o.m.position.z > 15) o.m.position.z = -15;
+            o.m.position.y = herdY(o.m) + 0.12 * Math.abs(Math.sin(tH * 9 + o.ph));
+            o.m.rotation.z = 0.06 * Math.sin(tH * 9 + o.ph);
+            o.m.userData.head.rotation.z = 0.2 + 0.1 * Math.sin(tH * 9 + o.ph);
+          });
+          dustH -= dt;
+          if (dustH <= 0) { dustH = 0.05; puff((-14 + Math.random() * 7) * rigG.scale.x, 0.6, (Math.random() - 0.5) * 36, { color: 0xcdbb98, vx: 0.5, vy: 0.6, vz: 4, life: 2, grow: 3, op: 0.5, size: 0.9 }); }
+        } });
+    } else if (kind === "bear") {
+      // a grizzly comes out of the dark toward the wagon, then rears up
+      var bear = makeBear(), tB = 0;
+      bear.position.set(1.5, 0, -14);
+      bear.rotation.y = -Math.PI / 2;
+      rigG.add(bear);
+      reacted.push({ undo: function () { rigG.remove(bear); },
+        step: function (dt) {
+          tB += dt;
+          var u = bear.userData;
+          if (bear.position.z < -3.6) {
+            bear.position.z += dt * 2.6;
+            u.legs.forEach(function (l) { l.g.rotation.z = 0.5 * Math.sin(tB * 6 + l.ph); });
+            u.body.rotation.z = 0;
+          } else {
+            // stand up on its hind legs and sway
+            u.body.rotation.z += (-1.05 - u.body.rotation.z) * Math.min(1, dt * 3);
+            u.body.position.y += (0.55 - u.body.position.y) * Math.min(1, dt * 3);
+            u.head.rotation.y = 0.35 * Math.sin(tB * 1.6);
+            u.legs.forEach(function (l, i) { if (i < 2) l.g.rotation.z = -0.9 + 0.25 * Math.sin(tB * 3 + i); });
+          }
+        } });
+    } else if (kind === "lightning") {
+      var wasL = current.weather, hiL = hemi.intensity, siL = sun.intensity;
+      setWeather("rain");
+      hemi.intensity = hiL * 0.45; sun.intensity = siL * 0.15;
+      var bolt = null, nextFlash = 0.6, flashT = 0;
+      function makeBolt() {
+        var pts = [], x = (Math.random() - 0.5) * 50, z = -18 - Math.random() * 10, y = 34;
+        while (y > 0) { pts.push(new T.Vector3(x, y, z)); x += (Math.random() - 0.5) * 4; y -= 2 + Math.random() * 3; }
+        pts.push(new T.Vector3(x, 0, z));
+        var geo = new T.BufferGeometry().setFromPoints(pts);
+        return new T.Line(geo, new T.LineBasicMaterial({ color: 0xffffff }));
+      }
+      reacted.push({ undo: function () { if (bolt) scene.remove(bolt); setWeather(wasL); hemi.intensity = hiL; sun.intensity = siL; },
+        step: function (dt) {
+          nextFlash -= dt;
+          if (flashT > 0) {
+            flashT -= dt;
+            if (flashT <= 0) { if (bolt) { scene.remove(bolt); bolt = null; } hemi.intensity = hiL * 0.45; sun.intensity = siL * 0.15; }
+          } else if (nextFlash <= 0) {
+            nextFlash = 1.6 + Math.random() * 2.4; flashT = 0.16;
+            bolt = makeBolt(); scene.add(bolt);
+            hemi.intensity = hiL * 2.4; sun.intensity = siL * 1.2;
+            if (W.sound) W.sound.play("thunder");
+          }
+        } });
+    } else if (kind === "dance") {
+      // the family dances: hops, arms up, turning in place
+      var tD = 0, homesD = rig.people.map(function (p) { return { pos: p.p.position.clone(), ry: p.p.rotation.y }; });
+      rig.people.forEach(function (p) { p.p.userData.reacting = true; });
+      reacted.push({ undo: function () {
+          rig.people.forEach(function (p, i) {
+            var u = p.p.userData; u.reacting = false;
+            p.p.position.copy(homesD[i].pos); p.p.rotation.y = homesD[i].ry; u.body.position.y = 0;
+            u.arms.forEach(function (a) { a.g.rotation.x = 0; a.g.rotation.z = 0; });
+          });
+        },
+        step: function (dt) {
+          tD += dt;
+          rig.people.forEach(function (p, i) {
+            var u = p.p.userData, ph = tD * 7 + i * 1.6;
+            p.p.position.y = homesD[i].pos.y + 0.18 * Math.abs(Math.sin(ph));
+            p.p.rotation.y = homesD[i].ry + Math.sin(tD * 1.8 + i) * 1.4;
+            u.legs.forEach(function (l) { l.g.rotation.z = 0.6 * Math.sin(ph + l.ph); });
+            u.arms.forEach(function (a, k) { a.g.rotation.x = a.side * -(1.6 + 0.6 * Math.sin(ph + k * 3)); });
+          });
+        } });
+    } else if (kind === "spring") {
+      // a mineral spring: a crusty orange mound, a pool, and a spout that hisses up now and then
+      var sp = new T.Group();
+      var mound = cyl(2.2, 2.8, 0.5, 9, "#c99a6a"); sp.add(at(mound, 0, 0.25, 0));
+      var pool = cyl(1.5, 1.5, 0.08, 12, new T.MeshPhongMaterial({ color: 0x9fd0d6, flatShading: true, shininess: 60 })); sp.add(at(pool, 0, 0.52, 0));
+      sp.add(at(cyl(1.6, 1.6, 0.06, 12, "#e6c9a0"), 0, 0.49, 0));
+      dropBeside(sp, -13);
+      var tS = 0, nextSpout = 0.5, bubble = 0;
+      reacted.push({ undo: function () {},
+        step: function (dt) {
+          tS += dt; bubble -= dt; nextSpout -= dt;
+          var wp = new T.Vector3(); sp.getWorldPosition(wp);
+          if (bubble <= 0) { bubble = 0.12; puff(wp.x + (Math.random() - 0.5) * 2, wp.y + 0.7, wp.z + (Math.random() - 0.5) * 2, { color: 0xffffff, vy: 0.8, life: 0.8, grow: 0.8, op: 0.7, size: 0.25 }); }
+          if (nextSpout <= 0) {
+            nextSpout = 2.5 + Math.random() * 2;
+            for (var q = 0; q < 10; q++) puff(wp.x, wp.y + 0.8, wp.z, { color: 0xf4f8f8, vx: (Math.random() - 0.5) * 0.8, vy: 5 + Math.random() * 3, vz: (Math.random() - 0.5) * 0.8, life: 1.4, grow: 1.6, op: 0.75, size: 0.4 });
+          }
+        } });
     }
+  }
+  // A grizzly bear: heavy, humped shoulders, short legs.
+  function makeBear() {
+    var b = new T.Group(), body = new T.Group(), col = "#5e4128";
+    body.add(at(box(2.0, 1.05, 1.05, col), 0, 1.2, 0));
+    body.add(at(box(0.8, 0.45, 1.0, shade(col, 0.85)), -0.45, 1.85, 0));
+    var head = new T.Group(); head.position.set(-1.25, 1.45, 0);
+    head.add(at(box(0.62, 0.55, 0.6, shade(col, 0.95)), 0, 0, 0));
+    head.add(at(box(0.36, 0.28, 0.34, "#7a5a3c"), -0.42, -0.08, 0));
+    head.add(at(box(0.1, 0.1, 0.12, "#1f1712"), -0.62, -0.02, 0));
+    head.add(at(box(0.14, 0.16, 0.12, shade(col, 0.8)), 0.08, 0.34, 0.2));
+    head.add(at(box(0.14, 0.16, 0.12, shade(col, 0.8)), 0.08, 0.34, -0.2));
+    body.add(head);
+    b.add(body);
+    var legs = [];
+    [[-0.65, 0.32], [-0.65, -0.32], [0.65, 0.32], [0.65, -0.32]].forEach(function (p, i) {
+      var pivot = new T.Group(); pivot.position.set(p[0], 0.85, p[1]);
+      pivot.add(at(box(0.32, 0.85, 0.32, shade(col, 0.8)), 0, -0.42, 0));
+      (i < 2 ? body : b).add(pivot);
+      legs.push({ g: pivot, ph: (i === 0 || i === 3) ? 0 : Math.PI });
+    });
+    b.userData = { body: body, head: head, legs: legs };
+    return b;
   }
   // After an event changes the family (a death), refresh who walks beside the wagon.
   function updateParty(opts) {

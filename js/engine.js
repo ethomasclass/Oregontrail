@@ -519,6 +519,8 @@
   function eventCount(state, now) {
     var b = beat(state), c = W.config;
     if (!b || state.index <= 0 || b.type === "ending") return 0;
+    // trail life happens on the road, not between two stops at the same place
+    if (state.trip && state.trip.fromId === state.trip.toId) return 0;
     // Budget against the whole rest of the journey: time left until the ending,
     // minus the stops still required. Only the true surplus becomes trail life.
     var end = state.beats[state.beats.length - 1];
@@ -532,9 +534,19 @@
       needed += Math.max(cost(beatsFor(state, "oregon")), cost(beatsFor(state, "california")));
     }
     var elapsed = elapsedMinutes(state, now);
-    var slack = Math.min(b.target - elapsed, endTarget - elapsed - needed) - c.eventReserveMinutes;
+    var slack = endTarget - elapsed - needed - c.eventReserveMinutes;
     var left = c.maxEventsPerRun - Object.keys(state.eventsSeen || {}).length;
-    var n = Math.max(0, Math.min(c.maxTripEvents, left, Math.floor(slack / c.eventMinutes)));
+    // Share the spare time across the legs still to travel, so trail life is spread
+    // over the whole journey instead of bunched at the start.
+    var legs = 1;
+    for (var li = state.index + 1; li < state.beats.length; li++) if (state.beats[li].at !== state.beats[li - 1].at) legs++;
+    if (end.type !== "ending") legs += 4;
+    var share = Math.max(0, Math.floor(slack / c.eventMinutes)) / legs;
+    var n = Math.floor(share) + (rand(state) < share % 1 ? 1 : 0);
+    // every long leg gets at least one moment of trail life (config.eventsPerLongLeg)
+    var trip = state.trip;
+    if (trip && (trip.miles >= W.config.longLegMiles || trip.days >= 20)) n = Math.max(n, W.config.eventsPerLongLeg);
+    n = Math.max(0, Math.min(c.maxTripEvents, left, n));
     var out = 0;
     for (var i = 0; i < n; i++) if (rand(state) < c.eventChance) out++;
     return out;
@@ -545,6 +557,9 @@
     if (w.terrain && w.terrain.indexOf(terrain) < 0) return false;
     if (w.months && w.months.indexOf(month) < 0) return false;
     if (w.has && !meets(state, w.has)) return false;
+    // "to": only on the way to these stops; "days": only on these days of the month
+    if (w.to && w.to.indexOf(state.place) < 0) return false;
+    if (w.days) { var d = dateOf(state).getUTCDate(); if (d < w.days[0] || d > w.days[1]) return false; }
     return true;
   }
   function pickTripEvents(state, now) {
@@ -583,9 +598,9 @@
     return { id: t.id, headline: fill(t.headline || t.title), title: fill(t.title), text: fill(t.text), lead: t.lead || "navigator", react: t.react || "stop",
       choices: choices, slots: slots, quick: !t.choices, draft: true };
   }
-  function resolveEvent(state, ev, index) {
+  function resolveEvent(state, ev, index, force) {
     var before = state.oxen;
-    var report = choose(state, ev, index);
+    var report = choose(state, ev, index, force);
     // the named ox is the one lost
     if (state.oxen < before && state.oxNames) {
       var i = state.oxNames.indexOf(ev.slots.ox);

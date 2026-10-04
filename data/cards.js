@@ -603,6 +603,33 @@ WESTWARD.cards = [
     draft: true
   },
   {
+    id: "chans-arrive",
+    teacherNote: "Invented scene built on documented facts: Chinese arrivals peaked in 1852 (about 20,000), most from Guangdong; many borrowed for the fare; district associations met ships and helped with work. Overland families often stopped in Sacramento, near Sutter's Fort, for supplies.",
+    year: "1852",
+    title: "Off the riverboat",
+    lead: "journal",
+    vote: true,
+    families: ["ohio", "irish", "black"],
+    art: "river",
+    text: "Sacramento is a busy river town near Sutter's Fort. Your family comes here to buy supplies for the gold fields. On one trip, in 1852, a riverboat from San Francisco unloads four young men: Chan Ah Sing and his cousins Kwok, Fook, and Yau. They come from Guangdong, a province (a region) in southern China. Their families borrowed money to pay for the ship, and the cousins must pay it back. They spent about two months below deck crossing the Pacific Ocean. Men from their home district (their home area in China) are helping them find work.",
+    choices: [
+      { label: "Show them the road to the diggings",
+        result: "{journal} draws the road on a scrap of paper. Ah Sing thanks you. He says they will work together as a group, the way men from home do.",
+        effects: { days: 1, flags: { metChans: true, guidedChans: true } } },
+      { label: "Sell them flour at a fair price", requires: { food: 50 },
+        result: "You sell them flour for the same price the stores in town charge. Kwok counts the coins carefully. Every dollar they spend makes it harder to pay back what they owe.",
+        effects: { food: -50, money: 20, flags: { metChans: true, soldChansFair: true } } },
+      { label: "Sell them flour at a high price", requires: { food: 50 },
+        result: "You charge them double what the stores charge. They are new here and do not know the prices yet. Yau pays without a word.",
+        effects: { food: -50, money: 40, flags: { metChans: true, overchargedChans: true } } },
+      { label: "Walk past them",
+        result: "You load your wagon and leave. The cousins ask someone else for help.",
+        effects: { flags: { metChans: true } } }
+    ],
+    sources: ["chinese-arrivals", "chinese-voyage", "chinese-district-associations"],
+    draft: true
+  },
+  {
     id: "cross-chan-tax",
     year: "1852",
     title: "The tax collector",
@@ -610,7 +637,7 @@ WESTWARD.cards = [
     vote: false,
     families: ["ohio", "irish", "black"],
     art: "goldfields",
-    text: "Three years later, in 1852, a tax collector rides up to a camp of Chinese miners downstream. He demands the new Foreign Miners' Tax (a monthly fee for miners who are not U.S. citizens). One of the miners, Chan Ah Sing, has already paid. The collector demands more anyway.",
+    text: "Later in 1852, the Chan cousins you met in Sacramento are mining a claim (a mining spot) downstream. A tax collector rides up. Under the Foreign Miners' Tax of 1852, every miner who is not a U.S. citizen must pay $3 a month. U.S. law let only white immigrants become citizens, so Chinese miners could never stop paying. Ah Sing has already paid this month. The collector demands more anyway.",
     choices: [
       { label: "Speak up for the Chan cousins",
         result: "The collector tells you to mind your own business. But he leaves without making them pay twice.",
@@ -619,11 +646,60 @@ WESTWARD.cards = [
         result: "Ah Sing pays again. That evening, the cousins move farther upstream.",
         effects: {} }
     ],
-    sources: ["foreign-miners-tax"],
+    sources: ["foreign-miners-tax", "naturalization-white"],
+    draft: true
+  },
+  {
+    id: "chans-witness",
+    teacherNote: "Invented scene built on People v. Hall, 4 Cal. 399 (1854), which barred Chinese testimony against white people in California courts.",
+    year: "1854",
+    title: "The only witness",
+    lead: "navigator",
+    vote: true,
+    families: ["ohio", "irish"],
+    art: "goldfields",
+    text: "It is 1854. A white miner points a gun at the Chan cousins and takes their gold. Your family sees it all. This year, in a case called People v. Hall, California's top court ruled that Chinese people cannot testify (speak as a witness) in court against a white person. So the Chans cannot tell a judge what happened. Your family is the only witness whose word counts.",
+    choices: [
+      { label: "Testify in court",
+        outcomes: [
+          { chance: 0.5, result: "You tell the judge what you saw. The man must give back the gold. Some neighbors stop talking to you. They say you took the side of Chinese miners against a white man.", effects: { days: 2, flags: { testifiedForChans: true } } },
+          { chance: 0.5, result: "You tell the judge what you saw. The jury lets the man go anyway. Some neighbors stop talking to you. But Ah Sing knows you spoke.", effects: { days: 2, flags: { testifiedForChans: true } } }
+        ] },
+      { label: "Stay quiet",
+        result: "You say nothing. With no witness, there is no case. The man keeps the gold, and the cousins move their camp again.",
+        effects: { flags: { silentWitness: true } } }
+    ],
+    sources: ["people-v-hall"],
+    draft: true
+  },
+  {
+    id: "chans-witness-bell",
+    teacherNote: "Invented scene built on section 14 of California's 1850 Act Concerning Crimes and Punishments (no Black, mulatto, or Indian testimony against a white man) and People v. Hall (1854).",
+    year: "1854",
+    title: "Two witnesses who don't count",
+    lead: "navigator",
+    vote: true,
+    families: ["black"],
+    art: "goldfields",
+    text: "It is 1854. A white miner points a gun at the Chan cousins and takes their gold. Your family sees it all. This year, California's top court ruled that Chinese people cannot testify (speak as a witness) in court against a white person. A California law from 1850 already said the same about Black people and Native Americans. So your family saw the robbery, but the law will not let you tell a judge.",
+    choices: [
+      { label: "Find a white neighbor to testify",
+        outcomes: [
+          { chance: 0.4, result: "A storekeeper who also saw it agrees to speak. The man must give back part of the gold.", effects: { days: 1, flags: { foundWitness: true } } },
+          { chance: 0.6, result: "Each neighbor you ask says no. Nobody wants trouble. The gold is gone.", effects: { days: 1 } }
+        ] },
+      { label: "Tell the Chans what you saw",
+        result: "{navigator} describes the man to Ah Sing. The cousins warn other Chinese camps to watch for him. Your two families start looking out for each other.",
+        effects: { flags: { warnedChans: true } } },
+      { label: "Stay quiet",
+        result: "You keep quiet. Your word would not count in court. Speaking up could bring trouble to your own family.",
+        effects: { flags: { bellsKeptQuiet: true } } }
+    ],
+    sources: ["people-v-hall"],
     draft: true
   },
 
-  // ------------------------------------------------------ sea route (Chans)
+  // ------------------------------- sea route (Chans; kept for reference, unused)
   {
     id: "pacific-voyage",
     title: "Crossing the Pacific",
@@ -680,6 +756,8 @@ WESTWARD.cards = [
     sources: ["foreign-miners-tax"],
     draft: true
   },
+  // Unused now: written from the Chans' point of view for the sea route, which no
+  // playable family takes. Kept for reference.
   {
     id: "cross-chan-overlanders",
     title: "New arrivals",

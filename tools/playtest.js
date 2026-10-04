@@ -1,6 +1,7 @@
 // Westward playtest: plays many full runs with random choices and checks the rules.
 //   node tools/playtest.js            (all families, 300 seeds each)
 //   node tools/playtest.js 50         (50 seeds each)
+//   node tools/playtest.js 100 events (also list how often each trail event happened)
 // Also checks every text file for em dashes (a style rule for this project).
 "use strict";
 var fs = require("fs");
@@ -83,8 +84,8 @@ W.families.forEach(function (fam) {
 if (fs.readFileSync(path.join(root, "index.html"), "utf8").indexOf("—") >= 0) fail("Em dash found in index.html");
 
 // ---------------------------------------------------------------- simulated runs
-var stats = {};
-W.families.forEach(function (fam) {
+var stats = {}, seen = {};
+W.families.filter(function (f) { return f.playable !== false; }).forEach(function (fam) {
   var s = stats[fam.id] = { deathsDaily: 0, hungry: 0, runs: 0, decisions: 0, deaths: 0, oregon: 0, california: 0, maxDecisions: 0, minDecisions: 99, events: 0, minutes: 0, maxMinutes: 0 };
   for (var seed = 1; seed <= runs; seed++) {
     var state = E.create(seed);
@@ -110,7 +111,10 @@ W.families.forEach(function (fam) {
       E.pickTripEvents(state, now).forEach(function (ev) {
         if (/\{\w+\}/.test(ev.title + ev.text + JSON.stringify(ev.choices))) fail("Unfilled slot in trail event " + ev.id);
         var okc = E.choices(state, ev).filter(function (x) { return x.ok; });
-        E.resolveEvent(state, ev, okc[Math.floor(E.rand(state) * okc.length)].index);
+        seen[ev.id] = (seen[ev.id] || 0) + 1;
+        var pickE = okc[Math.floor(E.rand(state) * okc.length)].index;
+        if (ev.choices[pickE].minigame === "fish") E.resolveEvent(state, ev, pickE, { effects: { food: Math.round(E.rand(state) * 30) } });
+        else E.resolveEvent(state, ev, pickE);
         s.events++;
         now += (0.3 + E.rand(state) * 0.2) * 60000 + 5000; // reading and deciding, plus the build-up
       });
@@ -138,6 +142,7 @@ W.families.forEach(function (fam) {
         if (!ok.length) { fail(fam.id + " seed " + seed + ": no available choice on " + c.id); break; }
         var pickC = ok[Math.floor(E.rand(state) * ok.length)].index, chc = c.choices[pickC];
         if (chc.minigame === "raft") E.choose(state, c, pickC, { outcome: E.rand(state) < 0.6 ? 0 : 1 });
+        else if (chc.minigame === "fish") E.choose(state, c, pickC, { effects: { food: Math.round(E.rand(state) * 30) } });
         else if (chc.minigame === "pan") E.choose(state, c, pickC, { effects: { gold: Math.round(E.rand(state) * 60) } });
         else E.choose(state, c, pickC);
         decisions++;
@@ -181,3 +186,11 @@ if (failures.length) {
   process.exit(1);
 }
 console.log("\nAll checks passed.");
+
+if (process.argv[3] === "events") {
+  console.log("\nTrail events per 100 runs:");
+  var total = Object.keys(stats).reduce(function (n, k) { return n + stats[k].runs; }, 0) || 1;
+  W.trailEvents.map(function (t) { return [t.id, Math.round((seen[t.id] || 0) / total * 100)]; })
+    .sort(function (a, b) { return b[1] - a[1]; })
+    .forEach(function (r) { console.log("  " + (r[1] + "   ").slice(0, 4) + r[0]); });
+}
