@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Westward UI Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2b1d12; --ink-soft: #5e4632; --cream: #f6ead0; --brass: #e7c87a; --red: #9b3024;
+    --title: "Alegreya SC", Georgia, serif; --body: "Alegreya Sans", "Trebuchet MS", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: var(--body); color: var(--ink); background: #17151a; }
+  [data-ui] { position: relative; isolation: isolate; }
+  .ui-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .ui-bg svg { display: block; overflow: visible; }
+  .icon { display: block; }
+
+  /* ---------- shared pieces ---------- */
+  .title { font-family: var(--title); font-weight: 800; letter-spacing: 0.01em; }
+  .ribbon { height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 56px 12px; color: var(--cream);
+    font-family: var(--title); font-weight: 800; font-size: 22px; text-shadow: 0 1px 0 #4a120d; white-space: nowrap; }
+  .btn { display: flex; align-items: center; gap: 12px; width: 100%; height: 50px; padding: 0 26px 4px 18px; border: 0; background: none;
+    font: 600 17px var(--body); color: var(--cream); text-align: left; text-shadow: 0 1px 1px rgba(0,0,0,.6); cursor: pointer; }
+  .btn.primary { color: #2b1a0c; text-shadow: 0 1px 0 rgba(255,230,180,.5); font-weight: 700; }
+  .btn .key { width: 26px; height: 26px; flex: none; display: grid; place-items: center; font: 800 13px var(--title); color: #3a2608; text-shadow: none; }
+  .btn .role { margin-left: auto; font-size: 13px; font-weight: 500; opacity: .75; }
+  .btn.pressed { padding-top: 4px; }
+  .btn.disabled { color: #ddd5c8; opacity: .85; }
+  .tag { height: 30px; display: inline-flex; align-items: center; padding: 0 26px 2px 14px; color: var(--cream); font: 600 13px var(--body); letter-spacing: .02em; }
+  .seal-row { display: inline-flex; align-items: center; gap: 6px; font: 700 13px var(--body); color: var(--red); }
+  .seal { width: 34px; height: 34px; display: grid; place-items: center; }
+  .eyebrow { font: 700 12px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .medal { width: 58px; height: 58px; display: grid; place-items: center; font: 800 22px var(--title); color: var(--ink); }
+  .pips { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+  .pips i { width: 7px; height: 7px; border-radius: 50%; background: #6f8f4e; box-shadow: inset 0 -1px 0 rgba(0,0,0,.35); }
+  .pips i.off { background: #3a2a1c; }
+  .pips.sick i { background: #c9a24e; }
+  .who { font: 600 12px var(--body); color: var(--cream); text-align: center; margin-top: 2px; text-shadow: 0 1px 1px #000; }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+  .stat b { color: var(--ink); font-size: 15px; }
+
+  /* ---------- game screen ---------- */
+  .screen { width: 1366px; height: 768px; position: relative; overflow: hidden; background: #000 center/cover no-repeat; }
+  .screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 40% 45%, transparent 55%, rgba(20,10,4,.45)); }
+  .corner-btns { position: absolute; left: 16px; top: 14px; display: flex; gap: 10px; z-index: 5; }
+  .corner-btns .medal { width: 52px; height: 52px; }
+  .place-sign { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); width: 330px; height: 58px; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .place-sign .t { font: 800 22px var(--title); color: #2a170a; text-shadow: 0 1px 0 rgba(255,220,170,.45); line-height: 1; }
+  .place-sign .d { font: 600 13px var(--body); color: #3c2412; margin-top: 3px; }
+  .card { position: absolute; right: 22px; top: 52px; width: 470px; padding: 40px 34px 30px; z-index: 5; }
+  .card .ribbon { position: absolute; left: 50%; top: -18px; transform: translateX(-50%); width: 300px; }
+  .card .chips { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
+  .card h2 { margin: 2px 0 8px; font: 800 28px/1.1 var(--title); }
+  .card p { font-size: 17px; line-height: 1.45; margin: 0 0 16px; }
+  .card .choices { display: grid; gap: 8px; }
+  .shelf { position: absolute; left: 0; right: 0; bottom: 0; height: 112px; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 22px 16px 8px; }
+  .plaque { width: 196px; height: 78px; padding: 9px 14px 12px; }
+  .plaque .role { font: 800 12px var(--title); letter-spacing: .06em; color: var(--ink-soft); display: flex; justify-content: space-between; }
+  .plaque .rows { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; margin-top: 5px; }
+  .family { margin-left: auto; display: flex; gap: 12px; padding-right: 6px; }
+  .family .medal { width: 54px; height: 54px; }
+  .journal-note { position: absolute; left: 20px; bottom: 120px; width: 420px; height: 62px; padding: 18px 22px 0 28px; z-index: 5; font-size: 15px; }
+  .journal-note b { font-family: var(--title); }
+
+  /* ---------- second screen: size-up + voices ---------- */
+  .board { position: absolute; left: 24px; top: 84px; width: 420px; padding: 34px 30px 28px; z-index: 5; color: var(--cream); }
+  .board h2 { margin: 6px 0 6px; font: 800 26px var(--title); color: var(--cream); text-shadow: 0 2px 2px #000; }
+  .board .status { font-size: 15px; line-height: 1.5; margin: 0 0 14px; color: #e8d8b8; }
+  .board .status b { color: var(--brass); }
+  .board .choices { display: grid; gap: 8px; }
+  .book { position: absolute; right: 30px; top: 96px; width: 780px; height: 470px; z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 42px 46px 60px; }
+  .book h3 { margin: 0 0 4px; font: 800 24px var(--title); }
+  .book .quote { font-size: 18px; line-height: 1.5; margin: 12px 0; }
+  .book .src { font-size: 13px; color: var(--ink-soft); font-style: italic; }
+  .book .orig { margin-top: 12px; font-size: 13px; color: var(--ink-soft); border-top: 1px dashed #b89466; padding-top: 8px; }
+  .book .right { display: flex; flex-direction: column; gap: 12px; }
+  .bubble { height: 150px; padding: 18px 22px 0; font-size: 16px; line-height: 1.45; }
+  .bubble .src { margin-top: 6px; }
+
+  /* ---------- the kit sheet ---------- */
+  .sheet { width: 1366px; padding: 28px 30px 40px; background: radial-gradient(ellipse at 70% 0%, #3b3640 0%, #1b191e 55%, #121014 100%); color: #d9cdb6; }
+  .sheet h1 { font: 800 34px var(--title); color: #f0e2c2; margin: 0 0 2px; }
+  .sheet .lede { margin: 0 0 22px; color: #a99c86; font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px 22px; }
+  .cell { grid-column: span 4; }
+  .cell.w6 { grid-column: span 6; } .cell.w8 { grid-column: span 8; } .cell.w12 { grid-column: span 12; } .cell.w3 { grid-column: span 3; }
+  .label { font: 700 12px var(--body); letter-spacing: .14em; text-transform: uppercase; color: #a99c86; margin-bottom: 10px; display: flex; gap: 8px; align-items: baseline; }
+  .label span { letter-spacing: 0; text-transform: none; font-weight: 400; color: #7d7262; }
+  .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .col { display: grid; gap: 10px; }
+  .icons { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 18px; }
+  .icons > div:not(.ui-bg) { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 60px; font-size: 11px; color: var(--ink-soft); }
+  .slider { width: 260px; height: 16px; }
+  .slider .knob { position: absolute; top: -5px; width: 30px; height: 26px; }
+  .toggle { width: 86px; height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font: 700 12px var(--body); color: #a99c86; }
+  .toggle .knob { position: absolute; top: 3px; width: 40px; height: 30px; }
+  .miles { width: 100%; height: 22px; }
+  .miles .fill { position: absolute; left: 3px; top: 3px; bottom: 3px; width: 58%; border-radius: 3px; background: repeating-linear-gradient(90deg, #e6d2a8 0 10px, #dcc394 10px 12px); }
+  .miles .marker { position: absolute; top: -18px; left: calc(58% - 14px); }
+  .miles .stop { position: absolute; top: 4px; width: 3px; height: 14px; background: #8f6a40; }
+  .field { width: 100%; height: 44px; padding: 0 14px; display: flex; align-items: center; font-size: 17px; }
+  .field .ph { color: #8a7458; font-style: italic; }
+  .type .t1 { font: 800 32px var(--title); color: #f0e2c2; }
+  .type .t2 { font: 700 20px var(--title); color: #f0e2c2; }
+  .type .t3 { font: 400 17px/1.45 var(--body); color: #d9cdb6; max-width: 380px; }
+  .sign-big { width: 420px; height: 82px; display: grid; place-items: center; font: 800 32px var(--title); color: #2a170a; text-shadow: 0 1px 0 rgba(255,220,170,.45), 0 -1px 0 rgba(0,0,0,.25); }
+  .mapboard { height: 260px; padding: 30px; }
+  .mapboard svg.map { position: absolute; inset: 26px; width: calc(100% - 52px); height: calc(100% - 52px); }
+  .tooltip { display: inline-block; height: 44px; padding: 10px 18px 0; font-size: 14px; }
+
+  .sheet [data-ui="paper"], .sheet [data-ui="note"], .sheet [data-ui="bubble"], .sheet [data-ui="book"], .sheet [data-ui="field"],
+  .sheet [data-ui="frame"][data-o-inner="paper"] { color: var(--ink); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- =============================== SCREEN 1: an event at Fort Laramie =============================== -->
+<section id="event" class="screen" style="background-image:url(bg-fort.png)">
+  <div class="corner-btns">
+    <div class="medal" data-ui="medallion" data-seed="41"><span data-icon="sound" data-size="22"></span></div>
+    <div class="medal" data-ui="medallion" data-seed="42"><span data-icon="gear" data-size="22"></span></div>
+  </div>
+  <div class="place-sign" data-ui="sign" data-seed="7"><div class="t">Fort Laramie</div><div class="d">May 28, 1849 &middot; 650 miles from home</div></div>
+
+  <div class="card" data-ui="frame" data-o-inner="paper" data-seed="12">
+    <div class="ribbon" data-ui="ribbon" data-seed="3">The Doyles</div>
+    <div class="chips">
+      <span class="tag" data-ui="tag" data-seed="5">Mouse: Journal keeper (Mia)</span>
+      <span class="seal-row"><span class="seal" data-ui="seal" data-seed="9"><span data-icon="vote" data-size="16" data-color="#f6ead0"></span></span>Group vote</span>
+    </div>
+    <div class="eyebrow">Fort Laramie &middot; May 28, 1849</div>
+    <h2>Should the Doyles stay?</h2>
+    <p>The wagon captain wants to kick the Doyles out of the group. They are an Irish Catholic family. In the 1840s, many Americans hated or feared Catholics. The captain asks every family to vote. Your family's vote counts.</p>
+    <div class="choices">
+      <button class="btn primary" data-ui="button" data-o-kind="primary" data-seed="21"><span class="key" data-ui="key">1</span>Vote to let the Doyles stay</button>
+      <button class="btn" data-ui="button" data-o-state="hover" data-seed="22"><span class="key" data-ui="key">2</span>Vote with the captain</button>
+      <button class="btn" data-ui="button" data-seed="23"><span class="key" data-ui="key">3</span>Don't vote</button>
+    </div>
+  </div>
+
+  <div class="journal-note" data-ui="note" data-seed="31"><b>May 28.</b> Reached Fort Laramie. Bought 100 pounds of food.</div>
+
+  <div class="shelf" data-ui="shelf" data-seed="2">
+    <div class="plaque" data-ui="plaque" data-seed="51"><div class="role">NAVIGATOR <span>Ava</span></div>
+      <div class="rows"><div class="stat"><span data-icon="wagon" data-size="18"></span><b>650 mi</b></div><div class="stat"><span data-icon="compass" data-size="18"></span><b>Steady</b></div>
+      <div class="stat" style="grid-column:span 2"><span data-icon="pin" data-size="18"></span>Next: <b>Ind. Rock, 180 mi</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-o-alert="true" data-seed="52"><div class="role">QUARTERMASTER <span>Leo</span></div>
+      <div class="rows"><div class="stat"><span data-icon="food" data-size="18"></span><b>140 lb</b></div><div class="stat" style="color:#9b3024"><b style="color:#9b3024">9 days</b></div>
+      <div class="stat"><span data-icon="ox" data-size="18"></span><b>6</b></div><div class="stat"><span data-icon="coin" data-size="18"></span><b>$212</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-seed="53"><div class="role">FAMILY DOCTOR <span>Sam</span></div>
+      <div class="rows"><div class="stat"><span data-icon="heart" data-size="18"></span><b>Fair</b></div><div class="stat"><span data-icon="medicine" data-size="18"></span><b>2</b></div>
+      <div class="stat" style="grid-column:span 2">Sick: <b>Ruth (fever)</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-seed="54"><div class="role">JOURNAL KEEPER <span>Mia</span></div>
+      <div class="rows"><div class="stat"><span data-icon="calendar" data-size="18"></span><b>May 28</b></div><div class="stat"><span data-icon="sun" data-size="18"></span><b>Hot</b></div>
+      <div class="stat" style="grid-column:span 2"><span data-icon="book" data-size="18"></span><b>4 entries</b></div></div></div>
+    <div class="family">
+      <div><div class="medal" data-ui="medallion" data-seed="61">S</div><div class="who">Samuel</div><div class="pips"><i></i><i></i><i></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="62">J</div><div class="who">James</div><div class="pips"><i></i><i></i><i></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="63" data-o-fill="#ecd7a0">R</div><div class="who">Ruth</div><div class="pips sick"><i></i><i class="off"></i><i class="off"></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="64">M</div><div class="who">Martha</div><div class="pips"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== SCREEN 2: night camp, check on your family + talk to people =============================== -->
+<section id="camp" class="screen" style="background-image:url(bg-camp.png)">
+  <div class="corner-btns">
+    <div class="medal" data-ui="medallion" data-seed="41"><span data-icon="sound" data-size="22"></span></div>
+    <div class="medal" data-ui="medallion" data-seed="42"><span data-icon="gear" data-size="22"></span></div>
+  </div>
+  <div class="place-sign" data-ui="sign" data-seed="8"><div class="t">Fort Laramie</div><div class="d">Evening camp &middot; May 28, 1849</div></div>
+
+  <div class="board" data-ui="frame" data-o-inner="boards" data-seed="14">
+    <div class="ribbon" data-ui="ribbon" data-seed="4" style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:320px">Check on your family</div>
+    <p class="status">Health <b>Fair</b> &middot; Pace <b>Steady</b> &middot; Meals <b>Full</b><br>Food lasts <b>9 days</b> &middot; Next: <b>Independence Rock</b></p>
+    <div class="choices">
+      <button class="btn primary" data-ui="button" data-o-kind="primary" data-seed="24"><span class="key" data-ui="key">1</span>Continue on the trail</button>
+      <button class="btn" data-ui="button" data-seed="25"><span class="key" data-ui="key">2</span>Change pace<span class="role">Navigator</span></button>
+      <button class="btn" data-ui="button" data-seed="26"><span class="key" data-ui="key">3</span>Change rations<span class="role">Quartermaster</span></button>
+      <button class="btn" data-ui="button" data-seed="27"><span class="key" data-ui="key">4</span>Stop to rest<span class="role">Family doctor</span></button>
+      <button class="btn pressed" data-ui="button" data-o-state="pressed" data-seed="28"><span class="key" data-ui="key">5</span>Talk to people<span class="role">Journal keeper</span></button>
+      <button class="btn disabled" data-ui="button" data-o-state="disabled" data-seed="29"><span class="key" data-ui="key">6</span>Buy food (no money)<span class="role">Quartermaster</span></button>
+    </div>
+  </div>
+
+  <div class="book" data-ui="book" data-seed="17">
+    <div>
+      <div class="eyebrow">Real words, 1853</div>
+      <h3>Amelia Stewart Knight</h3>
+      <div class="src">A mother on her way to Oregon</div>
+      <div class="quote">Some Native women had moccasins (soft leather shoes) and beads. They wanted to trade them for our bread.</div>
+      <div class="orig"><b>Her exact words:</b> &ldquo;Some of the women had moccasins and beads, which they wanted to trade for bread.&rdquo;<br><span class="src">Knight diary, June 7, 1853</span></div>
+    </div>
+    <div class="right">
+      <div class="eyebrow">A voice based on history</div>
+      <div class="bubble" data-ui="bubble" data-seed="33">We come here to trade. We want bread, cloth, and cooking pots. Every summer more of you come, and there are fewer buffalo near the river.
+        <div class="src">A Lakota woman at Fort Laramie</div></div>
+      <button class="btn" data-ui="button" data-seed="34" style="width:260px"><span data-icon="talk" data-size="20" data-color="#f6ead0"></span>Talk to someone else</button>
+    </div>
+  </div>
+
+  <div class="shelf" data-ui="shelf" data-seed="2">
+    <div class="plaque" data-ui="plaque" data-seed="51"><div class="role">NAVIGATOR <span>Ava</span></div>
+      <div class="rows"><div class="stat"><span data-icon="wagon" data-size="18"></span><b>650 mi</b></div><div class="stat"><span data-icon="compass" data-size="18"></span><b>Steady</b></div>
+      <div class="stat" style="grid-column:span 2"><span data-icon="pin" data-size="18"></span>Next: <b>Ind. Rock, 180 mi</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-o-alert="true" data-seed="52"><div class="role">QUARTERMASTER <span>Leo</span></div>
+      <div class="rows"><div class="stat"><span data-icon="food" data-size="18"></span><b>140 lb</b></div><div class="stat"><b style="color:#9b3024">9 days</b></div>
+      <div class="stat"><span data-icon="ox" data-size="18"></span><b>6</b></div><div class="stat"><span data-icon="coin" data-size="18"></span><b>$212</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-seed="53"><div class="role">FAMILY DOCTOR <span>Sam</span></div>
+      <div class="rows"><div class="stat"><span data-icon="heart" data-size="18"></span><b>Fair</b></div><div class="stat"><span data-icon="medicine" data-size="18"></span><b>2</b></div>
+      <div class="stat" style="grid-column:span 2">Sick: <b>Ruth (fever)</b></div></div></div>
+    <div class="plaque" data-ui="plaque" data-seed="54"><div class="role">JOURNAL KEEPER <span>Mia</span></div>
+      <div class="rows"><div class="stat"><span data-icon="calendar" data-size="18"></span><b>May 28</b></div><div class="stat"><span data-icon="rain" data-size="18"></span><b>Rain</b></div>
+      <div class="stat" style="grid-column:span 2"><span data-icon="book" data-size="18"></span><b>4 entries</b></div></div></div>
+    <div class="family">
+      <div><div class="medal" data-ui="medallion" data-seed="61">S</div><div class="who">Samuel</div><div class="pips"><i></i><i></i><i></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="62">J</div><div class="who">James</div><div class="pips"><i></i><i></i><i></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="63" data-o-fill="#ecd7a0">R</div><div class="who">Ruth</div><div class="pips sick"><i></i><i class="off"></i><i class="off"></i></div></div>
+      <div><div class="medal" data-ui="medallion" data-seed="64">M</div><div class="who">Martha</div><div class="pips"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== THE KIT SHEET =============================== -->
+<section id="sheet" class="sheet">
+  <h1>Westward UI kit</h1>
+  <p class="lede">Every piece is drawn in code (SVG) from a few rules: one light from the top left, three woods, two papers, iron and brass, one red. Nothing is a stock image.</p>
+  <div class="grid">
+
+    <div class="cell">
+      <div class="label">Panel <span>wood frame, paper inside</span></div>
+      <div data-ui="frame" data-o-inner="paper" data-seed="101" style="height:220px;padding:34px 30px">
+        <div class="eyebrow">Chimney Rock &middot; June 9</div>
+        <div class="title" style="font-size:24px;margin:4px 0">Event cards</div>
+        <div style="font-size:15px;line-height:1.45">Cards, results, river crossings, and the ledger sit on paper in a frame.</div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Panel <span>wood frame, boards inside</span></div>
+      <div data-ui="frame" data-o-inner="boards" data-seed="102" style="height:220px;padding:34px 30px;color:#f6ead0">
+        <div class="title" style="font-size:24px;margin:4px 0;color:#f6ead0;text-shadow:0 2px 2px #000">Menus</div>
+        <div style="font-size:15px;line-height:1.45;color:#e8d8b8">Choices you make again and again: the travel menu, the store, the teacher panel.</div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Map board <span>for the travel map</span></div>
+      <div class="mapboard" data-ui="frame" data-o-inner="paper" data-seed="103">
+        <svg class="map" viewBox="0 0 300 180" fill="none" stroke-linecap="round">
+          <path d="M8 120 C40 130 60 110 90 112 S140 95 170 90 S220 70 250 60 L292 40" stroke="#2b1d12" stroke-width="2" stroke-dasharray="2 5"/>
+          <path d="M8 120 C40 130 60 110 90 112 S140 95 170 90" stroke="#9b3024" stroke-width="3"/>
+          <path d="M200 120 l14 -26 l14 26 M222 120 l12 -20 l12 20" stroke="#6b5440" stroke-width="1.5"/>
+          <path d="M30 150 C70 140 110 150 150 135" stroke="#5f7f94" stroke-width="2"/>
+          <circle cx="8" cy="120" r="4" fill="#2b1d12"/><circle cx="90" cy="112" r="4" fill="#2b1d12"/><circle cx="170" cy="90" r="5" fill="#9b3024"/><circle cx="292" cy="40" r="4" fill="none" stroke="#2b1d12" stroke-width="2"/>
+          <text x="14" y="138" font-family="Alegreya Sans" font-size="10" fill="#2b1d12">Independence</text>
+          <text x="150" y="80" font-family="Alegreya SC" font-weight="700" font-size="11" fill="#9b3024">You are here</text>
+          <text x="40" y="60" font-family="Alegreya SC" font-size="11" fill="#6b5440" letter-spacing="2">PAWNEE</text>
+          <text x="180" y="150" font-family="Alegreya SC" font-size="11" fill="#6b5440" letter-spacing="2">LAKOTA</text>
+          <text x="248" y="30" font-family="Alegreya Sans" font-size="10" fill="#2b1d12">Oregon</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="label">Buttons <span>primary: normal, hover, pressed, disabled</span></div>
+      <div class="col">
+        <button class="btn primary" data-ui="button" data-o-kind="primary" data-seed="111"><span class="key" data-ui="key">1</span>Continue on the trail</button>
+        <button class="btn primary" data-ui="button" data-o-kind="primary" data-o-state="hover" data-seed="112"><span class="key" data-ui="key">1</span>Continue on the trail</button>
+        <button class="btn primary pressed" data-ui="button" data-o-kind="primary" data-o-state="pressed" data-seed="113"><span class="key" data-ui="key">1</span>Continue on the trail</button>
+        <button class="btn disabled" data-ui="button" data-o-state="disabled" data-seed="114"><span class="key" data-ui="key">1</span>Use the medicine (none left)</button>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Buttons <span>secondary, with the job that holds the mouse</span></div>
+      <div class="col">
+        <button class="btn" data-ui="button" data-seed="121"><span class="key" data-ui="key">2</span>Change pace<span class="role">Navigator</span></button>
+        <button class="btn" data-ui="button" data-o-state="hover" data-seed="122"><span class="key" data-ui="key">3</span>Change rations<span class="role">Quartermaster</span></button>
+        <button class="btn pressed" data-ui="button" data-o-state="pressed" data-seed="123"><span class="key" data-ui="key">4</span>Stop to rest<span class="role">Family doctor</span></button>
+        <button class="btn" data-ui="button" data-seed="124" style="width:200px;justify-content:center;padding-left:26px">Back</button>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Titles, tags, and seals</div>
+      <div class="col" style="gap:16px">
+        <div class="ribbon" data-ui="ribbon" data-seed="131" style="width:330px">Crossing the Kansas River</div>
+        <div class="ribbon" data-ui="ribbon" data-seed="132" style="width:200px;font-size:18px">Who Decided?</div>
+        <div class="row">
+          <span class="tag" data-ui="tag" data-seed="133">Mouse: Navigator (Ava)</span>
+          <span class="seal-row" style="color:#e7b8a8"><span class="seal" data-ui="seal" data-seed="134"><span data-icon="vote" data-size="16" data-color="#f6ead0"></span></span>Group vote</span>
+        </div>
+        <div class="row"><span class="tag" data-ui="tag" data-seed="135">Read aloud: Journal keeper</span><span class="tag" data-ui="tag" data-seed="136">1853</span></div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="label">Family portraits <span>well, sick, died</span></div>
+      <div class="row" style="gap:18px">
+        <div><div class="medal" data-ui="medallion" data-seed="141">S</div><div class="who">Samuel</div><div class="pips"><i></i><i></i><i></i></div></div>
+        <div><div class="medal" data-ui="medallion" data-seed="142" data-o-fill="#ecd7a0">R</div><div class="who">Ruth</div><div class="pips sick"><i></i><i class="off"></i><i class="off"></i></div></div>
+        <div><div class="medal" data-ui="medallion" data-seed="143" data-o-dead="true" data-o-fill="#b9a98c" style="color:#5e4632">J</div><div class="who" style="opacity:.6">James</div><div class="pips"><i class="off"></i><i class="off"></i><i class="off"></i></div></div>
+        <div><div class="medal" data-ui="medallion" data-seed="144"><span data-icon="gear"></span></div><div class="who">Teacher</div></div>
+        <div><div class="medal" data-ui="medallion" data-seed="145"><span data-icon="sound"></span></div><div class="who">Sound</div></div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Inputs <span>name field, slider, switch</span></div>
+      <div class="col" style="gap:16px">
+        <div class="field" data-ui="field" data-seed="151"><span class="ph">Type your character's name</span></div>
+        <div class="row" style="gap:24px">
+          <div class="slider" data-ui="slot" data-seed="152"><div class="knob" data-ui="knob" style="left:120px"></div></div>
+          <div class="toggle" data-ui="slot" data-seed="153"><span>OFF</span><span>ON</span><div class="knob" data-ui="knob" style="left:43px"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Progress <span>miles to Oregon</span></div>
+      <div class="col" style="gap:20px;padding-top:20px">
+        <div class="miles" data-ui="slot" data-seed="161"><div class="fill"></div><span class="stop" style="left:15%"></span><span class="stop" style="left:33%"></span><span class="stop" style="left:47%"></span><span class="stop" style="left:70%"></span><span class="stop" style="left:88%"></span>
+          <span class="marker" data-icon="wagon" data-size="28" data-color="#f0e2c2"></span></div>
+        <div class="row" style="justify-content:space-between;font-size:13px;color:#a99c86"><span>Independence</span><span>650 of 1,950 miles</span><span>Oregon</span></div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="label">Gauges <span>one per job, on the shelf</span></div>
+      <div class="row">
+        <div class="plaque" data-ui="plaque" data-seed="171"><div class="role">NAVIGATOR <span>Ava</span></div>
+          <div class="rows"><div class="stat"><span data-icon="wagon" data-size="18"></span><b>650 mi</b></div><div class="stat"><span data-icon="compass" data-size="18"></span><b>Steady</b></div>
+          <div class="stat" style="grid-column:span 2"><span data-icon="pin" data-size="18"></span>Next: <b>180 mi</b></div></div></div>
+        <div class="plaque" data-ui="plaque" data-o-alert="true" data-seed="172"><div class="role">QUARTERMASTER <span>Leo</span></div>
+          <div class="rows"><div class="stat"><span data-icon="food" data-size="18"></span><b>140 lb</b></div><div class="stat"><b style="color:#9b3024">9 days</b></div>
+          <div class="stat"><span data-icon="ox" data-size="18"></span><b>6</b></div><div class="stat"><span data-icon="coin" data-size="18"></span><b>$212</b></div></div></div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Notes <span>journal line, tooltip</span></div>
+      <div class="col" style="gap:14px">
+        <div class="journal-note" data-ui="note" data-seed="181" style="position:relative;left:0;bottom:0;width:100%"><b>June 2.</b> Ruth has a fever. We rest a day.</div>
+        <div><span class="tooltip" data-ui="paper" data-seed="182">Pace: how hard you push the oxen each day.</span></div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Headline sign <span>when something happens</span></div>
+      <div class="sign-big" data-ui="sign" data-seed="191">A wheel breaks!</div>
+      <div class="type" style="margin-top:18px">
+        <div class="t2">Alegreya SC for titles</div>
+        <div class="t3">Alegreya Sans for reading. Big, clear, and easy for four students to read from one screen.</div>
+      </div>
+    </div>
+
+    <div class="cell w8">
+      <div class="label">Book <span>journal, landmarks, and real voices</span></div>
+      <div class="book" data-ui="book" data-seed="201" style="position:relative;right:auto;top:auto;width:100%;height:330px;padding:34px 40px 50px;gap:34px">
+        <div>
+          <div class="eyebrow">Landmark</div>
+          <h3>Independence Rock</h3>
+          <div class="quote" style="font-size:16px">Travelers hoped to reach this huge granite rock by the Fourth of July. If they did, they were on schedule. Thousands carved or painted their names on it.</div>
+        </div>
+        <div>
+          <div class="eyebrow">Real words, 1853</div>
+          <div class="quote" style="font-size:16px">We went 19 miles today. We passed Independence Rock and crossed the Sweetwater River on a bridge.</div>
+          <div class="orig">&ldquo;Came 19 miles today; passed Independence Rock this afternoon&hellip;&rdquo;<br><span class="src">Amelia Stewart Knight, June 15, 1853</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">Speech <span>talk to people</span></div>
+      <div class="bubble" data-ui="bubble" data-seed="211" style="height:170px">The Army built this fort to watch over the road. Most days the trouble is not raids. It is sickness and broken wagons.<div class="src">A soldier at Fort Kearny</div></div>
+    </div>
+
+    <div class="cell w12">
+      <div class="label">Icons <span>one set, one stroke, drawn in ink</span></div>
+      <div class="icons" data-ui="paper" data-seed="221">
+        <div><span data-icon="food"></span>Food</div><div><span data-icon="ox"></span>Oxen</div><div><span data-icon="coin"></span>Money</div>
+        <div><span data-icon="medicine"></span>Medicine</div><div><span data-icon="wheel"></span>Parts</div><div><span data-icon="heart"></span>Health</div>
+        <div><span data-icon="calendar"></span>Date</div><div><span data-icon="compass"></span>Pace</div><div><span data-icon="pin"></span>Next stop</div>
+        <div><span data-icon="sun"></span>Weather</div><div><span data-icon="rain"></span>Rain</div><div><span data-icon="wagon"></span>Wagon</div>
+        <div><span data-icon="book"></span>Journal</div><div><span data-icon="talk"></span>Talk</div><div><span data-icon="rest"></span>Rest</div>
+        <div><span data-icon="vote"></span>Vote</div><div><span data-icon="sound"></span>Sound</div><div><span data-icon="gear"></span>Teacher</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="kit.js"></script>
+<script>
+  // ?view=event | camp | sheet shows one; no view shows all three.
+  var view = new URLSearchParams(location.search).get("view");
+  if (view) document.querySelectorAll("section").forEach(function (s) { if (s.id !== view) s.classList.add("hidden"); });
+  function go() { UIKit.paint(document); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else window.addEventListener("load", go);
+  window.addEventListener("resize", go);
+</script>
+</body>
+</html>
