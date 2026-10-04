@@ -44,7 +44,7 @@ WESTWARD.places = {
   // Sea route (the Chan cousins)
   hongkong: { name: "Hong Kong harbor", scene: "hongkong", days: 0 },
   pacific: { name: "The Pacific crossing", scene: "sea", days: 50, rations: true },
-  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10, market: 0.5 },
+  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10, market: 0.25 },
   sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4, market: 0.4 }
 };
 

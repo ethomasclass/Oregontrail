@@ -651,8 +651,8 @@ WESTWARD.cards = [
     text: "San Francisco is a forest of ship masts. Men from your home district meet the ship. Their district association, the Sze Yup company, offers lodging, help finding work, and tools for the mines.",
     choices: [
       { label: "Join a mining company from your district",
-        result: "You head for the mines with men who speak your dialect. There is safety in numbers.",
-        effects: { flags: { company: true } } },
+        result: "You head for the mines with men who speak your dialect. The company sends you off with rice for the road. There is safety in numbers.",
+        effects: { food: 120, flags: { company: true } } },
       { label: "Strike out on your own",
         result: "You travel lighter, but alone.",
         effects: { money: 10 } }
