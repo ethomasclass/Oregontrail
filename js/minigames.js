@@ -63,8 +63,8 @@
   // ------------------------------------------------------------ the Columbia raft
   function raft(opts) {
     return new Promise(function (resolve) {
-      var el = overlay("Down the Columbia", (opts.pilot ? "Your Chinookan pilots call out each rock before you reach it. " : "") +
-        "Steer with the arrow keys, the buttons, or by moving the mouse over the river. Avoid the rocks.", opts.who);
+      var el = overlay("Rafting the Columbia River", (opts.pilot ? "Your Chinookan guides (Native people who know this river) shout a warning before each rock. " : "") +
+        "Steer the raft with the arrow keys, the buttons, or the mouse. Stay away from the rocks.", opts.who);
       var cv = el.querySelector("canvas"), g = cv.getContext("2d"), inp = input(el, cv), timerEl = el.querySelector(".mg-timer");
       var T = 32, t = 0, x = 400, hits = 0, rocks = [], spawn = 0, last = 0, flash = 0, running = false, raf;
       var gap = opts.pilot ? 0.95 : 0.6;
@@ -128,7 +128,7 @@
   // ------------------------------------------------------------ the gold pan
   function pan(opts) {
     return new Promise(function (resolve) {
-      var el = overlay("Panning for gold", "Swirl the pan: move the mouse in circles over it, or press Left and Right one after the other. Gravel washes out over the edge. Swirl too hard and the gold washes out too.", opts.who);
+      var el = overlay("Panning for gold", "Swirl the pan to wash out the gravel. Move the mouse in circles over the pan, or tap Left and Right again and again. Gold is heavy, so it stays in the pan. Swirl too hard and the gold spills out too.", opts.who);
       var cv = el.querySelector("canvas"), g = cv.getContext("2d"), inp = input(el, cv), timerEl = el.querySelector(".mg-timer");
       var T = 30, t = 0, last = 0, running = false, raf, pans = 0, total = 0, grains = [], swirl = 0, lastPress = null, lastMoved = 0, msg = "";
       function newPan() {
@@ -181,7 +181,7 @@
         if (gravel === 0) {
           var flecks = grains.filter(function (p) { return p.gold && !p.out; }).length;
           total += flecks * 2; pans++;
-          msg = flecks ? "Pan " + pans + ": " + flecks + " flecks of gold ($" + flecks * 2 + ")." : "Pan " + pans + ": nothing but sand.";
+          msg = flecks ? "Pan " + pans + ": " + flecks + " tiny flecks of gold ($" + flecks * 2 + ")." : "Pan " + pans + ": only sand, no gold.";
           newPan();
         }
         timerEl.textContent = Math.max(0, Math.ceil(T - t)) + "s";

@@ -349,3 +349,9 @@ button.on { outline: 3px solid var(--blue); outline-offset: 1px; }
 
 .sound-toggle { position: fixed; top: 10px; left: 10px; z-index: 45; font-size: 11px; padding: 5px 9px; box-shadow: 2px 2px 0 var(--ink); opacity: 0.85; }
 .sound-toggle[aria-pressed="false"] { background: #e6e1d6; }
+
+/* real quotes: modern version first, exact original words one click away */
+.plain-quote { font-style: normal; }
+.original { margin-top: 6px; font-size: 0.85em; }
+.original summary { cursor: pointer; color: var(--muted); font-style: normal; font-size: 0.85em; }
+.original[open] summary { margin-bottom: 4px; }

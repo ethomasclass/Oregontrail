@@ -52,8 +52,8 @@ WESTWARD.config = {
 
 // The four student jobs. The mouse rotates between them.
 WESTWARD.roles = [
-  { id: "navigator", name: "Navigator", job: "Route choices: river crossings, shortcuts, the fork." },
-  { id: "quartermaster", name: "Quartermaster", job: "Money and supplies. Leads every trade." },
-  { id: "journal", name: "Journal keeper", job: "Reads diary voices aloud. Fills in the handout." },
-  { id: "doctor", name: "Family doctor", job: "Health events: sickness and accidents." }
+  { id: "navigator", name: "Navigator", job: "Picks the route: how to cross rivers, whether to take shortcuts, and which way to go where the trail splits." },
+  { id: "quartermaster", name: "Quartermaster", job: "In charge of money and supplies. Leads every trade." },
+  { id: "journal", name: "Journal keeper", job: "Reads the diary quotes and voices out loud. Fills in the handout." },
+  { id: "doctor", name: "Family doctor", job: "Handles health problems, like sickness and injuries." }
 ];

@@ -4,25 +4,25 @@ window.WESTWARD = window.WESTWARD || {};
 
 WESTWARD.stores = {
   independence: {
-    title: "Outfitting in Independence",
-    intro: "Your wagon is bought. Now the Quartermaster spends the rest. Guidebooks say to bring three or four yoke of oxen and, for each person, 200 pounds of flour and 150 pounds of bacon. Four people eat 12 pounds a day on filling rations.",
+    title: "Getting Ready in Independence",
+    intro: "You are in Independence, Missouri, where the trail starts. You already bought your wagon. Now the Quartermaster spends the rest of the money. Guidebooks say to bring three or four yoke of oxen. A yoke is a pair of oxen joined by a wooden bar so they can pull together. Bring 200 pounds of flour and 150 pounds of bacon for each person. Four people who eat full meals go through 12 pounds of food a day.",
     items: [
-      { id: "oxen", name: "Yoke of oxen (2 oxen)", price: 50, stat: "oxen", per: 2, min: 2, recommended: 3, max: 4 },
+      { id: "oxen", name: "Yoke of oxen (a team of 2)", price: 50, stat: "oxen", per: 2, min: 2, recommended: 3, max: 4 },
       { id: "flour", name: "Flour, 100 lb sack", price: 4, stat: "food", per: 100, recommended: 8, max: 12 },
       { id: "bacon", name: "Bacon, 50 lb", price: 5, stat: "food", per: 50, recommended: 12, max: 16 },
       { id: "parts", name: "Spare wheel and axle", price: 15, stat: "parts", per: 1, recommended: 1, max: 3 },
-      { id: "medicine", name: "Medicine chest", price: 10, stat: "medicine", per: 1, recommended: 1, max: 2 },
-      { id: "trade", name: "Trade goods (cloth, tools)", price: 10, stat: "trade", per: 1, recommended: 2, max: 4 }
+      { id: "medicine", name: "Box of medicines", price: 10, stat: "medicine", per: 1, recommended: 1, max: 2 },
+      { id: "trade", name: "Goods to trade (cloth, tools)", price: 10, stat: "trade", per: 1, recommended: 2, max: 4 }
     ],
     draft: true
   },
   hongkong: {
-    title: "Leaving from Hong Kong",
-    intro: "Your passage is paid on credit. You must repay it from what you earn in California. The Quartermaster decides what else to bring.",
+    title: "Leaving from Hong Kong, China",
+    intro: "You borrowed money to pay for your ship ticket. You must pay it back from what you earn in California. The Quartermaster decides what else to bring.",
     items: [
       { id: "rice", name: "Rice and dried fish for the voyage", price: 4, stat: "food", per: 50, min: 1, recommended: 2, max: 4 },
-      { id: "medicine", name: "Herbal medicines", price: 5, stat: "medicine", per: 1, recommended: 1, max: 2 },
-      { id: "tools", name: "Mining tools (pan and rocker)", price: 12, stat: "parts", per: 1, min: 1, recommended: 1, max: 2 },
+      { id: "medicine", name: "Medicines made from plants", price: 5, stat: "medicine", per: 1, recommended: 1, max: 2 },
+      { id: "tools", name: "Mining tools (pan and rocker box for washing out gold)", price: 12, stat: "parts", per: 1, min: 1, recommended: 1, max: 2 },
       { id: "trade", name: "Goods to sell in California", price: 10, stat: "trade", per: 1, recommended: 1, max: 3 }
     ],
     draft: true

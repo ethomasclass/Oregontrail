@@ -102,7 +102,7 @@
     store.items.forEach(function (it) {
       state[it.stat] = (state[it.stat] || 0) + (cart[it.id] || 0) * it.per;
     });
-    state.log.push({ kind: "store", text: "Outfitted at " + place(state.beats[state.index].at).name });
+    state.log.push({ kind: "store", text: "Bought supplies at " + place(state.beats[state.index].at).name });
     // the oxen get names, the way emigrants named theirs
     var names = (W.oxNames || []).slice();
     state.oxNames = [];
@@ -141,19 +141,19 @@
   // then takes on loads from pace, rations, weather, sickness, and hardship. A steady
   // daily load S settles H at about 10 x S, so choices show up a few days later.
   var PACES = {
-    steady: { speed: 1, load: 2, name: "Steady", text: "About 8 hours a day, with frequent rests." },
-    strenuous: { speed: 1.5, load: 4, name: "Strenuous", text: "About 12 hours a day. Everyone ends the day very tired." },
-    grueling: { speed: 2, load: 6, name: "Grueling", text: "About 16 hours a day, before sunrise until dark. Health suffers." }
+    steady: { speed: 1, load: 2, name: "Steady", text: "You push the oxen about 8 hours a day and rest often." },
+    strenuous: { speed: 1.5, load: 4, name: "Hard", text: "You push about 12 hours a day. Everyone is very tired by night." },
+    grueling: { speed: 2, load: 6, name: "Very hard", text: "You push about 16 hours a day, from before sunrise until dark. Health gets worse." }
   };
   var RATIONS = {
-    filling: { lb: 3, load: 0, name: "Filling", text: "Meals are large and generous. 3 lb of food per person a day." },
-    meager: { lb: 2, load: 2, name: "Meager", text: "Meals are small, but adequate. 2 lb per person a day." },
-    bare: { lb: 1, load: 4, name: "Bare bones", text: "Meals are very small; everyone stays hungry. 1 lb per person a day." }
+    filling: { lb: 3, load: 0, name: "Full meals", text: "Everyone eats big meals: 3 pounds of food per person each day." },
+    meager: { lb: 2, load: 2, name: "Small meals", text: "Meals are small but enough: 2 pounds per person each day." },
+    bare: { lb: 1, load: 4, name: "Tiny meals", text: "Everyone stays hungry: 1 pound per person each day." }
   };
   var ILLNESS = {
-    trail: ["exhaustion", "typhoid", "cholera", "measles", "dysentery", "a fever"],
-    sea: ["a fever", "dysentery", "exhaustion"],
-    walk: ["a fever", "dysentery", "exhaustion"]
+    trail: ["exhaustion (being worn out)", "typhoid (a fever from dirty food or water)", "cholera (a deadly sickness from dirty water)", "measles (a disease with a rash that spreads fast)", "dysentery (a bad stomach sickness from dirty water)", "a fever"],
+    sea: ["a fever", "dysentery (a bad stomach sickness from dirty water)", "exhaustion (being worn out)"],
+    walk: ["a fever", "dysentery (a bad stomach sickness from dirty water)", "exhaustion (being worn out)"]
   };
   var TEMPS = ["very cold", "cold", "cool", "warm", "hot", "very hot"];
 
@@ -252,7 +252,7 @@
     var fromGold = Math.min(state.gold, pay);
     state.gold -= fromGold; state.money -= pay - fromGold;
     state.food += Math.floor(pay / price);
-    day.messages.push("Out of food. You buy " + Math.floor(pay / price) + " lb at " + place(state.place).name.split(",")[0] + " prices: $" + pay + ".");
+    day.messages.push("You run out of food. You buy " + Math.floor(pay / price) + " pounds at " + place(state.place).name.split(",")[0] + " for $" + pay + ".");
   }
 
   function routeIllness(state) { return ILLNESS[routeKind(state, state.place)] || ILLNESS.trail; }
@@ -282,7 +282,7 @@
     who.cause = cause;
     state.deaths++;
     who.epitaph = "Here lies " + who.name + (surname(state) ? " " + surname(state) : "") + ", age " + who.age +
-      ". Died of " + cause + " near " + place(state.place).name.split(":")[0] + ", " + formatDate(dateOf(state)) + ".";
+      ". Died of " + cause + " near " + place(state.place).name.split(":")[0] + " on " + formatDate(dateOf(state)) + ".";
     report.deaths.push(who);
   }
 
@@ -298,15 +298,15 @@
 
   function riverOptions(state, r) {
     var o = [
-      { id: "ford", label: "Ford the river", role: "navigator" },
-      { id: "float", label: "Caulk the wagon and float it", role: "navigator" }
+      { id: "ford", label: "Ford (drive straight through)", role: "navigator" },
+      { id: "float", label: "Seal the wagon and float it", role: "navigator" }
     ];
     if (r.ferry) o.push({ id: "ferry", label: "Take " + r.ferry.by, role: "quartermaster", requires: { money: r.ferry.cost } });
     if (r.guide) {
-      o.push({ id: "guide", label: "Hire " + r.guide.by + " (trade goods)", role: "quartermaster", requires: r.guide.cost });
+      o.push({ id: "guide", label: "Hire " + r.guide.by + " (pay in trade goods)", role: "quartermaster", requires: r.guide.cost });
       if (r.guide.alt) o.push({ id: "guideCash", label: "Hire " + r.guide.by + " ($" + r.guide.alt.money + ")", role: "quartermaster", requires: r.guide.alt });
     }
-    o.push({ id: "wait", label: "Wait a day to see if the river drops", role: "doctor" });
+    o.push({ id: "wait", label: "Wait a day for the river to drop", role: "doctor" });
     return o.map(function (x) { x.ok = meets(state, x.requires); return x; });
   }
 
@@ -319,15 +319,15 @@
       report.upset = true;
       var lost = Math.round(state.food * (0.15 + 0.25 * rand(state)) * scale);
       state.food -= lost; report.changes.push({ stat: "food", amount: -lost });
-      var text = "The wagon tips in the current. You lose " + lost + " lb of food";
-      if (rand(state) < 0.4 * scale && state.oxen > 2) { state.oxen--; report.changes.push({ stat: "oxen", amount: -1 }); text += " and an ox is swept away"; }
+      var text = "The strong current tips the wagon. You lose " + lost + " pounds of food";
+      if (rand(state) < 0.4 * scale && state.oxen > 2) { state.oxen--; report.changes.push({ stat: "oxen", amount: -1 }); text += " and the river carries off an ox"; }
       if (rand(state) < 0.3 * scale && state.parts > 0) { state.parts--; report.changes.push({ stat: "parts", amount: -1 }); }
       text += ".";
       if (rand(state) < 0.3 * scale) {
         var living = alive(state);
         var who = pick(state, living);
-        if (state.deaths < W.config.maxDeaths && living.length > 2) { die(state, who, "drowning", report); text += " " + who.name + " is pulled under by the current."; }
-        else { who.sick = { cause: "a near drowning", days: 10 }; report.sick.push(who); text += " " + who.name + " is pulled out of the water half-drowned."; }
+        if (state.deaths < W.config.maxDeaths && living.length > 2) { die(state, who, "drowning", report); text += " " + who.name + " drowns in the river."; }
+        else { who.sick = { cause: "a near drowning", days: 10 }; report.sick.push(who); text += " " + who.name + " almost drowns but is pulled out alive."; }
       }
       return text;
     }
@@ -339,12 +339,12 @@
       return report;
     }
     if (how === "ford") {
-      if (depth < 2.5) report.result = "The water barely reaches the wagon bed. You ford easily.";
-      else if (depth < 3) { waitDays(1); report.result = "Water slops into the wagon. You lose a day drying everything out."; }
-      else { tip = Math.min(0.85, 0.25 + (depth - 3) * 0.25); report.result = rand(state) < tip ? upset(1) : "The water is over the wheels, but the oxen keep their footing. You make it across."; }
+      if (depth < 2.5) report.result = "The water barely reaches the bottom of the wagon. You drive across easily.";
+      else if (depth < 3) { waitDays(1); report.result = "Water splashes into the wagon. You lose a day drying everything out."; }
+      else { tip = Math.min(0.85, 0.25 + (depth - 3) * 0.25); report.result = rand(state) < tip ? upset(1) : "The water covers the wheels, but the oxen stay on their feet. You make it across."; }
     } else if (how === "float") {
       tip = Math.min(0.7, 0.08 + r.current * 0.25 + r.width / 8000);
-      report.result = depth < 1.5 ? "Too shallow to float; you drag the wagon across." : rand(state) < tip ? upset(0.8) : "Sealed with tar, the wagon floats like a boat. You pole across safely.";
+      report.result = depth < 1.5 ? "The river is too shallow to float. You drag the wagon across." : rand(state) < tip ? upset(0.8) : "You seal the cracks with tar so the wagon floats like a boat. You push it across with long poles.";
       waitDays(1);
     } else if (how === "ferry") {
       pay({ money: r.ferry.cost });
@@ -354,7 +354,7 @@
     } else if (how === "guide" || how === "guideCash") {
       pay(how === "guide" ? r.guide.cost : r.guide.alt);
       tip = Math.min(0.7, 0.08 + r.current * 0.25 + r.width / 8000) * 0.2;
-      report.result = rand(state) < tip ? upset(0.5) : "Your guide leads the wagon from island to island on the shallow gravel bars. You cross safely.";
+      report.result = rand(state) < tip ? upset(0.5) : "Your guide knows where the river is shallow. The guide leads the wagon across on strips of gravel. You cross safely.";
       waitDays(1);
     }
     state.log.push({ kind: "river", river: r.name, how: how, result: report.result });
@@ -450,7 +450,7 @@
       report.changes.push({ stat: k, amount: state[k] - before });
     });
     if (state.oxen < 2 && family(state).route === "trail") {
-      report.changes.push({ stat: "oxen", amount: 2 - state.oxen, note: "You trade for worn-out oxen to keep moving." });
+      report.changes.push({ stat: "oxen", amount: 2 - state.oxen, note: "You trade for tired old oxen so you can keep moving." });
       state.oxen = 2;
     }
     if (fx.flags) {

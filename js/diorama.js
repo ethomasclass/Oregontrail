@@ -818,6 +818,30 @@
         s.rotation.y = R() * 6;
         g.add(at(s, p.x, 0, p.z));
       }
+    },
+    // People who live, work, and travel here. See makeFigure for kinds, actor() for acts.
+    people: function (g, n, opt, R, def, taken, seed) { crowd(g, n, opt, R, taken, seed); },
+    riders: function (g, n, opt, R, def, taken, seed) { crowd(g, n, Object.assign({ act: "ride" }, opt), R, taken, seed); },
+    // Another family's wagon rolling along a road behind the trail, with people walking.
+    train: function (g, n, opt, R, def, taken, seed) {
+      var z = opt.z || -6.5, L = SLAB_L / 2 - 8;
+      for (var i = 0; i < n; i++) {
+        var tr = new T.Group(), parts = { oxen: [], walkers: [] };
+        var w = makeWagon(R); w.scale.setScalar(0.85); tr.add(at(w, 2, 0, 0)); parts.wagon = w;
+        [[-1.8, 0.5], [-1.8, -0.5], [-3.9, 0.5], [-3.9, -0.5]].forEach(function (o) {
+          var ox = makeOx(["#7b4f31", "#5f3e28", "#8a5a38", "#6b4a33", "#3f342c"][Math.floor(R() * 5)]);
+          ox.scale.setScalar(0.85); tr.add(at(ox, o[0], 0, o[1])); parts.oxen.push(ox);
+        });
+        var kinds = ["emigrant", "emigrantwoman", "emigrantchild"];
+        for (var k = 0; k < 2 + Math.floor(R() * 2); k++) {
+          var f = makeFigure(kinds[k % 3], R);
+          tr.add(at(f, -3.5 + k * 2.2, 0, z < 0 ? 1.7 : -1.7)); parts.walkers.push({ f: f, ph: R() * 6 });
+        }
+        var x0 = -L + (i / n) * 2 * L + R() * 6;
+        tr.position.set(x0, groundY(x0, z, seed), z);
+        g.add(tr);
+        trainAnim(g, tr, parts, L, z, seed, opt.speed || 1.1);
+      }
     }
   };
 
@@ -879,39 +903,263 @@
     return o;
   }
   var SKIN = { ohio: "#e3bb98", irish: "#ebc6a6", black: "#7a5038", chinese: "#d9ab80" };
-  function makePerson(m, family) {
-    var p = new T.Group(), c = m.color || "#5a5f6b", skin = SKIN[family] || "#d9b08c";
-    var small = m.look === "girl" || m.look === "youth" ? 0.85 : 1;
-    var skirt = m.look === "woman" || m.look === "girl";
-    var legs = [];
-    if (skirt) {
-      p.add(at(cone(0.38, 0.85, 7, c), 0, 0.45, 0));
+  // A person: legs, arms, and a head that can turn. Forward is -x (the way the wagon goes).
+  //   o.skirt, o.coat (torso color), o.pants, o.skin, o.hat, o.hair, o.braids, o.queue,
+  //   o.robe (a blanket or serape over the shoulders), o.scale
+  function buildFigure(o) {
+    var p = new T.Group(), body = new T.Group(), legs = [], arms = [];
+    p.add(body);
+    if (o.skirt) {
+      body.add(at(cone(0.38, 0.85, 7, o.skirtColor || o.coat), 0, 0.45, 0));
     } else {
       [-0.11, 0.11].forEach(function (z, i) {
         var pivot = new T.Group(); pivot.position.set(0, 0.82, z);
-        pivot.add(at(box(0.14, 0.8, 0.14, "#3a3530"), 0, -0.4, 0));
-        p.add(pivot); legs.push({ g: pivot, ph: i ? Math.PI : 0 });
+        pivot.add(at(box(0.14, 0.8, 0.14, o.pants || "#3a3530"), 0, -0.4, 0));
+        body.add(pivot); legs.push({ g: pivot, ph: i ? Math.PI : 0 });
       });
     }
-    p.add(at(box(0.32, 0.55, 0.36, c), 0, 1.1, 0));
-    p.add(at(mesh(new T.IcosahedronGeometry(0.17, 0), skin), 0, 1.55, 0));
-    if (m.look === "man") {
-      p.add(at(cyl(0.3, 0.3, 0.04, 8, "#3a3028"), 0, 1.68, 0));
-      p.add(at(cyl(0.15, 0.17, 0.22, 8, "#3a3028"), 0, 1.8, 0));
-    } else if (m.look === "youth") {
-      p.add(at(cyl(0.18, 0.2, 0.12, 8, "#5a4a3a"), 0, 1.7, 0));
-    } else if (m.look === "laborer") {
-      p.add(at(cone(0.42, 0.26, 10, "#d9c79c"), 0, 1.76, 0));
-      var pole = box(1.6, 0.05, 0.05, "#7a5d42"); pole.rotation.y = Math.PI / 2; p.add(at(pole, 0, 1.38, 0));
-      p.add(at(cyl(0.2, 0.16, 0.25, 6, "#a58a5c"), 0, 1.05, 0.75));
-      p.add(at(cyl(0.2, 0.16, 0.25, 6, "#a58a5c"), 0, 1.05, -0.75));
-    } else {
-      var bon = mesh(new T.SphereGeometry(0.21, 6, 4, 0, Math.PI * 2, 0, Math.PI / 2), m.look === "girl" ? "#efe6d2" : "#e6dcc6");
-      bon.rotation.z = 0.5; p.add(at(bon, 0.04, 1.58, 0));
+    body.add(at(box(0.32, 0.55, 0.36, o.coat), 0, 1.1, 0));
+    if (o.robe) {
+      body.add(at(box(0.4, 0.42, 0.5, o.robe), 0.02, 1.18, 0));
+      if (o.robeStripe) body.add(at(box(0.41, 0.07, 0.51, o.robeStripe), 0.02, 1.12, 0));
     }
-    p.scale.setScalar(small * 1.15);
-    p.userData = { legs: legs };
+    [-0.24, 0.24].forEach(function (z, i) {
+      var pivot = new T.Group(); pivot.position.set(0, 1.33, z);
+      pivot.add(at(box(0.11, 0.5, 0.11, o.sleeve || o.robe || o.coat), 0, -0.25, 0));
+      pivot.add(at(box(0.1, 0.1, 0.1, o.skin), 0, -0.52, 0));
+      body.add(pivot); arms.push({ g: pivot, ph: i ? 0 : Math.PI, side: i ? 1 : -1 });
+    });
+    var head = new T.Group(); head.position.set(0, 1.55, 0); body.add(head);
+    head.add(mesh(new T.IcosahedronGeometry(0.17, 0), o.skin));
+    if (o.hair) head.add(at(box(0.3, 0.12, 0.3, o.hair), 0.03, 0.1, 0));
+    if (o.braids) [-0.15, 0.15].forEach(function (z) { head.add(at(box(0.06, 0.38, 0.06, o.hair || "#1f1a17"), 0.05, -0.2, z)); });
+    if (o.queue) head.add(at(box(0.05, 0.45, 0.05, "#1f1a17"), 0.17, -0.25, 0));
+    var hat = o.hat;
+    if (hat === "top") { head.add(at(cyl(0.3, 0.3, 0.04, 8, o.hatColor || "#3a3028"), 0, 0.13, 0)); head.add(at(cyl(0.15, 0.17, 0.22, 8, o.hatColor || "#3a3028"), 0, 0.25, 0)); }
+    else if (hat === "slouch") { head.add(at(cyl(0.33, 0.33, 0.04, 8, o.hatColor || "#5a4632"), 0, 0.12, 0)); head.add(at(cyl(0.15, 0.18, 0.15, 8, o.hatColor || "#5a4632"), 0, 0.2, 0)); }
+    else if (hat === "wide") { head.add(at(cyl(0.48, 0.48, 0.03, 10, o.hatColor || "#2a2420"), 0, 0.12, 0)); head.add(at(cyl(0.14, 0.16, 0.14, 8, o.hatColor || "#2a2420"), 0, 0.2, 0)); }
+    else if (hat === "cap") { head.add(at(cyl(0.18, 0.2, 0.12, 8, o.hatColor || "#5a4a3a"), 0, 0.15, 0)); }
+    else if (hat === "kepi") { var k = cyl(0.15, 0.19, 0.2, 8, o.hatColor || "#2f3b5c"); k.rotation.z = -0.25; head.add(at(k, 0.02, 0.2, 0)); head.add(at(box(0.14, 0.03, 0.22, "#1f1a17"), -0.17, 0.11, 0)); }
+    else if (hat === "cone") { head.add(at(cone(0.42, 0.26, 10, o.hatColor || "#d9c79c"), 0, 0.21, 0)); }
+    else if (hat === "basket") { head.add(at(cyl(0.14, 0.2, 0.16, 8, o.hatColor || "#b89a62"), 0, 0.13, 0)); }
+    else if (hat === "bonnet") { var bon = mesh(new T.SphereGeometry(0.21, 6, 4, 0, Math.PI * 2, 0, Math.PI / 2), o.hatColor || "#e6dcc6"); bon.rotation.z = 0.5; head.add(at(bon, 0.04, 0.03, 0)); }
+    p.scale.setScalar((o.scale || 1) * 1.15);
+    p.userData = { legs: legs, arms: arms, head: head, body: body };
     return p;
+  }
+  function makePerson(m, family) {
+    var c = m.color || "#5a5f6b", look = m.look;
+    var o = { coat: c, skin: SKIN[family] || "#d9b08c", skirt: look === "woman" || look === "girl", scale: look === "girl" || look === "youth" ? 0.85 : 1 };
+    if (look === "man") o.hat = "top";
+    else if (look === "youth") o.hat = "cap";
+    else if (look === "laborer") { o.hat = "cone"; o.queue = true; }
+    else { o.hat = "bonnet"; o.hatColor = look === "girl" ? "#efe6d2" : "#e6dcc6"; }
+    var p = buildFigure(o);
+    if (look === "laborer") {   // a carrying pole with two baskets
+      var pole = box(1.6, 0.05, 0.05, "#7a5d42"); pole.rotation.y = Math.PI / 2; p.userData.body.add(at(pole, 0, 1.38, 0));
+      p.userData.body.add(at(cyl(0.2, 0.16, 0.25, 6, "#a58a5c"), 0, 1.05, 0.75));
+      p.userData.body.add(at(cyl(0.2, 0.16, 0.25, 6, "#a58a5c"), 0, 1.05, -0.75));
+      p.userData.carry = true;
+    }
+    return p;
+  }
+  // Everyone else on the trail. Kinds:
+  //   emigrant, emigrantwoman, emigrantchild   other families heading west
+  //   native, nativewoman      Plains and Great Basin nations (Pawnee, Lakota, Cheyenne, Shoshone)
+  //   kalapuya, kalapuyawoman  the Native people of the Willamette Valley
+  //   soldier, trader, townsman, townswoman, miner, chineseminer, californio, vaquero, dockworker
+  var NATIVE_SKIN = ["#9a6444", "#a46d4a", "#8d5a3c"], LIGHT_SKIN = ["#e3bb98", "#ebc6a6", "#d9b08c"];
+  var CALICO = ["#7a4f6b", "#5f6f8a", "#8a5a3a", "#6b7a52", "#9a6a4a", "#4f5f7a"];
+  function pick(R, a) { return a[Math.floor(R() * a.length)]; }
+  function makeFigure(kind, R) {
+    var o;
+    switch (kind) {
+      case "emigrant": o = { coat: pick(R, CALICO), pants: "#3a3530", skin: pick(R, LIGHT_SKIN.concat(["#7a5038"])), hat: pick(R, ["top", "slouch", "slouch"]) }; break;
+      case "emigrantwoman": o = { skirt: true, coat: pick(R, CALICO), skin: pick(R, LIGHT_SKIN), hat: "bonnet", hatColor: pick(R, ["#e6dcc6", "#d9c8a8", "#c9b8d0"]) }; break;
+      case "emigrantchild": o = { skirt: R() < 0.5, coat: pick(R, CALICO), skin: pick(R, LIGHT_SKIN), hat: R() < 0.5 ? "cap" : null, hair: "#6a4a2a", scale: 0.72 }; break;
+      case "native": o = { coat: "#a5845c", sleeve: "#a5845c", pants: "#8a6a48", skin: pick(R, NATIVE_SKIN), hair: "#1f1a17", braids: true,
+        robe: R() < 0.6 ? pick(R, ["#e8dcc0", "#7a4a32", "#5f3e2c"]) : null, robeStripe: R() < 0.5 ? pick(R, ["#a5402f", "#3d5a80", "#c9a54e"]) : null }; break;
+      case "nativewoman": o = { skirt: true, coat: "#b89a72", skirtColor: "#a88a62", skin: pick(R, NATIVE_SKIN), hair: "#1f1a17", braids: true,
+        robe: R() < 0.5 ? pick(R, ["#7a4a32", "#3d5a80", "#a5402f"]) : null }; break;
+      case "kalapuya": o = { coat: "#9a7a52", pants: "#7a5d42", skin: pick(R, NATIVE_SKIN), hair: "#1f1a17", robe: "#8a6c4c" }; break;
+      case "kalapuyawoman": o = { skirt: true, coat: "#a5845c", skirtColor: "#8a6c4c", skin: pick(R, NATIVE_SKIN), hair: "#1f1a17", hat: "basket" }; break;
+      case "soldier": o = { coat: "#2f3b5c", pants: "#6d86a8", skin: pick(R, LIGHT_SKIN), hat: "kepi" }; break;
+      case "trader": o = { coat: "#a5845c", pants: "#5a4632", skin: pick(R, LIGHT_SKIN), hat: "slouch", hair: "#4a3424" }; break;
+      case "townsman": o = { coat: pick(R, ["#3a3f4a", "#4a3a30", "#2f2f35"]), pants: "#3a3530", skin: pick(R, LIGHT_SKIN.concat(["#7a5038"])), hat: "top" }; break;
+      case "townswoman": o = { skirt: true, coat: pick(R, CALICO), skin: pick(R, LIGHT_SKIN), hat: "bonnet" }; break;
+      case "miner": o = { coat: pick(R, ["#a5402f", "#3d5a80", "#8a5a3a", "#6b6b6b"]), pants: pick(R, ["#4a4a52", "#5a4632"]), skin: pick(R, LIGHT_SKIN.concat(["#7a5038", "#b58a64"])), hat: "slouch", hatColor: pick(R, ["#5a4632", "#3a3028", "#7a6a52"]) }; break;
+      case "chineseminer": o = { coat: pick(R, ["#4a6a8a", "#3d4f6a", "#5f6f7a"]), pants: "#2f3440", skin: "#d9ab80", hat: "cone", queue: true }; break;
+      case "californio": o = { coat: "#2a2420", pants: "#2a2420", skin: pick(R, ["#c9966c", "#b58a64", "#d9ab80"]), hat: "wide", robe: pick(R, ["#a5402f", "#c9a54e", "#3d5a80"]), robeStripe: "#efe6d2" }; break;
+      case "vaquero": o = { coat: "#efe6d2", pants: "#4a3a2c", skin: pick(R, ["#c9966c", "#b58a64", "#9a6444"]), hat: "wide", hatColor: "#5a4632", robe: pick(R, ["#a5402f", "#c9a54e"]), robeStripe: "#2a2420" }; break;
+      case "dockworker": o = { coat: pick(R, ["#efe6d2", "#c9c2b0", "#4a6a8a"]), pants: "#3a3f4a", skin: pick(R, LIGHT_SKIN.concat(["#d9ab80", "#7a5038"])), hat: pick(R, ["cap", "slouch", "cone"]) }; break;
+      default: o = { coat: pick(R, CALICO), skin: pick(R, LIGHT_SKIN), hat: "slouch" };
+    }
+    if (o.hat === "cone" && kind === "dockworker") o.queue = true;
+    return buildFigure(o);
+  }
+  function makeHorse(col) {
+    var h = new T.Group(), body = new T.Group();
+    body.add(at(box(1.7, 0.6, 0.55, col), 0, 1.25, 0));
+    var neck = box(0.35, 0.8, 0.32, col); neck.rotation.z = -0.6; body.add(at(neck, -0.95, 1.7, 0));
+    var head = new T.Group(); head.position.set(-1.25, 2.0, 0);
+    var skull = box(0.55, 0.25, 0.26, shade(col, 0.9)); skull.rotation.z = 0.5; head.add(at(skull, -0.12, -0.12, 0));
+    head.add(at(box(0.08, 0.16, 0.06, shade(col, 0.8)), 0.05, 0.1, 0.08)); head.add(at(box(0.08, 0.16, 0.06, shade(col, 0.8)), 0.05, 0.1, -0.08));
+    body.add(head);
+    var tail = box(0.12, 0.6, 0.12, shade(col, 0.6)); tail.rotation.z = 0.4; body.add(at(tail, 0.95, 1.15, 0));
+    h.add(body);
+    var legs = [];
+    [[-0.65, 0.18], [-0.65, -0.18], [0.65, 0.18], [0.65, -0.18]].forEach(function (p, i) {
+      var pivot = new T.Group(); pivot.position.set(p[0], 0.95, p[1]);
+      pivot.add(at(box(0.14, 0.95, 0.14, shade(col, 0.8)), 0, -0.47, 0));
+      h.add(pivot); legs.push({ g: pivot, ph: (i === 0 || i === 3) ? 0 : Math.PI });
+    });
+    h.userData = { legs: legs, body: body, head: head, tail: tail };
+    return h;
+  }
+
+  // ------------------------------------------------------------------ people at work and play
+  // Acts: idle (looks around, shifts weight), talk (gestures), walk (strolls back and forth),
+  // work (swings a shovel or axe), pan (kneels and swirls a gold pan), sit (by a fire),
+  // wave (greets the wagon), carry (walks with a load), ride (on horseback), dance.
+  function faceTo(fig, dx, dz) { return Math.atan2(dz, -dx); }
+  function swing(u, walk, stride) {
+    u.legs.forEach(function (l) { l.g.rotation.z = walk * 0.6 * Math.sin(stride + l.ph); });
+    u.arms.forEach(function (a) { a.g.rotation.z = walk * 0.5 * Math.sin(stride + a.ph); a.g.rotation.x = 0; });
+  }
+  function actor(fig, act, R, opt) {
+    var u = fig.userData, t = R() * 20, ph = R() * 6.28, speed = (opt.speed || 1.2) * (0.8 + R() * 0.4);
+    var home = fig.position.clone(), range = opt.range || 6 + R() * 6, dir = R() < 0.5 ? 1 : -1, yaw = fig.rotation.y, pause = 0;
+    var look = 0, lookTo = 0, lookT = 0, base = fig.rotation.y;
+    if (act === "work" || act === "pan") {
+      var tool = new T.Group();
+      if (act === "work") { tool.add(at(box(0.05, 1.1, 0.05, "#6b5038"), 0, -0.55, 0)); tool.add(at(box(0.28, 0.06, 0.2, "#6a6a6a"), 0, -1.1, 0)); }
+      else tool.add(at(cyl(0.26, 0.18, 0.06, 10, "#5a5a5a"), -0.3, -0.55, -0.24));
+      u.arms[1].g.add(tool);
+    }
+    if (act === "carry") { u.body.add(at(box(0.5, 0.35, 0.45, pick(R, ["#8a6a48", "#efe6d2", "#a58a5c"])), 0, 1.98, 0)); }
+    if (act === "sit") { u.legs.forEach(function (l) { l.g.rotation.z = -1.4; }); fig.position.y -= 0.55; }
+    if (act === "pan") { u.legs.forEach(function (l, i) { l.g.rotation.z = i ? -1.5 : 0.2; }); fig.position.y -= 0.3; }
+    return function (dt, groundAt) {
+      t += dt;
+      lookT -= dt;
+      if (lookT <= 0) { lookT = 2 + R() * 4; lookTo = (R() - 0.5) * 1.6; }
+      look += (lookTo - look) * Math.min(1, dt * 2);
+      if (act === "walk" || act === "carry") {
+        if (pause > 0) { pause -= dt; swing(u, 0, 0); u.head.rotation.y = look; return; }
+        var x = fig.position.x + dir * speed * dt;
+        if (Math.abs(x - home.x) > range) { dir = -dir; pause = 1 + R() * 3; }
+        else fig.position.x = x;
+        if (groundAt) fig.position.y = groundAt(fig.position.x, fig.position.z);
+        var want = faceTo(fig, dir, 0);
+        var d = want - fig.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d));
+        fig.rotation.y += d * Math.min(1, dt * 5);
+        swing(u, 1, t * speed * 5.5 + ph);
+        if (act === "carry") u.arms.forEach(function (a) { a.g.rotation.x = a.side * -2.6; a.g.rotation.z = 0; });
+        u.body.position.y = 0.05 * Math.abs(Math.sin(t * speed * 5.5 + ph));
+        u.head.rotation.y = look * 0.3;
+      } else if (act === "work") {
+        var c = Math.sin(t * 3 + ph);
+        u.arms.forEach(function (a) { a.g.rotation.z = -0.6 - 0.9 * Math.max(0, c); });
+        u.body.rotation.z = 0.25 * Math.max(0, c);
+      } else if (act === "pan") {
+        u.arms.forEach(function (a, i) { a.g.rotation.z = -1.0 + 0.15 * Math.sin(t * 4 + i); a.g.rotation.x = 0.12 * Math.cos(t * 4 + i); });
+        u.body.rotation.z = 0.35;
+        u.head.rotation.z = -0.3;
+      } else if (act === "wave") {
+        var w = u.arms[1];
+        w.g.rotation.x = -2.5 + 0.35 * Math.sin(t * 7);
+        u.arms[0].g.rotation.z = 0.05 * Math.sin(t);
+        u.head.rotation.y = 0.2 * Math.sin(t * 0.7);
+      } else if (act === "dance") {
+        swing(u, 1, t * 6 + ph);
+        u.body.position.y = 0.12 * Math.abs(Math.sin(t * 6 + ph));
+        fig.rotation.y = base + 0.6 * Math.sin(t * 1.5 + ph);
+      } else {
+        // idle, talk, sit: breathe, look around, gesture now and then
+        u.body.scale.y = 1 + 0.015 * Math.sin(t * 2 + ph);
+        u.head.rotation.y = look;
+        var g = act === "talk" || act === "sit" ? Math.max(0, Math.sin(t * 1.3 + ph)) : 0;
+        u.arms[1].g.rotation.z = -1.1 * g + 0.04 * Math.sin(t * 1.7);
+        u.arms[1].g.rotation.x = -0.3 * g * Math.sin(t * 5);
+        u.arms[0].g.rotation.z = 0.04 * Math.sin(t * 1.5 + 1);
+        if (act !== "sit") u.body.rotation.z = 0.03 * Math.sin(t * 0.6 + ph);
+      }
+    };
+  }
+  function rider(kind, R) {
+    var g = new T.Group(), horse = makeHorse(pick(R, ["#6b4a33", "#3f342c", "#8a5a38", "#c9b79a", "#5f3e28"]));
+    g.add(horse);
+    var f = makeFigure(kind, R);
+    f.userData.legs.forEach(function (l, i) { l.g.rotation.x = i ? 0.5 : -0.5; });
+    g.add(at(f, -0.05, 0.75, 0));
+    g.userData = { horse: horse, rider: f };
+    return g;
+  }
+  function crowd(g, n, opt, R, taken, seed) {
+    var kinds = [].concat(opt.kinds || opt.kind || "emigrant"), act = opt.act || "idle";
+    var spread = opt.spread || (act === "walk" || act === "ride" ? 4 : 3.2);
+    var c = opt.x !== undefined && opt.z !== undefined ? { x: opt.x, z: opt.z } : placeIn(R, { side: opt.side, x: opt.x }, taken, spread);
+    var list = [], ground = function (x, z) { return groundY(x, z, seed); };
+    for (var i = 0; i < n; i++) {
+      var x = c.x + (R() - 0.5) * (opt.xspread || spread) * 2, z = c.z + (R() - 0.5) * (opt.zspread || spread);
+      if (opt.ring) { var ra = i / n * 6.28 + 0.4; x = c.x + Math.cos(ra) * opt.ring; z = c.z + Math.sin(ra) * opt.ring; }
+      else if (!opt.onTrail && Math.abs(z) < 3.2) z = (c.z < 0 ? -1 : 1) * (3.2 + R() * 2);
+      var kind = kinds[i % kinds.length], a = Array.isArray(opt.acts) ? opt.acts[i % opt.acts.length] : act, fig, fn;
+      if (a === "ride") {
+        fig = rider(kind, R);
+        fig.position.set(x, ground(x, z), z);
+        fig.rotation.y = R() < 0.5 ? 0 : Math.PI;
+        fn = rideAnim(fig, R, opt);
+      } else {
+        fig = makeFigure(kind, R);
+        fig.position.set(x, ground(x, z), z);
+        // face each other in a group, the fire, the river, or the trail
+        var fx = opt.faceX !== undefined ? opt.faceX : c.x, fz = opt.faceZ !== undefined ? opt.faceZ : (a === "wave" ? 0 : c.z);
+        fig.rotation.y = n > 1 || opt.faceZ !== undefined ? faceTo(fig, fx - x + 0.001, fz - z) : R() * 6.28;
+        fn = actor(fig, a, R, opt);
+      }
+      g.add(fig);
+      list.push(fn);
+    }
+    g.userData.anim.push(function (dt) { list.forEach(function (fn) { fn(dt, ground); }); });
+  }
+  function rideAnim(fig, R, opt) {
+    var u = fig.userData, h = u.horse.userData, t = R() * 10, home = fig.position.x, range = opt.range || 10 + R() * 8;
+    var dir = fig.rotation.y === 0 ? 1 : -1, speed = (opt.speed || 2.2) * (0.8 + R() * 0.4), pause = 0;
+    return function (dt, ground) {
+      t += dt;
+      var moving = pause <= 0;
+      if (moving) {
+        var x = fig.position.x - dir * speed * dt;
+        if (Math.abs(x - home) > range) { pause = 2 + R() * 3; dir = -dir; }
+        else fig.position.x = x;
+      } else pause -= dt;
+      var want = dir > 0 ? 0 : Math.PI, d = Math.atan2(Math.sin(want - fig.rotation.y), Math.cos(want - fig.rotation.y));
+      fig.rotation.y += d * Math.min(1, dt * 3);
+      if (ground) fig.position.y = ground(fig.position.x, fig.position.z);
+      var s = t * speed * 4;
+      h.legs.forEach(function (l) { l.g.rotation.z = (moving ? 0.5 : 0) * Math.sin(s + l.ph); });
+      h.body.position.y = moving ? 0.06 * Math.abs(Math.sin(s)) : 0;
+      h.head.rotation.z = moving ? 0.08 * Math.sin(s) : 0.3 + 0.25 * Math.sin(t * 0.7);
+      h.tail.rotation.x = 0.2 * Math.sin(t * 2);
+      u.rider.position.y = 0.75 + (moving ? 0.07 * Math.abs(Math.sin(s)) : 0);
+      u.rider.userData.head.rotation.y = 0.4 * Math.sin(t * 0.4);
+    };
+  }
+  function trainAnim(g, tr, parts, L, z, seed, speed) {
+    var t = Math.random() * 10, fade = 1;
+    g.userData.anim.push(function (dt) {
+      t += dt;
+      var x = tr.position.x - speed * dt;
+      if (x < -L) { fade = 0; x = L; }
+      fade = Math.min(1, fade + dt * 0.8);
+      tr.scale.setScalar(Math.min(fade, Math.max(0.01, (x + L) / 4)));
+      tr.position.x = x; tr.position.y = groundY(x, z, seed);
+      var stride = t * 6;
+      parts.oxen.forEach(function (o, i) { o.userData.legs.forEach(function (l) { l.g.rotation.z = 0.45 * Math.sin(stride + l.ph + i); }); });
+      parts.wagon.userData.wheels.forEach(function (w) { w.rotation.z += dt * 4.5; });
+      parts.walkers.forEach(function (w) { swing(w.f.userData, 1, stride + w.ph); });
+    });
   }
   function makeShip() {
     var s = new T.Group();
@@ -935,6 +1183,7 @@
   var rig = { kind: null, wagon: null, oxen: [], people: [], ship: null };
   function buildRig(vehicle, party, family) {
     while (rigG.children.length) rigG.remove(rigG.children[0]);
+    rigG.add(guestG);
     rig = { kind: vehicle, wagon: null, oxen: [], people: [], ship: null };
     if (vehicle === "none") return;
     if (vehicle === "ship") {
@@ -962,6 +1211,27 @@
       var z = vehicle === "wagon" ? 2.1 + (i % 2) * 0.5 : (i % 2 ? 0.7 : -0.7);
       rigG.add(at(p, x, 0, z));
       rig.people.push({ p: p, ph: i * 1.3 });
+    });
+  }
+
+  // Another family stands across the trail from yours when your paths cross.
+  var guestG = new T.Group(), guests = [], guestKey = null;
+  rigG.add(guestG);
+  function setGuests(familyKey) {
+    if ((familyKey || null) === guestKey) return;
+    guestKey = familyKey || null;
+    while (guestG.children.length) guestG.remove(guestG.children[0]);
+    guests = [];
+    var fam = familyKey && W.families && (W.families[familyKey] || (Array.isArray(W.families) && W.families.filter(function (f) { return f.id === familyKey; })[0]));
+    if (!fam) return;
+    var R = rng(11);
+    (fam.members || []).forEach(function (m, i) {
+      var f = makePerson(m, familyKey);
+      var x = -5 + i * 1.9, z = -2.6 - (i % 2) * 0.7;
+      f.position.set(x, 0, z);
+      f.rotation.y = faceTo(f, 0.6, 3);
+      guestG.add(f);
+      guests.push(actor(f, i === 0 ? "wave" : i === 1 ? "talk" : "idle", R, {}));
     });
   }
 
@@ -1109,6 +1379,7 @@
     var rk = rigKey(opts);
     if (rk !== current.rigKey) { buildRig(opts.vehicle || "wagon", opts.party, opts.family); current.rigKey = rk; }
     view.showcase = !!opts.showcase;
+    setGuests(opts.guests);
     if (current.key !== key || opts.force || !current.slab) {
       if (current.slab) disposeSlab(current.slab);
       current.slab = newSlab(key, opts.river);
@@ -1137,6 +1408,7 @@
     var rk = rigKey(opts);
     if (rk !== current.rigKey) { buildRig(opts.vehicle || "wagon", opts.party, opts.family); current.rigKey = rk; }
     view.showcase = false;
+    setGuests(null);
     var next = newSlab(key, opts.river);
     var old = current.slab, def = W.scenes[key] || W.scenes.prairie;
     var oldStart = old ? old.position.x : 0, span = SLAB_L + 1.5 - oldStart;
@@ -1418,10 +1690,18 @@
       rig.wagon.position.y = walk * 0.04 * Math.sin(stride * 2);
     }
     rig.people.forEach(function (p) {
-      p.p.userData.legs.forEach(function (l) { l.g.rotation.z = walk * 0.6 * Math.sin(stride + l.ph + p.ph); });
+      var u = p.p.userData;
+      if (u.reacting) return;
+      u.legs.forEach(function (l) { l.g.rotation.z = walk * 0.6 * Math.sin(stride + l.ph + p.ph); });
+      u.arms.forEach(function (a) {
+        a.g.rotation.z = u.carry ? 0 : walk * 0.45 * Math.sin(stride + a.ph + p.ph) + (1 - walk) * 0.04 * Math.sin(clock * 1.4 + p.ph + a.ph);
+      });
+      u.head.rotation.y = (1 - walk) * 0.5 * Math.sin(clock * 0.35 + p.ph * 2);
+      u.body.scale.y = 1 + (1 - walk) * 0.015 * Math.sin(clock * 2 + p.ph);
       p.p.position.y = walk * 0.06 * Math.abs(Math.sin(stride + p.ph));
       p.p.rotation.z = walk * 0.06;
     });
+    guests.forEach(function (fn) { fn(dt); });
     if (rig.ship) {
       rig.ship.position.y = 0.25 * Math.sin(clock * 1.1) + 0.3;
       rig.ship.rotation.x = 0.05 * Math.sin(clock * 0.9);

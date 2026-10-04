@@ -130,7 +130,7 @@
     screenName = "families";
     show(
       '<div class="card wide"><div class="eyebrow">Step 1</div><h2>Which family did your teacher give you?</h2>' +
-      "<p>Every group travels west in the same years, under different rules. Pick the family on your assignment.</p></div>" +
+      "<p>Every group travels west at the same time, but each family faces different rules. Pick the family your teacher assigned you.</p></div>" +
       '<div class="grid" style="margin-top:18px">' +
       W.families.map(function (f) {
         return '<button class="family-card" data-family="' + f.id + '"><strong>' + esc(f.name) + "</strong>" +
@@ -161,7 +161,7 @@
     screenName = "roles";
     show(
       '<div class="card wide"><div class="eyebrow">Step 2</div><h2>Claim your jobs</h2>' +
-      "<p>One laptop, four jobs. Each of you plays one member of the family: name your character, and the game will call on you by job. Big decisions need a group vote.</p>" +
+      "<p>One laptop, four jobs. Each of you plays one person in the family. Give your character a name. The game will call on you by your job. Big decisions need a group vote.</p>" +
       '<div class="portraits">' + S.members.map(function (m) {
         var r = role(m.role);
         return '<div class="portrait"><div class="face">' + esc(m.name[0]) + '</div><div class="role-name">' + esc(r.name) + "</div>" +
@@ -195,7 +195,7 @@
     show(
       '<div class="poster"><div class="chips" style="justify-content:center">' + draftChip(P) + "</div>" +
       '<div class="big">' + esc(P.headline) + "</div>" +
-      (P.quote ? "<blockquote>“" + esc(P.quote) + "”</blockquote><div>" + esc(P.speaker) + "</div>" : "") +
+      (P.quote ? "<blockquote>" + quoteHtml(P.quotePlain, P.quote) + "</blockquote><div>" + esc(P.speaker) + "</div>" : "") +
       '<div class="rule"></div>' + P.lines.map(function (l) { return '<div class="line">' + esc(l) + "</div>"; }).join("") +
       '<div class="rule"></div><p><em>' + esc(P.question) + "</em></p>" +
       '<button class="primary" id="go" data-autofocus>' + (sea ? "Go to the harbor" : "Go to the outfitters") + "</button></div>"
@@ -307,30 +307,30 @@
     if (next) scene.preload(E.place(next.at).scene);
     scene.dim("soft");
     var sea = vehicle() === "ship";
-    var notes = trip ? trip.notes.concat(trip.skipped && trip.skipped.length ? ["Running behind: the wagon presses on past " + trip.skipped.join(" and ") + "."] : []) : [];
+    var notes = trip ? trip.notes.concat(trip.skipped && trip.skipped.length ? ["Running late: to save time, the wagon goes right past " + trip.skipped.join(" and ") + "."] : []) : [];
     var here = E.place(S.place) || {};
     var voices = (W.voices || {})[S.place] || [];
     var st = E.settings(S);
     var opts = [
       { id: "go", label: sea ? "Continue the voyage" : "Continue on the trail", role: null },
-      { id: "pace", label: "Change pace", role: "navigator", hide: sea },
-      { id: "rations", label: "Change food rations", role: "quartermaster" },
+      { id: "pace", label: "Change pace (how hard you travel)", role: "navigator", hide: sea },
+      { id: "rations", label: "Change rations (how much you eat)", role: "quartermaster" },
       { id: "rest", label: "Stop to rest", role: "doctor", hide: sea },
       { id: "talk", label: "Talk to people", role: "journal", hide: !voices.length },
-      { id: "buy", label: "Buy 100 lb of food ($" + Math.round((here.market || 0) * 100) + ")", role: "quartermaster", hide: !here.market }
+      { id: "buy", label: "Buy 100 pounds of food ($" + Math.round((here.market || 0) * 100) + ")", role: "quartermaster", hide: !here.market }
     ].filter(function (o) { return !o.hide; });
     var panelHtml = "";
     if (sub === "pace") panelHtml = setting("pace", E.PACES, S.pace);
     if (sub === "rations") panelHtml = setting("rations", E.RATIONS, S.rations);
-    if (sub === "rest") panelHtml = '<div class="sub"><p>How many days? Resting lets health recover, and nobody new falls sick, but the food keeps going.</p>' +
+    if (sub === "rest") panelHtml = '<div class="sub"><p>How many days? Resting helps sick people get better, and nobody new gets sick. But you still eat food every day.</p>' +
       '<div class="actions">' + [1, 2, 3].map(function (n) { return '<button data-rest="' + n + '">' + n + " day" + (n > 1 ? "s" : "") + "</button>"; }).join("") + "</div></div>";
     if (sub === "talk") panelHtml = voiceHtml(voices);
     show(
       '<div class="card sizeup">' +
       '<div class="eyebrow">' + esc((here.name || "").split(":")[0]) + " · " + E.formatDate(E.dateOf(S)) + "</div>" +
-      "<h2>Size up the situation</h2>" +
+      "<h2>Check on your family</h2>" +
       notes.map(function (n) { return '<p class="problem">' + esc(n) + "</p>"; }).join("") +
-      '<p class="status">Health: <strong>' + cap(st.health) + "</strong> · Pace: <strong>" + st.pace + "</strong> · Rations: <strong>" + st.rations +
+      '<p class="status">Health: <strong>' + cap(st.health) + "</strong> · Pace: <strong>" + st.pace + "</strong> · Food rations: <strong>" + st.rations +
       "</strong> · Food lasts <strong>" + st.foodDays + " days</strong>" +
       (next ? " · Next: <strong>" + esc(E.place(next.at).name.split(":")[0]) + "</strong>" : "") + "</p>" +
       '<div class="choices menu">' + opts.map(function (o, i) {
@@ -367,11 +367,19 @@
     }).join("") + "</div></div>";
   }
 
+  // A real quote stays word for word. When it has a modern version ("plain"), students
+  // read that first and can open the exact original words.
+  function quoteHtml(plain, original) {
+    if (!plain) return "“" + esc(original) + "”";
+    return '<div class="plain-quote">' + esc(plain) + "</div>" +
+      '<details class="original"><summary>Read the exact original words</summary>“' + esc(original) + "”</details>";
+  }
+
   function voiceHtml(voices) {
     var v = voices[(S.talk || 0) % voices.length];
     return '<div class="sub voice"><div class="chips"><span class="chip lead">Read aloud: ' + roleLabel("journal") + "</span>" +
       (v.quote ? '<span class="chip trail">Real words, ' + v.year + "</span>" : '<span class="chip">A voice based on historical accounts</span>') + "</div>" +
-      '<div class="diary">“' + esc(v.text) + '”<div class="who">' + esc(v.who) + (v.quote ? " · " + esc(v.source) : "") + "</div></div>" +
+      '<div class="diary">' + quoteHtml(v.quote && v.plain ? v.plain : null, v.text, true) + '<div class="who">' + esc(v.who) + (v.quote ? " · " + esc(v.source) : "") + "</div></div>" +
       (voices.length > 1 ? '<div class="actions"><button id="next-voice">Talk to someone else</button></div>' : "") + "</div>";
   }
 
@@ -587,15 +595,23 @@
     var t = S._trip;
     delete S._trip;
     if (!t) return "";
-    var notes = t.notes.concat(t.skipped.length ? ["Running behind: you press on past " + t.skipped.join(" and ") + " without stopping."] : []);
+    var notes = t.notes.concat(t.skipped.length ? ["Running late: to save time, you go right past " + t.skipped.join(" and ") + " without stopping."] : []);
     return notes.map(function (n) { return '<p class="problem">' + esc(n) + "</p>"; }).join("");
   }
 
+  // When families cross paths, the other family shows up beside your wagon.
+  var GUESTS = {
+    "cross-ohio-doyles": "irish", "cross-bell-doyles": "irish",
+    "cross-ohio-bells": "black", "cross-irish-bells": "black",
+    "cross-chan-tax": "chinese", "cross-chan-overlanders": "ohio"
+  };
   function cardScreen(c) {
     screenName = "card";
     // A card can bring its own painting (the rancho, the evening camp).
     if (c.art && W.scenes[c.art] && c.art !== E.place(S.place).scene) {
-      scene.set(c.art, sceneOpts());
+      scene.set(c.art, sceneOpts({ guests: GUESTS[c.id] }));
+    } else if (GUESTS[c.id]) {
+      setScene(S.place, { guests: GUESTS[c.id] });
     }
     scene.dim("strong");
     var list = E.choices(S, c);
@@ -659,7 +675,7 @@
     var r = W.rivers[b.river];
     scene.dim("soft");
     var list = E.riverOptions(S, r), depth = E.riverDepth(S, r);
-    var danger = depth >= 3 ? "Too deep to ford safely." : depth >= 2.5 ? "Fording will soak the supplies." : "Shallow enough to ford.";
+    var danger = depth >= 3 ? "Too deep to drive across safely." : depth >= 2.5 ? "Driving across will soak your supplies." : "Shallow enough to drive across.";
     show(
       '<div class="card river-card"><div class="chips"><span class="chip lead">Mouse: ' + roleLabel("navigator") + '</span><span class="chip vote">Group vote</span>' + draftChip(r) + "</div>" +
       '<div class="eyebrow">' + esc(E.place(S.place).name) + " \u00b7 " + E.formatDate(E.dateOf(S)) + "</div>" +
@@ -702,7 +718,7 @@
     show(
       '<div class="card narrow" style="margin-top:auto"><div class="chips"><span class="chip lead">Read aloud: ' + roleLabel("journal") + "</span>" + draftChip(L) + "</div>" +
       "<h2>" + esc(L.title) + "</h2>" + tripNotes() + "<p>" + esc(L.text) + "</p>" +
-      '<div class="diary">' + (L.quote ? "“" + esc(L.quote) + "”" : "<em>A real diary excerpt goes here once it is verified.</em>") +
+      '<div class="diary">' + (L.quote ? quoteHtml(L.quotePlain, L.quote) : "<em>A real diary excerpt goes here once it is verified.</em>") +
       (L.speaker ? '<div class="who">' + esc(L.speaker) + "</div>" : "") + "</div>" +
       '<div class="actions"><button class="primary" id="go" data-autofocus>Continue</button></div></div>',
       { panel: true, top: false }
