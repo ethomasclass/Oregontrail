@@ -62,7 +62,7 @@ fs.mkdirSync(out, { recursive: true });
     await shot("05-store-filled");
     await page.click("#done");
     var n = 0, endedShot = false;
-    var evShots = 0, shotMg = 0;
+    var evShots = 0, shotMg = 0, sizeShots = 0;
     while (n++ < 1500) {
       await page.waitForTimeout(150);
       if (await page.$(".ledger")) { await shot("99-ending"); endedShot = true; break; }
@@ -80,6 +80,14 @@ fs.mkdirSync(out, { recursive: true });
         await page.waitForTimeout(900);
         if (evShots++ < 3) await shot("50-event-" + evShots);
         await ev.click();
+        continue;
+      }
+      var trail = await page.$("[data-opt='go']");
+      if (trail) {
+        if (sizeShots++ < 2) await shot("40-sizeup-" + sizeShots);
+        await trail.click();
+        await page.waitForTimeout(1500);
+        if (sizeShots < 3) await shot("41-moving-" + sizeShots);
         continue;
       }
       var go = await page.$("#go");
