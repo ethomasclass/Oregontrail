@@ -980,8 +980,10 @@
   }
 
   // Slide the next place in under the wagon while it walks.
-  function travelTo(key, opts, ms) {
-    opts = opts || {};
+  // hooks: { stops: [0.4, 0.7], onStop(i) -> Promise, onProgress(k) }
+  // At each stop the wagon halts, the event plays out, then the trip resumes.
+  function travelTo(key, opts, ms, hooks) {
+    opts = opts || {}; hooks = hooks || {};
     mount();
     var rk = rigKey(opts);
     if (rk !== current.rigKey) { buildRig(opts.vehicle || "wagon", opts.party, opts.family); current.rigKey = rk; }
@@ -991,24 +993,115 @@
     world.add(next);
     var old = current.slab, def = W.scenes[key] || W.scenes.prairie;
     current.slab = next; current.key = key; current.def = def;
+    current.old = old;
+    var stops = (hooks.stops || []).slice().sort();
     return new Promise(function (resolve) {
-      var t0 = performance.now(), switched = false;
+      var done = 0, switched = false, paused = false, lastNow = null;
       travelAnim = function (now) {
-        var k = Math.min(1, (now - t0) / ms);
+        if (lastNow === null) lastNow = now;
+        var step = now - lastNow; lastNow = now;
+        if (paused) { moving = Math.max(0, moving - step / 400); return; }
+        done = Math.min(ms, done + step);
+        var k = done / ms;
+        if (stops.length && k >= stops[0]) {
+          k = stops.shift(); done = k * ms;
+          paused = true;
+          var i = (hooks.stops.length - stops.length - 1);
+          Promise.resolve(hooks.onStop ? hooks.onStop(i) : null).then(function () { clearReact(); paused = false; lastNow = null; });
+        }
         var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         var dx = (SLAB_L + 1.5) * e;
         if (old) old.position.x = dx;
         next.position.x = -SLAB_L - 1.5 + dx;
-        moving = Math.min(1, Math.sin(Math.PI * k) * 2.5);
+        current.dx = dx;
+        moving = paused ? moving : Math.min(1, moving + step / 300, k < 0.95 ? 1 : (1 - k) * 20);
+        if (hooks.onProgress) hooks.onProgress(k);
         if (!switched && k > 0.5) { switched = true; placeRig(def); applyLight(def, opts.month); setWeather(opts.weather || def.weather); }
-        if (k >= 1) {
+        if (k >= 1 && !paused) {
           if (old) disposeSlab(old);
+          current.old = null;
           moving = 0; travelAnim = null;
           resolve();
         }
       };
-      if (reduce) { travelAnim(t0 + ms); }
+      if (reduce && !stops.length) { lastNow = 0; travelAnim(ms); }
     });
+  }
+
+  // ------------------------------------------------------------------ reactions to trail events
+  var reacted = [];
+  function slabUnderRig() {
+    // during a trip the old slab is under the wagon until the seam passes
+    if (current.old && current.dx < SLAB_L / 2) return current.old;
+    return current.slab;
+  }
+  function dropBeside(obj, ahead) {
+    var s = slabUnderRig();
+    obj.position.x = (ahead || -9) - s.position.x;
+    obj.position.z = 3.2;
+    s.add(obj);
+  }
+  function react(kind) {
+    clearReact();
+    if (kind === "wheel" && rig.wagon) {
+      var w = rig.wagon.userData.wheels[1];
+      w.visible = false;
+      rig.wagon.rotation.x = 0.12; rig.wagon.position.y = -0.15;
+      var loose = makeWheel(0.55);
+      loose.position.set(rig.wagon.position.x * rigG.scale.x - 1.3 * 1.45, 0.8, 1.6 * 1.45);
+      loose.scale.setScalar(1.45);
+      scene.add(loose);
+      var t = 0;
+      reacted.push({ undo: function () { w.visible = true; rig.wagon.rotation.x = 0; rig.wagon.position.y = 0; scene.remove(loose); },
+        step: function (dt) {
+          t += dt;
+          if (t < 1.2) { loose.position.z += dt * 2.2; loose.rotation.z -= dt * 4; }
+          else if (loose.rotation.x > -1.45) { loose.rotation.x -= dt * 3; loose.position.y = Math.max(0.12, loose.position.y - dt * 0.6); }
+        } });
+    } else if (kind === "ox" && rig.oxen.length) {
+      var ox = rig.oxen[rig.oxen.length - 1];
+      ox.userData.down = true;
+      reacted.push({ undo: function () { ox.userData.down = false; ox.userData.body.position.y = 0; ox.userData.legs.forEach(function (l) { l.g.rotation.x = 0; }); },
+        step: function () { ox.userData.body.position.y += (-0.55 - ox.userData.body.position.y) * 0.08; ox.userData.legs.forEach(function (l, i) { l.g.rotation.x += ((i % 2 ? 1.3 : -1.3) - l.g.rotation.x) * 0.08; }); } });
+    } else if (kind === "storm" || kind === "snow" || kind === "dust") {
+      var was = current.weather, hi = hemi.intensity, si = sun.intensity;
+      if (kind !== "dust") setWeather(kind === "snow" ? "snow" : "rain");
+      hemi.intensity = hi * 0.7; sun.intensity = si * 0.35;
+      var dt0 = 0;
+      reacted.push({ undo: function () { setWeather(was); hemi.intensity = hi; sun.intensity = si; },
+        step: function (dt) {
+          if (kind !== "dust") return;
+          dt0 -= dt;
+          if (dt0 <= 0) { dt0 = 0.05; puff((Math.random() - 0.5) * 30, 0.5, (Math.random() - 0.5) * 20, { color: 0xd8c8a4, vx: 3, vy: 0.4, life: 2.5, grow: 3, op: 0.45, size: 0.8 }); }
+        } });
+    } else if (kind === "grave") {
+      var gr = new T.Group();
+      var mound = ico(0.8, "#8a7a5c"); mound.scale.set(1.4, 0.35, 0.8); gr.add(at(mound, 0, 0.1, 0));
+      gr.add(at(box(0.12, 1.2, 0.5, "#b9a888"), -0.9, 0.6, 0));
+      dropBeside(gr, -8);
+    } else if (kind === "goods") {
+      var gd = new T.Group();
+      gd.add(at(box(0.8, 0.9, 0.7, "#3f3a36"), 0, 0.45, 0));               // a cookstove
+      gd.add(at(cyl(0.05, 0.05, 0.6, 4, "#3f3a36"), 0.2, 1.2, 0));
+      gd.add(at(cyl(0.35, 0.35, 0.9, 8, "#8a6a48"), 1.1, 0.45, 0.4));       // a barrel
+      var chair = new T.Group(); chair.add(at(box(0.6, 0.08, 0.6, "#7a5a3c"), 0, 0.5, 0)); chair.add(at(box(0.08, 0.9, 0.6, "#7a5a3c"), -0.3, 0.9, 0));
+      chair.rotation.z = 0.4; gd.add(at(chair, -1.1, 0, -0.2));              // a rocking chair, tipped
+      gd.add(at(box(0.9, 0.5, 0.55, "#5a4636"), 0.4, 0.25, -0.9));            // a trunk
+      dropBeside(gd, -8);
+    }
+  }
+  // After an event changes the family (a death), refresh who walks beside the wagon.
+  function updateParty(opts) {
+    var rk = rigKey(opts || {});
+    if (rk === current.rigKey) return;
+    clearReact();
+    buildRig(opts.vehicle || "wagon", opts.party, opts.family);
+    current.rigKey = rk;
+    if (current.def) placeRig(current.def);
+  }
+  function clearReact() {
+    reacted.forEach(function (r) { r.undo(); });
+    reacted = [];
   }
 
   function travel(ms) { return new Promise(function (r) { setTimeout(r, Math.min(ms, 300)); }); }
@@ -1042,6 +1135,7 @@
     var dt = Math.min(0.05, (now - (last || now)) / 1000);
     last = now; clock += dt; view.t += dt;
     if (travelAnim) travelAnim(now);
+    reacted.forEach(function (r) { if (r.step) r.step(dt); });
 
     // camera ease (zoom in a touch behind cards)
     view.zoom += (view.zoomTo - view.zoom) * Math.min(1, dt * 3);
@@ -1057,6 +1151,7 @@
     var walk = reduce ? 0 : moving;
     var stride = clock * 7;
     rig.oxen.forEach(function (o, i) {
+      if (o.userData.down) return;
       o.userData.legs.forEach(function (l) { l.g.rotation.z = walk * 0.45 * Math.sin(stride + l.ph + i); });
       o.userData.body.position.y = walk * 0.05 * Math.abs(Math.sin(stride + i));
       o.userData.body.rotation.z = (1 - walk) * 0.03 * Math.sin(clock * 0.8 + i);
@@ -1119,5 +1214,5 @@
   function start() { if (!raf) raf = requestAnimationFrame(frame); }
 
   W.scene2d = W.scene;
-  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, preload: function () {}, is3d: true };
+  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, preload: function () {}, is3d: true };
 })();

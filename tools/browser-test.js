@@ -62,22 +62,32 @@ fs.mkdirSync(out, { recursive: true });
     await shot("05-store-filled");
     await page.click("#done");
     var n = 0, endedShot = false;
-    while (n++ < 40) {
+    var evShots = 0;
+    while (n++ < 1500) {
       await page.waitForTimeout(150);
       if (await page.$(".ledger")) { await shot("99-ending"); endedShot = true; break; }
+      var roll = await page.$("#roll");
+      if (roll) { await roll.click(); await page.waitForTimeout(300); continue; }
+      var ev = await page.$(".card.event [data-choice]:not([disabled])");
+      if (ev) {
+        await page.waitForTimeout(900);
+        if (evShots++ < 3) await shot("50-event-" + evShots);
+        await ev.click();
+        continue;
+      }
       var go = await page.$("#go");
       var choice = await page.$("[data-choice]:not([disabled])");
       if (choice) {
-        if (n < 12) await shot(String(n + 10).padStart(2, "0") + "-card");
+        if (n < 40) await shot(String(n + 10).padStart(2, "0") + "-card");
         await choice.click();
       } else if (go) {
         var label = await go.innerText();
         if (/Continue on the trail|Continue the voyage/.test(label)) {
           if (n < 4) await shot(String(n + 10).padStart(2, "0") + "-travel");
           await go.click();
-          await page.waitForTimeout(1500);
+          await page.waitForTimeout(1200);
           if (n < 4) await shot(String(n + 10).padStart(2, "0") + "-moving");
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(800);
         } else {
           if (n < 12) await shot(String(n + 10).padStart(2, "0") + "-screen");
           await go.click();

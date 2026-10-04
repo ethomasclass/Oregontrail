@@ -1,0 +1,415 @@
+[
+  {
+    "id": "osullivan-1845",
+    "claim": "\"our manifest destiny to overspread the continent allotted by Providence for the free development of our yearly multiplying millions\" appears in the unsigned essay \"Annexation,\" United States Magazine and Democratic Review, vol. 17, no. 85 (July-August 1845), p. 5. Traditionally credited to editor John L. O'Sullivan.",
+    "source_title": "United States Democratic Review, July-August 1845, Vol. 17, Iss. 85 (original scan, Internet Archive)",
+    "url": "https://archive.org/details/sim_united-states-democratic-review_july-august-1845_17_85",
+    "confidence": "verified"
+  },
+  {
+    "id": "osullivan-1845-transcription",
+    "claim": "Full transcription of \"Annexation\" (1845), with the manifest destiny sentence.",
+    "source_title": "Teaching American History: Annexation",
+    "url": "https://teachingamericanhistory.org/document/annexation/",
+    "confidence": "verified"
+  },
+  {
+    "id": "osullivan-authorship",
+    "claim": "Authorship of the unsigned 1845 \"Annexation\" essay is debated: Linda S. Hudson (1999) attributed it to Jane McManus Storm (Cazneau); O'Sullivan's biographer disputes this.",
+    "source_title": "Linda S. Hudson, dissertation on Jane McManus Storm Cazneau (UNT Digital Library)",
+    "url": "https://digital.library.unt.edu/ark:/67531/metadc278486/m2/1/high_res_d/1002658825-hudson.pdf",
+    "confidence": "disputed"
+  },
+  {
+    "id": "emigrant-numbers",
+    "claim": "Unruh's count, 1840 to 1860: Oregon 53,062; California about 200,000; Utah 42,862; total 296,259. In 1849: Oregon 450, California 25,000, Utah 1,500. Broader estimates run 300,000 to 400,000.",
+    "source_title": "BLM, Overland Trails in Numbers (data from Unruh, The Plains Across, via William E. Hill)",
+    "url": "https://www.blm.gov/sites/default/files/docs/2024-01/Overland%20Trail%20in%20Numbers%20(Upper%20Elementary).final_.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "great-migration-1843",
+    "claim": "In spring 1843 a wagon train of nearly 1,000 people organized at Independence, Missouri, bound for Oregon.",
+    "source_title": "NPS, Oregon National Historic Trail: History & Culture",
+    "url": "https://www.nps.gov/oreg/learn/historyculture/index.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "outfitting-costs",
+    "claim": "In 1850 a proper outfit cost roughly $800 to $1,200; an average wagon cost about $85; emigrants left about mid April, traveled 12 to 15 miles a day, and took 4 to 6 months to cover about 2,000 miles.",
+    "source_title": "NPS, Traveling the Emigrant Trails",
+    "url": "https://home.nps.gov/articles/000/traveling-emigrant-trails.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "oxen-prices",
+    "claim": "A yoke of oxen cost about $25 to $65 in the late 1840s; Joseph Ware's 1849 guide priced four yoke at $50 a yoke.",
+    "source_title": "Historic Oregon City, Outfitting for the Journey",
+    "url": "https://historicoregoncity.org/2019/04/03/outfitting-for-the-journey/",
+    "confidence": "partial"
+  },
+  {
+    "id": "hastings-supplies",
+    "claim": "Hastings (1845) advised each emigrant to bring at least 200 lb of flour or meal, 150 lb of bacon, 10 lb of coffee, 20 lb of sugar, and 10 lb of salt.",
+    "source_title": "Lansford W. Hastings, The Emigrants' Guide to Oregon and California (1845), pp. 143-144 (Internet Archive)",
+    "url": "https://archive.org/details/emigrantsguideto04hast",
+    "confidence": "verified"
+  },
+  {
+    "id": "trip-length",
+    "claim": "Average trip lengths (Unruh via OCTA): 1849, Oregon 129.0 days and California 131.6 days; 1841 to 1860 average, Oregon 139.6 and California 121.0 days. About 2,000 miles; 4.5 to 5 months on the road.",
+    "source_title": "OCTA, How long was the journey from the Missouri jumping off place (More Trail Facts)",
+    "url": "https://octa-trails.org/wp-content/uploads/2017/11/793_02-How-long-was-the-journey-from-Missouri-More-Trail-Facts.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "oregon-city-mileage",
+    "claim": "Oregon City, the end of the Oregon Trail, was not quite 2,000 miles from Independence; Fort Laramie about 640 miles.",
+    "source_title": "Historic Oregon City, Oregon Trail Mileposts",
+    "url": "https://historicoregoncity.org/2019/04/03/oregon-trail-mileposts/",
+    "confidence": "partial"
+  },
+  {
+    "id": "independence-rock",
+    "claim": "Emigrants felt well on their way if they reached Independence Rock by the Fourth of July; William Sublette's party named it in 1830; De Smet called it the great register of the desert; thousands of names are carved and painted on it.",
+    "source_title": "WyoHistory.org, Independence Rock",
+    "url": "https://www.wyohistory.org/essays/independence-rock",
+    "confidence": "verified"
+  },
+  {
+    "id": "chimney-rock",
+    "claim": "Chimney Rock rises more than 300 feet and was mentioned in more emigrant diaries than any other Oregon Trail landmark.",
+    "source_title": "NPS, Chimney Rock National Historic Site",
+    "url": "https://www.nps.gov/places/000/chimney-rock-national-historic-site.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "fort-kearny",
+    "claim": "Fort Kearny was founded in spring 1848 near the head of Grand Island on the Platte to protect emigrants; the trail ran about 330 miles from there to Fort Laramie.",
+    "source_title": "Nebraska Studies, Fort Kearny",
+    "url": "https://nebraskastudies.org/en/1800-1849/forts-built/fort-kearny",
+    "confidence": "partial"
+  },
+  {
+    "id": "kansas-river-ferries",
+    "claim": "The Pappan (Papin) brothers, French-Canadian traders whose wives had a Kaw mother, ran a ferry at present Topeka from the early 1840s charging $1 a wagon; in 1849 many emigrants crossed instead at Uniontown, 15 miles west, where ferries also charged $1 a wagon.",
+    "source_title": "Friends of the Kaw, The Working Kaw",
+    "url": "https://kansasriver.org/learn/life-on-the-kaw/the-working-kaw/",
+    "confidence": "partial"
+  },
+  {
+    "id": "shawnee-delaware-ferry",
+    "claim": "In 1846 a Shawnee and Delaware ferry keeper on the Kansas River said he had made four hundred dollars that season by the crossing of emigrants bound to Oregon.",
+    "source_title": "George A. Root, Ferries in Kansas, Part II: Kansas River, Kansas Historical Quarterly (1934)",
+    "url": "https://www.kansashistory.gov/p/ferries-in-kansas-part-ii-kansas-river/17493",
+    "confidence": "verified"
+  },
+  {
+    "id": "native-tolls",
+    "claim": "Native people charged tolls and ran crossings: Amelia Knight paid an Indian 75 cents toll for a narrow bridge in Nebraska (May 7, 1853); NPS notes Indians ferried wagons in canoes before white-run ferries existed.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (Internet Archive)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "pawnee-loup-tolls",
+    "claim": "A band of Pawnee at the Loup Fork collected tolls from emigrants.",
+    "source_title": "BYU Saints by Sea, Developments Along the Overland Trail from the Missouri",
+    "url": "https://saintsbysea.byu.edu/static/articles/DevelopmentsAlongTheOverlandTrailFromTheMissouri.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "cholera-deaths",
+    "claim": "Disease was the number one killer by a wide margin; cholera caused more illness and death than all other maladies, spread through polluted water, could kill within 12 hours, and the camphor and laudanum emigrants carried did little.",
+    "source_title": "NPS, Death and Danger on the Emigrant Trails",
+    "url": "https://www.nps.gov/articles/000/death-on-trails.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "trail-death-estimates",
+    "claim": "Estimates of total trail deaths range widely: NPS says up to 30,000 of about 350,000 (nearly 1 in 10); Unruh estimated about 4 percent and judged about 9 in 10 deaths were from disease; worst cholera years 1850 and 1852.",
+    "source_title": "KC Clay, Emigrants and Death along the Overland Trail (2014 paper, NPS History eLibrary, citing Unruh)",
+    "url": "https://www.npshistory.com/publications/emigrants-death-overland-trail.pdf",
+    "confidence": "disputed"
+  },
+  {
+    "id": "trail-accidents",
+    "claim": "Shootings, drownings, being crushed by wagon wheels, and injuries from draft animals were common killers; wagon accidents were the most prevalent; accidental shootings were common but murders were rare.",
+    "source_title": "NPS, Death and Danger on the Emigrant Trails",
+    "url": "https://www.nps.gov/articles/000/death-on-trails.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "unruh-violence",
+    "claim": "Unruh's tentative, probably low figures for 1840 to 1860: 362 emigrants killed by Indians and 426 Indians killed by emigrants; about 90 percent of emigrants killed by Indians died west of South Pass; only four well-documented pre-Civil War massacres.",
+    "source_title": "OCTA More Trail Facts sheet, citing Unruh, The Plains Across, p. 185",
+    "url": "https://www.octa-trails.org/wp-content/uploads/2017/11/801_05-On-what-part-of-the-Oregon-Trail-were-Indian-risks-More-Trail-Facts.pdf",
+    "confidence": "verified"
+  },
+  {
+    "id": "unruh-violence-arch",
+    "claim": "Unruh estimated 362 overlanders and 426 Indians were killed in altercations on the trail, 1840 to 1860.",
+    "source_title": "Gateway Arch Park Foundation, Museum at the Gateway Arch: Conflict on the Trail",
+    "url": "https://archpark.org/visit/points-of-interest/museum-at-the-gateway-arch/manifest-destiny/Conflict-on-the-Trail",
+    "confidence": "verified"
+  },
+  {
+    "id": "native-relations-nps",
+    "claim": "American Indians were usually among the least of the emigrants' problems; they were mostly peaceful, traded food and moccasins, and helped in many ways; tales of hostile encounters far overshadowed actual incidents.",
+    "source_title": "NPS, Death and Danger on the Emigrant Trails",
+    "url": "https://www.nps.gov/articles/000/death-on-trails.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "emigrant-impact",
+    "claim": "By the gold rush, grass, wood, and game had been nearly destroyed along the Platte; cottonwood groves where Native people wintered disappeared in a single season; emigrant damage helped drive bison from the Platte valley.",
+    "source_title": "Andrew C. Isenberg, The Destruction of the Bison (Cambridge University Press, 2000), quoting George Bird Grinnell, The Fighting Cheyennes (1915)",
+    "url": "https://buffalofieldcampaign.org/images/get-involved/students-resource-about-bison/bison-conservation-papers/Isenberg-The-Destruction-of-the-Bison-An-Environmental-History-2000.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "emigrant-impact-richey-1852",
+    "claim": "An 1852 emigrant near Fort Laramie had seen no buffalo because the first emigration scared them off the road.",
+    "source_title": "Letters of Caleb and Alice Richey, Transactions of the 40th Annual Reunion of the Oregon Pioneer Association (1912)",
+    "url": "https://archive.org/details/transactionsofan40oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "bison-decline",
+    "claim": "Bison fell from an estimated 30 to 60 million to fewer than 1,000 by the 1890s, driven by railways, rifles, the hide market, and Army policy; Hornaday counted 1,091 in 1889.",
+    "source_title": "NPS, Bison: People and Bison",
+    "url": "https://www.nps.gov/subjects/bison/people.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "shoshone-trade",
+    "claim": "The Shoshonean peoples were welcoming, trading fish and other resources with emigrants; emigrants bought salmon from Native people in the Snake River country and Grande Ronde Valley.",
+    "source_title": "NPS, Hagerman Fossil Beds: History & Culture",
+    "url": "https://www.nps.gov/hafo/learn/historyculture/index.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "native-guides",
+    "claim": "Emigrants hired Native guides: \"This morning we hired an Indian to show us the ford\" (Robert Haldane Renshaw, Three Island Crossing, 1851); most Columbia River overlanders enlisted Indigenous help to navigate the river.",
+    "source_title": "BLM and Idaho OCTA, Oregon Trail Backcountry Byway booklet, p. 10",
+    "url": "https://www.blm.gov/sites/blm.gov/files/OregonTrail-Booklet.pdf",
+    "confidence": "verified"
+  },
+  {
+    "id": "columbia-river-route",
+    "claim": "Before the Barlow Road, wagons stopped at The Dalles; most overlanders enlisted Indigenous people to navigate the Columbia, and nearly all in 1843 paid Chinookan people for help around the Cascades rapids.",
+    "source_title": "NPS, Overlanders in the Columbia River Gorge, 1840-1870: A Narrative History",
+    "url": "https://www.nps.gov/articles/000/overlanders-in-the-columbia-river-gorge-1840-1870-a-narrative-history.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "barlow-road",
+    "claim": "Sam Barlow's road around the south flank of Mount Hood was pioneered in 1845 and opened as a toll road in 1846 at $5 a wagon plus 10 cents a head of livestock; about 1,000 emigrants and 152 wagons used it the first season; later travelers took about six days; the toll was much cheaper than boat passage on the Columbia.",
+    "source_title": "NPS, The Barlow Road",
+    "url": "https://www.nps.gov/articles/000/the-barlow-road.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "donner-party",
+    "claim": "Hastings claimed his 1846 cutoff could save 300 to 400 miles, but it was over 100 miles longer; the Donner-Reed Party of 87 followed it, was trapped at Truckee Lake from October 1846 for about four months, and about 40 died.",
+    "source_title": "NPS, Donner and Reed Wagon Train Incident",
+    "url": "https://home.nps.gov/cali/learn/historyculture/donner-reed-party.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "hastings-cutoff",
+    "claim": "Hastings estimated his cutoff could save 300 to 400 miles of travel; it turned out to be over 100 miles longer than the main California Trail.",
+    "source_title": "NPS, Hastings Cutoff",
+    "url": "https://www.nps.gov/places/hastings-cutoff.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "fort-laramie",
+    "claim": "Fort Laramie began as Fort William (1834) and then the American Fur Company's Fort John; the U.S. Army bought it in 1849 and the first soldiers arrived that July; emigrants used it to resupply and as a hospital; more than 25 tribes traded there.",
+    "source_title": "NPS, What is Fort Laramie?",
+    "url": "https://home.nps.gov/fola/what-is-fort-laramie.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "gold-discovery",
+    "claim": "James Marshall found gold at Sutter's sawmill on January 24, 1848; about 25,000 emigrants took the California Trail in 1849 and about 140,000 from 1849 to 1854.",
+    "source_title": "NPS, California National Historic Trail: The California Gold Rush",
+    "url": "https://www.nps.gov/cali/learn/historyculture/california-gold-rush.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "gold-polk-1848",
+    "claim": "President Polk confirmed the gold discovery in his annual message of December 5, 1848, which triggered the mass rush of 1849.",
+    "source_title": "Library of Congress, California as I Saw It: The Discovery of Gold",
+    "url": "https://www.loc.gov/collections/california-first-person-narratives/articles-and-essays/early-california-history/discovery-of-gold/",
+    "confidence": "verified"
+  },
+  {
+    "id": "trail-split",
+    "claim": "From Fort Hall the Oregon and California trails ran together about 50 miles southwest to a parting of the ways at the Raft River; Hudspeth's Cutoff (1849) let many California-bound wagons bypass Fort Hall.",
+    "source_title": "Wikipedia, California Trail and Route of the Oregon Trail (secondary; confirm with NPS maps)",
+    "url": "https://en.wikipedia.org/wiki/California_Trail",
+    "confidence": "partial"
+  },
+  {
+    "id": "forty-mile-desert",
+    "claim": "The Forty Mile Desert was the most dreaded section of the California Trail; travelers often crossed at night; an 1850 survey counted about 1,061 dead mules, 5,000 horses, 3,750 cattle, and 953 graves.",
+    "source_title": "Nevada State Historic Preservation Office, Historical Marker 26: Forty Mile Desert",
+    "url": "https://shpo.nv.gov/nevadas-historical-markers/historical-markers/forty-mile-desert",
+    "confidence": "verified"
+  },
+  {
+    "id": "oregon-exclusion-laws",
+    "claim": "Oregon's Provisional Government passed a Black exclusion (lash) law in June 1844, introduced by Peter Burnett; the territorial legislature passed another in September 1849 making it unlawful for any negro or mulatto to enter or reside in Oregon (newcomers had 40 days to leave); the state constitution kept exclusion from 1859.",
+    "source_title": "NPS, Race, Slavery, and Freedom: The Nature of Freedom in the West",
+    "url": "https://www.nps.gov/articles/000/chapter-1-race-slavery-and-freedom-the-nature-of-freedom-in-the-west.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "oregon-exclusion-dates",
+    "claim": "The 1844 lash law (June 18) was amended December 19, 1844 to replace whipping with forced labor and repealed July 3, 1845; no whipping is documented.",
+    "source_title": "Oregon State Archives, Black History exhibit chronology",
+    "url": "https://sos.oregon.gov/archives/exhibits/black-history/Pages/context/chronology.aspx",
+    "confidence": "partial"
+  },
+  {
+    "id": "oregon-constitution-1857",
+    "claim": "On November 9, 1857 white male voters approved the constitution 7,195 to 3,195, rejected slavery 7,727 to 2,645, and approved excluding African Americans 8,640 to 1,081; the Donation Land Law kept African Americans and Hawaiians from owning land.",
+    "source_title": "Oregon History Project, A New Legal Landscape",
+    "url": "https://www.oregonhistoryproject.org/articles/a-new-legal-landscape/",
+    "confidence": "verified"
+  },
+  {
+    "id": "black-emigrants-oregon",
+    "claim": "African Americans who reached Oregon from the 1840s to the 1860s probably numbered in the hundreds; some came free, others enslaved; the 1849 law made it unlawful for any negro or mulatto to enter into, or reside in Oregon.",
+    "source_title": "NPS, African Americans on the Oregon Trail",
+    "url": "https://www.nps.gov/articles/000/african-americans-on-the-oregon-trail.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "peter-burnett",
+    "claim": "Peter Burnett was elected captain of the 1843 wagon train but resigned after eight days, introduced the 1844 exclusion law, and became California's first elected governor (1849 to 1851), where he again sought Black exclusion.",
+    "source_title": "Oregon Encyclopedia, Peter Burnett (1807-1895)",
+    "url": "https://oregonencyclopedia.org/articles/burnett_peter/",
+    "confidence": "partial"
+  },
+  {
+    "id": "donation-land-claim",
+    "claim": "The Donation Land Claim Act took effect September 27, 1850: 320 acres to a single white male citizen 18 or older and 640 acres to a married couple (half in the wife's name) settled by December 1, 1850; 160 or 320 acres for arrivals from December 1, 1850 to 1853 (extended to 1855); four years' residence and cultivation required; Native people could not claim land.",
+    "source_title": "HistoryLink, Donation Land Claim Act takes effect on September 27, 1850",
+    "url": "https://www.historylink.org/File/9501",
+    "confidence": "verified"
+  },
+  {
+    "id": "george-bush",
+    "claim": "George Bush, born around 1790, crossed the Oregon Trail in 1844 with Michael T. Simmons; barred by Oregon's exclusion law, the party settled north of the Columbia and founded what became Tumwater in fall 1845; Bush farmed Bush Prairie, gave nearly all his crop to neighbors in the 1852 shortage, and Congress confirmed his land by special act in 1855.",
+    "source_title": "HistoryLink, Bush, George (1790?-1863)",
+    "url": "https://historylink.org/file/5645",
+    "confidence": "verified"
+  },
+  {
+    "id": "free-papers-missouri",
+    "claim": "Missouri law (1835) required free Black residents to carry a license or risk being fined or imprisoned as runaway slaves; laws of 1835, 1843, and 1847 barred free Black people from entering Missouri; slave catchers on the Missouri border kidnapped and sold Black people regardless of legal status.",
+    "source_title": "NPS, Captivity and Independence: Race and Enslavement in the Trailhead Towns along the Missouri",
+    "url": "https://home.nps.gov/articles/000/captivity-and-independence-race-and-enslavement-in-the-trailhead-towns-along-the-missouri.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "kalapuya-history",
+    "claim": "The Kalapuya used fire as their main land-management tool, burning to drive deer, clear brush, and stimulate camas and other roots in the valley's prairies.",
+    "source_title": "Cain Allen, Indian Burning in the Willamette Valley, Oregon History Project",
+    "url": "https://oregonhistoryproject.org/articles/historical-records/indian-burning-in-the-willamette-valley/",
+    "confidence": "verified"
+  },
+  {
+    "id": "kalapuya-disease-treaty",
+    "claim": "Malaria epidemics from about 1830 killed roughly 90 percent of Kalapuyan people; the 1855 Willamette Valley Treaty (signed January 22, ratified March 3) ceded the Willamette drainage; bands were removed to Grand Ronde in 1856.",
+    "source_title": "Oregon Encyclopedia, Kalapuya Treaty",
+    "url": "https://oregonencyclopedia.org/articles/kalapuya_treaty/",
+    "confidence": "partial"
+  },
+  {
+    "id": "grand-ronde-reservation",
+    "claim": "Treaties of 1853 to 1855 led to forced removal of tribal members from their homelands; the Grand Ronde Reservation was established by Executive Order on June 30, 1857.",
+    "source_title": "Confederated Tribes of Grand Ronde, Treaties",
+    "url": "https://www.grandronde.org/culture-history/treaties/",
+    "confidence": "verified"
+  },
+  {
+    "id": "nativism-1840s",
+    "claim": "In the 1840s Irish immigrants made up nearly half of all U.S. immigrants; anti-Catholic and anti-immigrant feeling produced the nativist American (Know-Nothing) Party; 1844 riots in Philadelphia left thirteen dead.",
+    "source_title": "Library of Congress Classroom Materials, Irish: Religious Conflict and Discrimination",
+    "url": "https://www.loc.gov/classroom-materials/immigration/irish/religious-conflict-and-discrimination/",
+    "confidence": "partial"
+  },
+  {
+    "id": "irish-in-oregon",
+    "claim": "Oregon Donation Land Claim records list 139 Irish immigrants holding claims in the 1840s and 1850s; Irish Catholics were drawn to the Catholic church at St. Paul.",
+    "source_title": "Oregon History Project, Irish Immigration",
+    "url": "https://oregonhistoryproject.org/articles/historical-records/irish-immigration/",
+    "confidence": "verified"
+  },
+  {
+    "id": "chimney-rock-knight",
+    "claim": "Quote: \"Passed Court House Rock and Chimney Rock, both situated on the lower side of the river, and have been in sight [for] several days. We have camped opposite Chimney Rock.\" Amelia Stewart Knight, June 2, 1853.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "partial"
+  },
+  {
+    "id": "independence-rock-knight",
+    "claim": "Quote: \"Came 19 miles today; passed Independence Rock this afternoon, and crossed Sweetwater River on a bridge. Paid 3 dollars a wagon and swam the stock across.\" Amelia Stewart Knight, June 15, 1853 (final letters of two words reconstructed from OCR).",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "partial"
+  },
+  {
+    "id": "river-crossing-knight",
+    "claim": "Quote: \"In this way we have to cross everything a little at a time. Women and children last, and then swim the cattle and horses. There were three horses and some cattle drowned while crossing this place yesterday.\" Amelia Stewart Knight, May 8, 1853, Elkhorn River.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "graves-knight",
+    "claim": "Quote: \"Here we passed a train of wagons on their way back, the head man had been drowned a few days before, in a river called Elkhorn, while getting some cattle across, and his wife was lying in the wagon quite sick, and children were mourning for a father gone.\" Amelia Stewart Knight, May 6, 1853.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "cholera-richey-1852",
+    "claim": "Quote: \"There is a great deal of diarrhoea and cholera on the plains. We have seen hundreds of graves, and it is said we are in advance of the greater portion of the emigration and sickness.\" Caleb Richey, letter, twenty miles east of Fort Laramie, June 20, 1852.",
+    "source_title": "Letters from the Plains, Transactions of the 40th Annual Reunion of the Oregon Pioneer Association (1912)",
+    "url": "https://archive.org/details/transactionsofan40oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "cholera-akin-1852",
+    "claim": "Quote: \"We passed from five to eight fresh graves of a day. The principal part of the sickness is the diarrhoea and cholera. Some have died with cholera in four hours after taking it.\" James Akin, Jr., letter near Fort Laramie, June 19, 1852.",
+    "source_title": "Letters from the Plains, Transactions of the 40th Annual Reunion of the Oregon Pioneer Association (1912)",
+    "url": "https://archive.org/details/transactionsofan40oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "hope-knight",
+    "claim": "Quote: \"take us all together we are a poor looking set, and all this for Oregon. I am thinking while I write, \"Oh, Oregon, you must be a wonderful country.\"\" Amelia Stewart Knight, June 1, 1853.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "arrival-knight",
+    "claim": "Quote: \"Here husband traded two yoke of oxen for a half section of land with one-half acre planted to potatoes and a small log cabin and lean-to with no windows. This is the journey's end.\" Amelia Stewart Knight, September 1853.",
+    "source_title": "Diary of Mrs. Amelia Stewart Knight, Transactions of the 56th Annual Reunion of the Oregon Pioneer Association (printed 1933)",
+    "url": "https://archive.org/details/transactionsofan56oreg",
+    "confidence": "verified"
+  },
+  {
+    "id": "bison-whitman-1836",
+    "claim": "Quote: \"I never saw any thing like buffalo meat to satisfy hunger.\" Narcissa Whitman, letter from the Platte River, June 1836.",
+    "source_title": "Mrs. Whitman's Letters, Transactions of the 21st Annual Reunion of the Oregon Pioneer Association (1893)",
+    "url": "https://archive.org/details/transactionsof1s21oreg",
+    "confidence": "verified"
+  }
+]

@@ -278,26 +278,89 @@
   }
 
   var busy = false;
+  // How long the crossing takes on screen: longer legs take longer.
+  function travelMs(trip) {
+    var c = W.config.travelSeconds;
+    var sec = trip.miles ? c.min + trip.miles / 100 * c.per100Miles : c.min + Math.min(4, trip.days / 15);
+    return Math.round(Math.min(c.max, sec) * 1000);
+  }
   function go() {
     if (busy) return;
     busy = true;
     var startMiles = S.miles;
     var trip = E.advance(S, Date.now());
     if (!trip) { busy = false; return; }
-    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), 3200);
-    app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to) + "</h2></div>";
+    var events = E.pickTripEvents(S, Date.now());
+    var stops = events.length === 1 ? [0.45] : events.length === 2 ? [0.32, 0.68] : [];
+    var ms = travelMs(trip);
+    screenName = "travel";
+    function rolling() {
+      app.className = "app";
+      app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to) + "</h2></div>";
+    }
+    rolling();
     renderPanel();
-    // Count the miles up while the scenery rolls by.
-    var milesEl = document.getElementById("miles"), t0 = performance.now(), ms = 3200;
-    (function count(now) {
-      var k = Math.min(1, (now - t0) / ms);
-      if (milesEl) milesEl.textContent = Math.round(startMiles + (S.miles - startMiles) * k);
-      if (k < 1) requestAnimationFrame(count);
-    })(t0);
+    var milesEl = function () { return document.getElementById("miles"); };
+    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), ms, {
+      stops: stops,
+      onProgress: function (k) {
+        var el = milesEl();
+        if (el) el.textContent = Math.round(startMiles + (S.miles - startMiles) * k);
+      },
+      onStop: function (i) {
+        return tripEvent(events[i]).then(function () {
+          scene.party(sceneOpts());
+          rolling();
+          renderPanel();
+        });
+      }
+    });
     travelling.then(function () {
       busy = false;
       if (trip.notes.length || trip.skipped.length) S._trip = trip;
       beatScreen();
+    });
+  }
+
+  // A trail event: a small card over the live diorama, decided quickly.
+  function tripEvent(ev) {
+    return new Promise(function (resolve) {
+      scene.react(ev.react);
+      var list = E.choices(S, ev);
+      app.className = "app top";
+      app.innerHTML =
+        '<div class="card event"><div class="chips"><span class="chip trail">' + (vehicle() === "ship" ? "At sea" : vehicle() === "walkers" ? "On the road" : "On the trail") + "</span>" +
+        '<span class="chip lead">Mouse: ' + roleLabel(ev.lead) + "</span>" + draftChip(ev) + "</div>" +
+        "<h2>" + esc(ev.title) + "</h2><p>" + esc(ev.text) + "</p>" +
+        '<div class="choices">' + list.map(function (ch, i) {
+          return '<button data-choice="' + ch.index + '"' + (ch.ok ? "" : " disabled") + '><span class="key">' + (i + 1) + "</span>" + esc(ch.label) +
+            (ch.ok ? "" : '<span class="why">You don\u2019t have what this needs.</span>') + "</button>";
+        }).join("") + "</div></div>";
+      var first = app.querySelector("button:not([disabled])");
+      if (first) first.focus({ preventScroll: true });
+      function decideEvent(index) {
+        var r = E.resolveEvent(S, ev, index);
+        renderPanel();
+        app.querySelector(".choices").outerHTML =
+          '<p class="result"><strong>' + esc(r.choice === "Continue" ? "" : r.choice) + "</strong> " + esc(r.result) + "</p>" +
+          '<div class="changes">' + r.changes.map(function (ch) {
+            return '<span class="change ' + (ch.amount > 0 ? "up" : "") + '">' + ch.amount + " " + STAT_NAMES[ch.stat] + "</span>";
+          }).join("") + "</div>" +
+          r.sick.map(function (m) { return "<p><strong>" + esc(m.name) + " is sick.</strong></p>"; }).join("") +
+          r.deaths.map(function (m) { return '<div class="epitaph">' + esc(m.epitaph) + "</div>"; }).join("") +
+          '<div class="actions"><button class="primary" id="roll">Continue on the trail</button></div>';
+        var btn = document.getElementById("roll");
+        btn.focus({ preventScroll: true });
+        function done() { keyHandlers = {}; resolve(); }
+        btn.addEventListener("click", done);
+        keyHandlers = { Enter: done };
+        save();
+      }
+      app.querySelectorAll("[data-choice]").forEach(function (b) {
+        b.addEventListener("click", function () { decideEvent(Number(b.getAttribute("data-choice"))); });
+      });
+      keyHandlers = {};
+      list.forEach(function (ch, i) { if (ch.ok) keyHandlers[String(i + 1)] = function () { decideEvent(ch.index); }; });
     });
   }
 

@@ -10,7 +10,7 @@ var vm = require("vm");
 var root = path.join(__dirname, "..");
 globalThis.window = globalThis;
 ["data/config.js", "data/families.js", "data/route.js", "data/stores.js", "data/cards.js",
- "data/landmarks.js", "data/endings.js", "data/scenes.js", "js/engine.js"].forEach(function (f) {
+ "data/landmarks.js", "data/endings.js", "data/scenes.js", "data/trail-events.js", "js/engine.js"].forEach(function (f) {
   vm.runInThisContext(fs.readFileSync(path.join(root, f), "utf8"), { filename: f });
 });
 
@@ -30,6 +30,19 @@ W.cards.forEach(function (c) {
     if (ch.outcomes) {
       var sum = ch.outcomes.reduce(function (s, o) { return s + o.chance; }, 0);
       if (Math.abs(sum - 1) > 0.001) fail("Card " + c.id + " choice '" + ch.label + "' chances add to " + sum);
+    }
+  });
+});
+W.trailEvents.forEach(function (t) {
+  if (ids["ev:" + t.id]) fail("Duplicate trail event id " + t.id);
+  ids["ev:" + t.id] = true;
+  if (t.choices && !t.choices.some(function (ch) { return !ch.requires; }))
+    fail("Trail event " + t.id + " has no choice that is always available");
+  if (!t.choices && !t.outcome) fail("Trail event " + t.id + " needs choices or an outcome");
+  (t.choices || []).forEach(function (ch) {
+    if (ch.outcomes) {
+      var sum = ch.outcomes.reduce(function (s, o) { return s + o.chance; }, 0);
+      if (Math.abs(sum - 1) > 0.001) fail("Trail event " + t.id + " choice chances add to " + sum);
     }
   });
 });
@@ -62,7 +75,7 @@ if (fs.readFileSync(path.join(root, "index.html"), "utf8").indexOf("—") >= 0) 
 // ---------------------------------------------------------------- simulated runs
 var stats = {};
 W.families.forEach(function (fam) {
-  var s = stats[fam.id] = { runs: 0, decisions: 0, deaths: 0, oregon: 0, california: 0, maxDecisions: 0, minDecisions: 99 };
+  var s = stats[fam.id] = { runs: 0, decisions: 0, deaths: 0, oregon: 0, california: 0, maxDecisions: 0, minDecisions: 99, events: 0, minutes: 0, maxMinutes: 0 };
   for (var seed = 1; seed <= runs; seed++) {
     var state = E.create(seed);
     var t0 = 0;
@@ -70,10 +83,17 @@ W.families.forEach(function (fam) {
     var decisions = 0, guard = 0, ended = false;
     var now = t0;
     while (!ended && guard++ < 100) {
-      // Simulate a group that takes 2.5 to 4 minutes per stop.
-      now += (2.5 + E.rand(state) * 1.5) * 60000;
+      // Simulate a group: 1.75 to 3 minutes per stop, about 0.4 per trail event.
+      now += (1.75 + E.rand(state) * 1.25) * 60000;
       var trip = E.advance(state, now);
       if (!trip) { fail(fam.id + " seed " + seed + ": ran out of beats without an ending"); break; }
+      E.pickTripEvents(state, now).forEach(function (ev) {
+        if (/\{\w+\}/.test(ev.title + ev.text + JSON.stringify(ev.choices))) fail("Unfilled slot in trail event " + ev.id);
+        var okc = E.choices(state, ev).filter(function (x) { return x.ok; });
+        E.resolveEvent(state, ev, okc[Math.floor(E.rand(state) * okc.length)].index);
+        s.events++;
+        now += (0.3 + E.rand(state) * 0.2) * 60000;
+      });
       var b = E.beat(state);
       if (b.type === "store") {
         var store = E.storeFor(state), cart = {};
@@ -97,6 +117,8 @@ W.families.forEach(function (fam) {
       }
     }
     if (!ended) fail(fam.id + " seed " + seed + ": never reached an ending");
+    var mins = (now - t0) / 60000 + 1; // when the group reaches the ending (plus the title screen)
+    s.minutes += mins; s.maxMinutes = Math.max(s.maxMinutes, mins);
     if (E.alive(state).length < 2) fail(fam.id + " seed " + seed + ": fewer than 2 survivors");
     var L = E.ledger(state);
     if (!L.ending) fail(fam.id + " seed " + seed + ": no ending text for branch " + state.branch);
@@ -111,7 +133,8 @@ Object.keys(stats).forEach(function (k) {
   var s = stats[k];
   console.log(k.padEnd(8) + " runs " + s.runs + "  decisions " + s.minDecisions + "-" + s.maxDecisions +
     " (avg " + (s.decisions / s.runs).toFixed(1) + ")  deaths/run " + (s.deaths / s.runs).toFixed(2) +
-    "  oregon " + s.oregon + "  california " + s.california);
+    "  oregon " + s.oregon + "  california " + s.california +
+    "  trail events/run " + (s.events / s.runs).toFixed(1) + "  ending reached at min "  + (s.minutes / s.runs).toFixed(1) + " max " + s.maxMinutes.toFixed(1));
 });
 if (failures.length) {
   var uniq = Array.from(new Set(failures));

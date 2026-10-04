@@ -47,7 +47,6 @@ WESTWARD.routes = {
   trail: [
     { type: "store", at: "independence", target: 4 },
     { type: "card", at: "kansasriver", card: "kansas-crossing", target: 9 },
-    { type: "draw", at: "platte", pool: "plains", target: 11.5, optional: true },
     { type: "draw", at: "fortkearny", pool: "plains", target: 14,
       byFamily: { irish: "nativist-company", black: "free-papers" } },
     { type: "landmark", at: "chimneyrock", landmark: "chimney-rock", target: 16, optional: true },

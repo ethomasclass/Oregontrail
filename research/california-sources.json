@@ -1,0 +1,303 @@
+[
+  {
+    "id": "gold-discovery",
+    "claim": "James Marshall found gold at Sutter's sawmill, Coloma, on January 24, 1848, on Nisenan and foothill Miwok land.",
+    "source_title": "California State Parks, Marshall Gold Discovery State Historic Park brochure",
+    "url": "https://www.parks.ca.gov/pages/484/files/MarshallGoldWebBrochure2013.pdf",
+    "confidence": "verified"
+  },
+  {
+    "id": "gold-rush-migration",
+    "claim": "About 300,000 people came to California from 1848 to about 1855; almost 100,000 non-Natives by end of 1849.",
+    "source_title": "Smithsonian NMAH, Many Voices: Gold Rush; PBS American Experience",
+    "url": "https://www.americanhistory.si.edu/explore/exhibitions/many-voices/online/peopling-expanding-nation-1776%E2%80%931900/incorporating-western-lands/gold-rush",
+    "confidence": "partial"
+  },
+  {
+    "id": "miner-earnings",
+    "claim": "Most miners earned little: census-based study finds outcomes 'generally small or even zero for miners but... positive and large for nonminers'; average daily earnings fell from about $20 (1848) to about $6 (1852-53).",
+    "source_title": "Clay and Jones, 'Migrating to Riches?', Journal of Economic History (2008)",
+    "url": "https://www.cambridge.org/core/product/identifier/S002205070800079X/type/journal_article",
+    "confidence": "partial"
+  },
+  {
+    "id": "miner-wages-margo",
+    "claim": "Real wages in California rose sharply 1848-1852, then declined.",
+    "source_title": "Margo, 'Wages in California During the Gold Rush', NBER Historical Working Paper 101 (1997)",
+    "url": "https://www.nber.org/papers/h0101",
+    "confidence": "verified"
+  },
+  {
+    "id": "gold-rush-prices",
+    "claim": "1849 prices: eggs and slices of bread about $1 each; boots costing $3-15 in the East sold for $30-40.",
+    "source_title": "Smithsonian Magazine; PBS Food, 'Food of the California Gold Rush'",
+    "url": "https://www.smithsonianmag.com/history/gold-rush-california-was-much-more-expensive-todays-dot-com-boom-california-180956788/",
+    "confidence": "partial"
+  },
+  {
+    "id": "merchants",
+    "claim": "Sam Brannan's store sold up to $5,000 in goods per day to miners; he was known as the richest man in California in the 1850s-60s.",
+    "source_title": "PBS American Experience, 'Samuel Brannan'",
+    "url": "https://www.pbs.org/wgbh/americanexperience/features/goldrush-samuel-brannan",
+    "confidence": "verified"
+  },
+  {
+    "id": "levi-strauss",
+    "claim": "Levi Strauss went to San Francisco in 1853 to sell dry goods; the riveted jeans patent was granted May 20, 1873.",
+    "source_title": "Levi Strauss & Co., 'The Story of Levi Strauss'",
+    "url": "https://levistrauss.com/2013/03/14/the-story-of-levi-strauss/",
+    "confidence": "partial"
+  },
+  {
+    "id": "foreign-miners-tax",
+    "claim": "1850: $20/month on non-citizen miners (signed April 13, 1850; repealed March 14, 1851), mainly hit Latin American and French miners. 1852: $3/month, aimed at Chinese miners; raised to $4/month March 30, 1853.",
+    "source_title": "PBS American Experience, 'Chinese Immigrants and the Gold Rush'; SCU Digital Exhibits",
+    "url": "https://www.pbs.org/wgbh/americanexperience/features/goldrush-chinese-immigrants",
+    "confidence": "partial"
+  },
+  {
+    "id": "foreign-miners-tax-1850-protest",
+    "claim": "About 4,000 mostly Mexican and Peruvian miners protested the 1850 tax at Sonora on May 19, 1850.",
+    "source_title": "CUNY American Social History Project, 'Latin American and French Miners Protest the Foreign Miner's Tax'",
+    "url": "https://shec.ashp.cuny.edu/items/show/1812",
+    "confidence": "partial"
+  },
+  {
+    "id": "naturalization-white",
+    "claim": "U.S. naturalization was limited to 'any Alien being a free white person', so Chinese immigrants could not become citizens.",
+    "source_title": "Immigration History (UT Austin), Nationality Act of 1790",
+    "url": "https://immigrationhistory.org/item/1790-nationality-act/",
+    "confidence": "verified"
+  },
+  {
+    "id": "chinese-arrivals",
+    "claim": "2,716 Chinese arrived in 1851 and 20,026 in 1852, following crop failures in southern China.",
+    "source_title": "PBS American Experience, 'Chinese Immigrants and the Gold Rush'",
+    "url": "https://www.pbs.org/wgbh/americanexperience/features/goldrush-chinese-immigrants",
+    "confidence": "verified"
+  },
+  {
+    "id": "chinese-voyage",
+    "claim": "Hong Kong to San Francisco generally took ten to twelve weeks by sail (fast clippers 40-50 days); most migrants paid their own way or borrowed; the credit-ticket system existed but its extent is debated.",
+    "source_title": "Mae Ngai, History News Network",
+    "url": "https://www.historynewsnetwork.org/article/america-once-was-eager-for-chinese-immigration-mae",
+    "confidence": "partial"
+  },
+  {
+    "id": "chinese-district-associations",
+    "claim": "Sam Yup (1851) and Sze Yup (late 1851) district associations; Sze Yup met newcomers at the docks and provided housing, jobs and mining outfits; later the Six Companies (CCBA, formal 1882). Debt-tracking role not verified online.",
+    "source_title": "PBS American Experience; NPS, 'The Chinese Six Companies'",
+    "url": "https://home.nps.gov/articles/000/the-chinese-six-companies.htm",
+    "confidence": "partial"
+  },
+  {
+    "id": "bigler-message-1852",
+    "claim": "Governor John Bigler's special message on the 'Chinese Question', April 23, 1852, attacked 'Coolies' and called for heavy taxes.",
+    "source_title": "Mae Ngai, History News Network",
+    "url": "https://historynewsnetwork.org/article/181031",
+    "confidence": "verified"
+  },
+  {
+    "id": "asing-letter-1852",
+    "claim": "Norman Asing's open letter in the Daily Alta California (early May 1852; May 5 per most scholars, May 15 per PBS): 'The declaration of your independence, and all the acts of your government, your people, and your history are all against you.'",
+    "source_title": "PBS, Becoming American: The Chinese Experience",
+    "url": "https://www.pbs.org/becomingamerican/ce_witness1.html",
+    "confidence": "partial"
+  },
+  {
+    "id": "people-v-hall",
+    "claim": "People v. Hall, 4 Cal. 399 (1854): Chief Justice Murray held Chinese witnesses could not testify against white persons; George W. Hall's conviction for murdering Ling Sing was reversed.",
+    "source_title": "CourtListener, People v. Hall; Immigration History",
+    "url": "https://www.courtlistener.com/opinion/5590541/people-v-hall/",
+    "confidence": "verified"
+  },
+  {
+    "id": "people-v-hall-victim",
+    "claim": "Ling Sing, a Chinese miner in Nevada County, was killed in 1853; Chinese witnesses testified at Hall's trial.",
+    "source_title": "SFSU Asian American/Pacific Islander biography project, Ling Sing",
+    "url": "https://apiabiography.sfsu.edu/ling-sing",
+    "confidence": "verified"
+  },
+  {
+    "id": "testimony-ban-end",
+    "claim": "The race-based testimony ban was dropped when California adopted its 1872 Penal Code.",
+    "source_title": "Wikipedia summary of People v. Hall (secondary)",
+    "url": "https://en.wikipedia.org/wiki/People_v._Hall",
+    "confidence": "partial"
+  },
+  {
+    "id": "land-act-1851",
+    "claim": "Land Act of March 3, 1851: the Board of Land Commissioners heard 813 cases (1851-1856) and confirmed 604; with appeals, cases took an average of 17 years.",
+    "source_title": "Online Archive of California, Bancroft Library finding aid, Documents Pertaining to the Adjudication of Private Land Claims",
+    "url": "https://www.oac.cdlib.org/findaid/ark:/13030/hb109nb422/admin/",
+    "confidence": "verified"
+  },
+  {
+    "id": "vallejo-land",
+    "claim": "Mariano Guadalupe Vallejo lost most of his land to squatters and expensive legal proceedings.",
+    "source_title": "University of Oklahoma Press, Recuerdos (Beebe and Senkewicz, trans.)",
+    "url": "https://www.oupress.com/9780806190778/recuerdos",
+    "confidence": "verified"
+  },
+  {
+    "id": "vallejo-recuerdos",
+    "claim": "Vallejo, Recuerdos (1875, Spanish, public domain): '¿a qué bien quejarnos? el mal está hecho y ya no tiene remedio.' Transcription not checked against the manuscript.",
+    "source_title": "Peralta Hacienda Historical Park audio scripts",
+    "url": "https://www.peraltahacienda.org/PH_allalbums/audio/scripts/scripts_pll.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "california-native-population",
+    "claim": "California's Native population fell from perhaps 150,000 (1846/1848) to about 30,000 (1870/1873).",
+    "source_title": "UCLA American Indian Studies Center, An American Genocide (Madley, Yale 2016); NMAI NK360",
+    "url": "https://amindian.ucla.edu/publication/an-american-genocide/",
+    "confidence": "verified"
+  },
+  {
+    "id": "madley-killings",
+    "claim": "Vigilantes, militiamen and soldiers killed between 9,492 and 16,094 California Indians (1846-1873); 370 massacres; 3,000-4,000 children forcibly transferred 1850-1868.",
+    "source_title": "USC Center for Advanced Genocide Research, Madley lecture summary",
+    "url": "https://dornsife.usc.edu/cagr/2016/10/31/benjamin-madley-lecture-summary/",
+    "confidence": "verified"
+  },
+  {
+    "id": "indian-act-1850",
+    "claim": "Act for the Government and Protection of Indians, April 22, 1850: allowed indenture of Indian children and adults, auction of 'vagrant' Indians; not fully repealed until 1937.",
+    "source_title": "Johnston-Dodds, Early California Laws and Policies Related to California Indians, California State Library (2002)",
+    "url": "https://cawaterlibrary.net/wp-content/uploads/2017/05/Early-Laws-Pertaining-to-Tribes.pdf",
+    "confidence": "verified"
+  },
+  {
+    "id": "burnett-1851",
+    "claim": "Governor Burnett, January 7, 1851: 'That a war of extermination will continue to be waged between the races, until the Indian race becomes extinct, must be expected.'",
+    "source_title": "Johnston-Dodds (2002), citing Journals of the Senate and Assembly of the State of California, 1852, p. 15",
+    "url": "https://cawaterlibrary.net/wp-content/uploads/2017/05/Early-Laws-Pertaining-to-Tribes.pdf",
+    "confidence": "verified"
+  },
+  {
+    "id": "militia-payments",
+    "claim": "State militia expeditions against Indians cost $843,573.48 (1850-52); total claims $1,293,179.20 (1851-59); for 1854-59 expeditions the U.S. paid $229,987.67 of $449,605.74 claimed (Act of March 2, 1861). Congress reimbursed about $900,000 for early expeditions in 1854 (exact figure unconfirmed).",
+    "source_title": "Johnston-Dodds (2002), Tables 1-2, from State Comptroller records, California State Archives",
+    "url": "https://cawaterlibrary.net/wp-content/uploads/2017/05/Early-Laws-Pertaining-to-Tribes.pdf",
+    "confidence": "partial"
+  },
+  {
+    "id": "militia-reimbursement-madley",
+    "claim": "Madley: state funding bills totaled about $1.5 million; Congress voted to reimburse about $900,000.",
+    "source_title": "Anchorage Daily News, 2016 interview with Benjamin Madley",
+    "url": "https://www.adn.com/arts/books/2016/09/21/author-of-controversial-book-on-indian-extermination-in-california-speaks-in-anchorage/",
+    "confidence": "partial"
+  },
+  {
+    "id": "bloody-island",
+    "claim": "Bloody Island, Clear Lake, May 15, 1850: U.S. soldiers killed Pomo people, mostly women, children and elders; estimates range about 60 to 200+.",
+    "source_title": "California Office of Historic Preservation, Landmark No. 427",
+    "url": "https://ohp.parks.ca.gov/ListedResources/Detail/427",
+    "confidence": "partial"
+  },
+  {
+    "id": "newsom-apology",
+    "claim": "Governor Newsom apologized to California Native Americans on June 18, 2019 (Executive Order N-15-19) and created a Truth and Healing Council.",
+    "source_title": "Office of the Governor of California",
+    "url": "https://www.gov.ca.gov/2019/06/18/governor-newsom-issues-apology-to-native-americans-for-states-historical-wrongdoings-establishes-truth-and-healing-council/",
+    "confidence": "verified"
+  },
+  {
+    "id": "clappe-lottery",
+    "claim": "Dame Shirley, Indian Bar, April 10, 1852: 'Gold-mining is nature's great lottery scheme... It is a mere matter of chance.'",
+    "source_title": "The Shirley Letters, Project Gutenberg #23280",
+    "url": "https://www.gutenberg.org/ebooks/23280",
+    "confidence": "verified"
+  },
+  {
+    "id": "clappe-foreigners",
+    "claim": "Dame Shirley, Indian Bar, May 1, 1852, on Rich Bar barring foreign miners: 'It seems to me that the above law is selfish, cruel, and narrow-minded in the extreme.'",
+    "source_title": "The Shirley Letters, Project Gutenberg #23280",
+    "url": "https://www.gutenberg.org/ebooks/23280",
+    "confidence": "verified"
+  },
+  {
+    "id": "royce-copyright",
+    "claim": "Sarah Royce's A Frontier Lady was first published in 1932 (Yale); public-domain status not confirmed, so do not quote it in the game.",
+    "source_title": "Library catalog record (NYPL)",
+    "url": "https://www.nypl.org/research/research-catalog/bib/b10668462",
+    "confidence": "disputed"
+  },
+  {
+    "id": "california-statehood",
+    "claim": "California became the 31st state on September 9, 1850, as part of the Compromise of 1850; its 1849 constitution banned slavery.",
+    "source_title": "U.S. Senate, States in the Senate: California",
+    "url": "https://www.senate.gov/states/CA/intro.htm",
+    "confidence": "verified"
+  },
+  {
+    "id": "oregon-trail-2021",
+    "claim": "Gameloft's 2021 Oregon Trail hired Indigenous historians (Huettl, Phillips, Bauer) and added Native playable characters, removed stereotyped braids, bows and music.",
+    "source_title": "NPR via KPBS, May 12, 2021",
+    "url": "https://www.kpbs.org/news/national/2021/05/12/a-new-spin-on-a-classic-video-game-gives-native-americans-better-representation",
+    "confidence": "verified"
+  },
+  {
+    "id": "mission-us-cheyenne",
+    "claim": "Mission US 'A Cheyenne Odyssey' was developed with the Northern Cheyenne at Chief Dull Knife College, who consulted on content, script, design and casting.",
+    "source_title": "Mission US, Process and Development",
+    "url": "https://www.mission-us.org/about/creating-mission-us/process-and-development/",
+    "confidence": "verified"
+  },
+  {
+    "id": "mission-us-research",
+    "claim": "EDC studies found Mission US knowledge gains (e.g., 15% pre/post gain vs under 1% control, 2016); no outcome study specific to A Cheyenne Odyssey found.",
+    "source_title": "Mission US, Research and Outcomes",
+    "url": "https://mission-us.org/about/proven-impact/research-and-outcomes/",
+    "confidence": "verified"
+  },
+  {
+    "id": "flight-to-freedom-backlash",
+    "claim": "'Flight to Freedom' drew backlash in 2015 and October 2017 (Phoenix Elementary blocked it); no 2019 event found.",
+    "source_title": "KJZZ (Phoenix public radio), October 2017",
+    "url": "https://kjzz.org/content/550387/asu-professor-discusses-criticism-over-slavery-computer-game",
+    "confidence": "partial"
+  },
+  {
+    "id": "simulations-adl",
+    "claim": "Simulations of oppression 'trivialize the experience of the victims' and can put students 'in the position of defending and/or identifying with the oppressors'.",
+    "source_title": "ADL, 'Why Simulation Activities Should Not Be Used'",
+    "url": "https://www.adl.org/resources/tools-and-strategies/why-simulation-activities-should-not-be-used",
+    "confidence": "verified"
+  },
+  {
+    "id": "simulations-lfj",
+    "claim": "Learning for Justice warns simulations send the message 'Now you know what it feels like to be...'.",
+    "source_title": "Learning for Justice, 'Classroom Simulations: Proceed With Caution' (2008)",
+    "url": "https://archive.learningforjustice.org/magazine/spring-2008/classroom-simulations-proceed-with-caution",
+    "confidence": "verified"
+  },
+  {
+    "id": "native-simulations-mccoy",
+    "claim": "On Native history simulations and reenactments: 'These do tangible harm and naturalize the context as normal.' (Meredith McCoy, Carleton College)",
+    "source_title": "K-12 Dive, October 2024",
+    "url": "https://www.k12dive.com/news/ensure-native-americans-accurately-represented-curriculum/730024",
+    "confidence": "verified"
+  },
+  {
+    "id": "nk360-essential-understandings",
+    "claim": "NMAI NK360: 'There is no single American Indian culture or language'; teach Native nations as present-day.",
+    "source_title": "Smithsonian Magazine, Sept 18, 2019",
+    "url": "https://www.smithsonianmag.com/smithsonian-institution/inside-new-effort-change-what-schools-teach-about-native-american-history-180973166/",
+    "confidence": "verified"
+  },
+  {
+    "id": "nk360-gold-rush",
+    "claim": "NMAI inquiry lesson for grades 8-12 asks whether American actions against California Native Americans during the gold rush meet the UN definition of genocide.",
+    "source_title": "NMAI Native Knowledge 360",
+    "url": "https://americanindian.si.edu/nk360/resources/Impact-of-the-Gold-Rush-on-Native-Americans-of-California",
+    "confidence": "verified"
+  },
+  {
+    "id": "single-display-groupware",
+    "claim": "Children sharing one screen were more engaged with multiple input devices; one input device lets one child dominate.",
+    "source_title": "Stewart, Bederson and Druin, Single Display Groupware (University of Maryland HCIL)",
+    "url": "https://www.cs.umd.edu/projects/hcil/jazz/learn/papers/chi-98-sdg.pdf",
+    "confidence": "partial"
+  }
+]

@@ -11,6 +11,17 @@ WESTWARD.config = {
   // How far behind schedule a group can fall before optional stops are skipped.
   slackMinutes: 1.5,
 
+  // Trail events between stops (data/trail-events.js). Each one takes a group about
+  // eventMinutes; a group only meets them when it is ahead of schedule.
+  maxTripEvents: 2,
+  maxEventsPerRun: 8,
+  eventMinutes: 0.4,
+  eventReserveMinutes: 1.0,
+  minutesPerStop: 2.8,   // how long a group usually spends on one stop
+  eventChance: 0.85,
+  // How long the wagon takes to cross between stops on screen (seconds).
+  travelSeconds: { min: 4, max: 8, per100Miles: 0.8 },
+
   // No early game over: at most this many family members can die in one run.
   maxDeaths: 2,
 

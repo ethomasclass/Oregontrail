@@ -354,10 +354,16 @@
     resize();
   });
 
-  function travelTo(key, opts, ms) {
+  function travelTo(key, opts, ms, hooks) {
+    hooks = hooks || {};
     set(key, Object.assign({}, opts, { force: true }));
-    return travel(ms);
+    var stops = (hooks.stops || []).slice().sort(), chain = Promise.resolve(), last = 0;
+    stops.forEach(function (k, i) {
+      chain = chain.then(function () { var seg = (k - last) * ms; last = k; return travel(seg); })
+        .then(function () { if (hooks.onProgress) hooks.onProgress(k); return hooks.onStop && hooks.onStop(i); });
+    });
+    return chain.then(function () { return travel((1 - last) * ms); }).then(function () { if (hooks.onProgress) hooks.onProgress(1); });
   }
 
-  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, preload: preload };
+  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, react: function () {}, party: function () {}, preload: preload };
 })();

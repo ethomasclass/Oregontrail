@@ -67,7 +67,7 @@
     state.log = [];
     state.beats = beatsFor(state, f.route);
     state.index = -1;
-    state.startedAt = now || Date.now();
+    state.startedAt = now != null ? now : Date.now();
     state.place = f.startPlace;
     return state;
   }
@@ -99,6 +99,10 @@
       state[it.stat] = (state[it.stat] || 0) + (cart[it.id] || 0) * it.per;
     });
     state.log.push({ kind: "store", text: "Outfitted at " + place(state.beats[state.index].at).name });
+    // the oxen get names, the way emigrants named theirs
+    var names = (W.oxNames || []).slice();
+    state.oxNames = [];
+    for (var i = 0; i < state.oxen && names.length; i++) state.oxNames.push(names.splice(Math.floor(rand(state) * names.length), 1)[0]);
   }
 
   // ---------------------------------------------------------------- travel
@@ -203,7 +207,7 @@
     var report = applyEffects(state, outcome.effects || {});
     report.result = outcome.result;
     report.choice = ch.label;
-    state.log.push({ kind: "card", card: c.id, choice: ch.label, result: outcome.result });
+    state.log.push({ kind: c.slots ? "event" : "card", card: c.id, choice: ch.label, result: outcome.result });
     return report;
   }
 
@@ -262,6 +266,90 @@
     state.beats = state.beats.slice(0, state.index + 1).concat(beatsFor(state, branch));
   }
 
+  // ---------------------------------------------------------------- trail events
+  // Events on the way between stops, generated from templates in trail-events.js.
+  // The clock decides how many: time a group has in hand becomes trail life.
+  function terrainOf(placeId) {
+    var sc = W.scenes && W.scenes[place(placeId).scene];
+    return (sc && sc.terrain) || "plains";
+  }
+  function routeKind(state, placeId) {
+    var f = family(state);
+    if (f.route === "trail") return "trail";
+    return ["hongkong", "pacific", "sanfrancisco"].indexOf(placeId) >= 0 ? "sea" : "walk";
+  }
+  function eventCount(state, now) {
+    var b = beat(state), c = W.config;
+    if (!b || state.index <= 0 || b.type === "ending") return 0;
+    // Budget against the whole rest of the journey: time left until the ending,
+    // minus the stops still required. Only the true surplus becomes trail life.
+    var end = state.beats[state.beats.length - 1];
+    var endTarget = end.type === "ending" ? end.target : W.routes.california[W.routes.california.length - 1].target;
+    var required = state.beats.slice(state.index).filter(function (x) { return !x.optional && x.type !== "ending"; }).length;
+    if (end.type !== "ending") required += 4; // the branch after the fork is not added yet
+    var elapsed = elapsedMinutes(state, now);
+    var slack = Math.min(b.target - elapsed, endTarget - elapsed - required * c.minutesPerStop) - c.eventReserveMinutes;
+    var left = c.maxEventsPerRun - Object.keys(state.eventsSeen || {}).length;
+    var n = Math.max(0, Math.min(c.maxTripEvents, left, Math.floor(slack / c.eventMinutes)));
+    var out = 0;
+    for (var i = 0; i < n; i++) if (rand(state) < c.eventChance) out++;
+    return out;
+  }
+  function eligible(state, t, terrain, route, month) {
+    var w = t.when || {};
+    if (w.route && w.route !== route) return false;
+    if (w.terrain && w.terrain.indexOf(terrain) < 0) return false;
+    if (w.months && w.months.indexOf(month) < 0) return false;
+    if (w.has && !meets(state, w.has)) return false;
+    return true;
+  }
+  function pickTripEvents(state, now) {
+    var n = eventCount(state, now);
+    var terrain = terrainOf(state.place), route = routeKind(state, state.place), month = dateOf(state).getUTCMonth();
+    state.eventsSeen = state.eventsSeen || {};
+    var picked = [];
+    for (var i = 0; i < n; i++) {
+      var pool = (W.trailEvents || []).filter(function (t) {
+        return eligible(state, t, terrain, route, month) && !state.eventsSeen[t.id] && picked.indexOf(t) < 0;
+      });
+      if (!pool.length) break;
+      var total = pool.reduce(function (s, t) { return s + (t.weight || 1); }, 0), r = rand(state) * total, chosen = pool[0];
+      for (var j = 0; j < pool.length; j++) { r -= pool[j].weight || 1; if (r <= 0) { chosen = pool[j]; break; } }
+      state.eventsSeen[chosen.id] = true;
+      picked.push(chosen);
+    }
+    return picked.map(function (t) { return instantiate(state, t); });
+  }
+  // Fill a template's slots: who, which ox, where.
+  function instantiate(state, t) {
+    var living = alive(state);
+    var member = pick(state, living);
+    var child = living.slice().sort(function (a, b) { return a.age - b.age; })[0];
+    var doctor = living.filter(function (m) { return m.role === "doctor"; })[0] || member;
+    var ox = state.oxNames && state.oxNames.length ? pick(state, state.oxNames) : "the lead ox";
+    var next = state.beats[state.index] ? place(state.beats[state.index].at).name.split(":")[0].split(",")[0] : "the next stop";
+    var slots = { member: member.name, child: child.name, doctor: doctor.name, ox: ox, next: next, family: family(state).short };
+    function fill(str) { return String(str).replace(/\{(\w+)\}/g, function (m, k) { return slots[k] != null ? slots[k] : m; }); }
+    function fillChoice(ch) {
+      var o = Object.assign({}, ch, { label: fill(ch.label), result: ch.result && fill(ch.result) });
+      if (ch.outcomes) o.outcomes = ch.outcomes.map(function (x) { return Object.assign({}, x, { result: fill(x.result) }); });
+      return o;
+    }
+    var choices = t.choices ? t.choices.map(fillChoice) : [fillChoice(Object.assign({ label: "Continue" }, t.outcome))];
+    return { id: t.id, title: fill(t.title), text: fill(t.text), lead: t.lead || "navigator", react: t.react || "stop",
+      choices: choices, slots: slots, quick: !t.choices, draft: true };
+  }
+  function resolveEvent(state, ev, index) {
+    var before = state.oxen;
+    var report = choose(state, ev, index);
+    // the named ox is the one lost
+    if (state.oxen < before && state.oxNames) {
+      var i = state.oxNames.indexOf(ev.slots.ox);
+      if (i >= 0) state.oxNames.splice(i, 1); else state.oxNames.pop();
+    }
+    return report;
+  }
+
   // ---------------------------------------------------------------- teacher
   function jumpTo(state, i) {
     var target = state.beats[i];
@@ -296,6 +384,7 @@
     storeFor: storeFor, cartTotal: cartTotal, cartProblems: cartProblems, checkout: checkout,
     advance: advance, beat: beat, cardFor: cardFor, choices: choices, choose: choose,
     elapsedMinutes: elapsedMinutes, dateOf: dateOf, formatDate: formatDate,
-    jumpTo: jumpTo, ledger: ledger, rand: rand, card: card
+    jumpTo: jumpTo, ledger: ledger, rand: rand, card: card,
+    pickTripEvents: pickTripEvents, resolveEvent: resolveEvent
   };
 })(typeof window !== "undefined" ? window : globalThis);

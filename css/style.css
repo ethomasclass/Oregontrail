@@ -117,6 +117,11 @@ body.has-panel .scene { bottom: var(--panel-h); }
 .chip.lead { background: var(--gold); }
 .chip.vote { background: var(--blue); color: #fff; }
 .chip.draft { background: var(--terracotta); color: #fff; }
+.chip.trail { background: var(--teal); color: #fff; }
+.card.event { max-width: 680px; margin-top: 2vh; animation: drop 0.35s cubic-bezier(.2,.8,.2,1); }
+.card.event h2 { font-size: clamp(22px, 2vw, 32px); }
+.card.event .result { margin-top: 12px; }
+@keyframes drop { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
 
 /* ------------------------------------------------------------ buttons */
 button {
