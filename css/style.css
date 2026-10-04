@@ -355,3 +355,47 @@ button.on { outline: 3px solid var(--blue); outline-offset: 1px; }
 .original { margin-top: 6px; font-size: 0.85em; }
 .original summary { cursor: pointer; color: var(--muted); font-style: normal; font-size: 0.85em; }
 .original[open] summary { margin-bottom: 4px; }
+
+/* ------------------------------------------------------------ the travel map */
+.map-overlay {
+  position: fixed; left: 0; right: 0; top: 0; bottom: var(--panel-h); z-index: 20;
+  display: grid; place-items: center; padding: 14px 18px; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(27, 23, 18, 0.55), rgba(27, 23, 18, 0.85));
+}
+.map-overlay.in { opacity: 1; pointer-events: auto; animation: map-in 0.7s cubic-bezier(.2,.8,.2,1); }
+.map-overlay.out { opacity: 0; animation: map-out 0.55s ease-in; }
+.map-screen { bottom: 0; z-index: 35; }
+@keyframes map-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes map-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.97); } }
+.map-board {
+  width: min(1240px, 100%); max-height: 100%; display: flex; flex-direction: column; align-items: center;
+  background: var(--card); border: 2px solid var(--ink); box-shadow: var(--shadow); border-radius: var(--radius);
+  padding: 18px 26px 16px;
+}
+.map-title { margin: 0 auto 6px; font-size: clamp(20px, 1.9vw, 30px); text-align: center; }
+.map-art { width: 100%; min-height: 0; flex: 1 1 auto; display: flex; justify-content: center; --map-maxh: calc(100vh - var(--panel-h) - 150px); }
+.map-screen .map-art { --map-maxh: calc(100vh - 210px); }
+.map-stack { position: relative; width: min(100%, calc(var(--map-maxh) * var(--map-ratio))); aspect-ratio: var(--map-ratio); }
+.map-stack .map-base { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map-stack .trail-map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map-foot { width: 100%; display: flex; gap: 18px; align-items: baseline; justify-content: space-between; font-size: 0.66em; margin-top: 6px; }
+.map-foot .map-date, .map-foot .map-miles { font-family: var(--head); font-weight: 700; white-space: nowrap; }
+.map-foot .map-note { flex: 1; text-align: center; color: var(--muted); font-style: italic; }
+.trail-map .token { transition: transform 0.25s linear; }
+.map-body { width: 100%; display: flex; gap: 18px; align-items: flex-start; min-height: 0; }
+.map-body .map-art { flex: 1 1 auto; }
+.map-legend { flex: 0 0 250px; margin: 0; padding: 0 0 0 1.4em; font-size: 0.6em; max-height: calc(100vh - 230px); overflow: auto; }
+.map-legend li { margin: 0 0 6px; }
+.map-legend li span:last-child { color: var(--muted); }
+.map-legend .empty { list-style: none; margin-left: -1.4em; color: var(--muted); font-style: italic; }
+.pin-key { display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; border: 1.5px solid var(--ink); }
+.pin-key.event { background: #c9a24e; transform: rotate(45deg) scale(0.85); }
+.pin-key.river { background: #cfe0e4; border-color: #5a7c90; border-radius: 50%; }
+.pin-key.death { border: 0; width: 9px; background: linear-gradient(var(--ink), var(--ink)) center / 2px 100% no-repeat, linear-gradient(var(--ink), var(--ink)) center 30% / 100% 2px no-repeat; }
+.pin-key.choice { background: #9b3024; border-radius: 50%; }
+.map-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+.map-tabs button { font-size: 0.6em; padding: 6px 14px; }
+.map-actions { margin-top: 10px; }
+@media (max-width: 900px) { .map-body { flex-direction: column; } .map-legend { flex-basis: auto; } }
+.trail-map { overflow: hidden; }
+.map-stack { contain: layout paint; }

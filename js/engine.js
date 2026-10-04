@@ -178,7 +178,7 @@
   // Set up a trip; the days are lived one at a time with stepDay().
   function travel(state, toId) {
     var from = place(state.place), to = place(toId);
-    var trip = { from: from.name, to: to.name, toId: toId, miles: 0, days: 0, day: 0, notes: [], mpd: 0, provisioned: !!to.rations };
+    var trip = { from: from.name, fromId: state.place, to: to.name, toId: toId, miles: 0, days: 0, day: 0, notes: [], mpd: 0, provisioned: !!to.rations };
     if (state.index < 0) return trip; // the first beat is where you start
     if (from === to) {
       trip.days = 3;

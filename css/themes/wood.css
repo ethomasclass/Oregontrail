@@ -1,0 +1,153 @@
+/* Westward UI skin: "Wood and paper". The art for every piece (frames, planks,
+   ribbons, tags, the shelf) is drawn in code by js/uikit.js and set as each
+   element's --ui-bg. This file handles type, color, and spacing.
+   Light comes from the top left. Titles: Alegreya SC. Reading: Alegreya Sans. */
+body.ui-wood {
+  --ink: #2b1d12; --muted: #6b5440; --cream: #f6ead0; --cream-dim: #e3d3b2; --brass: #e7c87a;
+  --wood-text: #2a170a; --red: #9b3024;
+  --head: "Alegreya SC", Georgia, serif;
+  --body: "Alegreya Sans", "Trebuchet MS", system-ui, sans-serif;
+  --panel-h: 116px;
+  background: #1b1712;
+}
+body.ui-wood h1, body.ui-wood h2, body.ui-wood h3 { font-weight: 800; }
+
+/* every painted piece: its art is the background */
+body.ui-wood .ui-frame, body.ui-wood .ui-ribbon, body.ui-wood .ui-sign, body.ui-wood .ui-tag, body.ui-wood .ui-key,
+body.ui-wood .ui-button, body.ui-wood .ui-shelf, body.ui-wood .ui-plaque, body.ui-wood .ui-medallion,
+body.ui-wood .ui-note, body.ui-wood .ui-paper, body.ui-wood .ui-field {
+  background: var(--ui-bg) 0 0 / 100% 100% no-repeat !important;
+  border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+}
+
+/* ------------------------------------------------------------ cards */
+body.ui-wood .card { padding: 34px 38px 32px; color: var(--ink); }
+body.ui-wood .card.event, body.ui-wood .card.river-card { max-width: 560px; }
+body.ui-wood .eyebrow { font-family: var(--body); font-weight: 700; font-size: 0.56em; letter-spacing: 0.14em; color: var(--muted); }
+body.ui-wood .card:not(.question) > h2:not(.plain), body.ui-wood .ledger h2 {
+  display: table; margin: 4px auto 14px; padding: 7px 62px 17px; text-align: center;
+  color: var(--cream); text-shadow: 0 1px 0 #4a120d; font-size: clamp(20px, 1.8vw, 30px); line-height: 1.15;
+}
+body.ui-wood .card p { line-height: 1.45; }
+body.ui-wood .card.question h2 { font-size: clamp(24px, 2.6vw, 40px); color: var(--red); }
+
+/* the menu board: cream text on dark wood */
+body.ui-wood .card.sizeup { color: var(--cream); max-width: 720px; }
+body.ui-wood .card.sizeup .eyebrow { color: #cdb894; text-align: center; }
+body.ui-wood .card.sizeup .status { color: var(--cream-dim); text-align: center; }
+body.ui-wood .card.sizeup .status strong { color: var(--brass); }
+body.ui-wood .card.sizeup .problem { color: #f2b49f; }
+body.ui-wood .card.sizeup .sub { border-top-color: rgba(246, 234, 208, 0.25); }
+body.ui-wood .card.sizeup .sub p, body.ui-wood .card.sizeup .ticker { color: var(--cream-dim); }
+body.ui-wood .card.sizeup .diary, body.ui-wood .card.sizeup .sub.voice .diary { color: var(--ink); }
+body.ui-wood .card.sizeup .chip { color: var(--cream); }
+
+/* ------------------------------------------------------------ tags */
+body.ui-wood .chip { height: 30px; padding: 0 24px 2px 13px; color: var(--cream); font: 600 0.56em var(--body); letter-spacing: 0.02em; }
+body.ui-wood .chips { gap: 10px; }
+
+/* ------------------------------------------------------------ buttons */
+body.ui-wood button { font-family: var(--body); transition: none; }
+body.ui-wood button.ui-button {
+  color: var(--cream); text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65);
+  font-weight: 700; padding: 12px 28px 16px 18px; min-height: 50px;
+}
+body.ui-wood button.ui-button:hover { background-image: var(--ui-hover) !important; }
+body.ui-wood button.ui-button:active { background-image: var(--ui-press) !important; transform: none; padding-top: 14px; padding-bottom: 14px; }
+body.ui-wood button.ui-button[disabled] { opacity: 0.9; color: #e7e0d4; }
+body.ui-wood button.ui-button[disabled]:hover, body.ui-wood button.ui-button[disabled]:active { background-image: var(--ui-bg) !important; padding: 12px 28px 16px 18px; }
+body.ui-wood button.primary, body.ui-wood .choices.menu > button:first-child { color: #2b1a0c; text-shadow: 0 1px 0 rgba(255, 230, 180, 0.55); }
+body.ui-wood button:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+body.ui-wood button.on { outline: none; padding-top: 14px; padding-bottom: 14px; }
+body.ui-wood button .key {
+  width: 1.75em; height: 1.75em; min-width: 0; display: inline-grid; place-items: center; padding: 0 0 1px;
+  margin-right: 12px; color: #3a2608; text-shadow: none; font: 800 0.85em var(--head); vertical-align: middle; flex: none;
+}
+body.ui-wood .choices { gap: 9px; }
+body.ui-wood .choices button { font-size: 0.74em; }
+body.ui-wood .choices .why, body.ui-wood .sub .actions button .why { color: var(--cream-dim); text-shadow: none; }
+body.ui-wood .choices.menu button { font-size: 0.66em; padding: 10px 26px 14px 14px; min-height: 48px; }
+body.ui-wood .choices.menu > button:first-child { font-size: 0.78em; }
+body.ui-wood .choices.menu .who { color: inherit; opacity: 0.75; }
+body.ui-wood .sub .actions button { max-width: 230px; }
+
+/* family pick: a paper card in a light frame */
+body.ui-wood .family-card { color: var(--ink); text-shadow: none; padding: 26px 26px 24px; font-size: 0.74em; }
+body.ui-wood .family-card:hover { background-image: var(--ui-hover) !important; }
+body.ui-wood .family-card strong { font-family: var(--head); font-size: 1.25em; }
+
+/* ------------------------------------------------------------ title, signs, headlines */
+body.ui-wood .title-screen h1 {
+  display: inline-block; padding: 18px 64px 24px; color: var(--wood-text);
+  text-shadow: 0 2px 0 rgba(255, 220, 170, 0.45), 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+body.ui-wood .title-screen .sub { color: var(--cream); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); }
+body.ui-wood .travel-box { padding: 12px 40px 16px; color: var(--wood-text); text-shadow: 0 1px 0 rgba(255, 220, 170, 0.45); }
+body.ui-wood .travel-box .next { color: #4a2c17; font-family: var(--body); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.6em; }
+body.ui-wood .travel-box h2 { margin: 0; font-size: clamp(24px, 2.6vw, 40px); }
+body.ui-wood .headline { padding: 14px 44px 18px; color: var(--wood-text); text-shadow: 0 1px 0 rgba(255, 220, 170, 0.45); font-size: clamp(26px, 3.2vw, 46px); }
+body.ui-wood .headline.somber { color: #1f140c; filter: saturate(0.6) brightness(0.9); }
+body.ui-wood .chapter-name { padding: 12px 48px 16px; color: var(--wood-text); text-shadow: 0 1px 0 rgba(255, 220, 170, 0.45); }
+body.ui-wood .chapter-date { color: var(--cream); }
+
+/* ------------------------------------------------------------ poster */
+body.ui-wood .poster { padding: 46px 52px; color: var(--ink); font-family: var(--body); }
+body.ui-wood .poster .big { color: var(--red); font-family: var(--head); }
+body.ui-wood .poster .rule { border-top-color: #8f6a40; }
+body.ui-wood .poster .line { font-family: var(--head); }
+
+/* ------------------------------------------------------------ roles */
+body.ui-wood .portrait .face { width: 66px; height: 66px; font-family: var(--head); font-weight: 800; color: var(--ink); }
+body.ui-wood .portrait input { padding: 9px 12px; color: var(--ink); font-family: var(--body); }
+body.ui-wood .field-label, body.ui-wood .role-name { font-family: var(--head); }
+
+/* ------------------------------------------------------------ store */
+body.ui-wood .store-row { border-bottom-color: #c9a874; }
+body.ui-wood .qty button.ui-button { min-height: 42px; padding: 6px 16px 10px; font-size: 1em; }
+body.ui-wood .qty output, body.ui-wood .budget { font-family: var(--head); }
+
+/* ------------------------------------------------------------ results, quotes, rivers */
+body.ui-wood .change { border: 0; background: rgba(139, 90, 51, 0.16); font-family: var(--body); font-weight: 700; }
+body.ui-wood .diary { padding: 16px 20px 18px; font-family: var(--body); font-size: 0.92em; }
+body.ui-wood .diary .who { font-family: var(--body); font-style: italic; font-size: 0.75em; }
+body.ui-wood .river-facts { padding: 12px 18px 14px; }
+body.ui-wood .river-facts .label { font-family: var(--body); font-weight: 700; }
+body.ui-wood .river-facts strong { font-family: var(--head); }
+body.ui-wood .epitaph { font-family: var(--body); background: #cfc8bb; border-color: #4f4840; }
+
+/* ------------------------------------------------------------ the shelf */
+body.ui-wood .panel { padding: 26px 14px 10px; gap: 12px; align-items: center; }
+body.ui-wood .gauge { padding: 9px 16px 13px; color: var(--ink); animation: none; min-width: 150px; }
+body.ui-wood .gauge-role { font-family: var(--head); font-weight: 800; font-size: 0.68em; color: var(--muted); }
+body.ui-wood .stat .label { font-family: var(--body); font-weight: 700; }
+body.ui-wood .stat .val { font-family: var(--body); font-weight: 700; }
+body.ui-wood .mini { color: var(--cream); text-shadow: 0 1px 1px #000; }
+body.ui-wood .mini .face { width: 48px; height: 48px; font: 800 1.3em var(--head); color: var(--ink); text-shadow: none; text-decoration: none; }
+body.ui-wood .mini .health { color: var(--cream-dim); }
+
+/* journal lines: scraps of paper */
+body.ui-wood .jline { padding: 10px 18px 14px; color: var(--ink); font-size: 0.64em; }
+body.ui-wood .jline span { font-family: var(--head); font-weight: 800; color: var(--ink); }
+
+/* ------------------------------------------------------------ teacher, minigames, sound */
+body.ui-wood .teacher { padding: 30px 30px 26px; color: var(--cream); }
+body.ui-wood .teacher button.ui-button { min-height: 40px; font-size: 13px; padding: 8px 20px 11px 14px; }
+body.ui-wood .note-t { color: var(--ink); }
+body.ui-wood .mg-card { padding: 30px 32px 28px; color: var(--cream); }
+body.ui-wood .minigame canvas { border: 3px solid #2b190d; }
+body.ui-wood .sound-toggle {
+  width: 46px; height: 46px; padding: 0; font-size: 0; opacity: 1; min-height: 0; position: fixed;
+}
+body.ui-wood .sound-toggle::after {
+  content: ""; position: absolute; inset: 12px; background: var(--ui-icon-sound) center / contain no-repeat;
+}
+body.ui-wood .sound-toggle[aria-pressed="false"]::after { opacity: 0.35; }
+body.ui-wood .sound-toggle[aria-pressed="false"]::before {
+  content: ""; position: absolute; left: 11px; right: 11px; top: 50%; height: 2.5px; background: var(--red); transform: rotate(-40deg); z-index: 1;
+}
+
+/* ------------------------------------------------------------ the map */
+body.ui-wood .map-board { padding: 30px 40px 26px; color: var(--ink); }
+body.ui-wood .map-title { display: table; padding: 7px 62px 17px; color: var(--cream); text-shadow: 0 1px 0 #4a120d; }
+body.ui-wood .map-foot .map-date, body.ui-wood .map-foot .map-miles { font-family: var(--head); }
+body.ui-wood .map-legend { font-family: var(--body); }

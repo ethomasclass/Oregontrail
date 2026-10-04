@@ -24,10 +24,15 @@ until every fact is verified (see `research/`).
 | Change endings and the ledger | `data/endings.js` |
 | Change diary quotes and the poster | `data/landmarks.js` |
 | Change timing, death limit, travel speed | `data/config.js` |
-| Change how a place looks (trees, rivers, forts, colors, light) | `data/scenes.js` |
+| Change how a place looks (trees, rivers, forts, people, colors, light) | `data/scenes.js` |
+| Change the travel map (places, rivers, Native nations, labels) | `data/map.js` |
+| Change the look of the screens | `uiTheme` in `data/config.js`: `wood` (default), `retro`, `glass`, `cinema`, `journal`, or `minimal`. Try one with `index.html?ui=retro`. |
 | Add the title painting (Gast, *American Progress*) | Put the image in `assets/` and set `titleImage` in `data/config.js` |
 
 Keep text free of em dashes (project style rule). `node tools/playtest.js` checks this.
+Student text is written at an 8th-grade reading level, with hard words explained where
+they appear. `node tools/readability.js` lists the hardest passages. Real quotes stay word
+for word; students see a modern version first and can open the original.
 
 ### Teacher panel
 
@@ -57,6 +62,12 @@ Plain HTML, CSS, and JavaScript, with no build step.
   shadows and resolution automatically.
 - `js/scene.js` is a simple 2D fallback for computers without WebGL.
 - `js/ui.js` holds the screens and the teacher panel.
+- `js/uikit.js` draws the wood and paper look (frames, planks, ribbons, tags, the shelf) as SVG
+  in code, then sets it as each element's background. No image files. The kit sheet and
+  mockups are in `design/ui-kit/index.html`.
+- `js/map.js` is the travel map, drawn to scale from real latitude and longitude. Between
+  stops the camera pulls up to the map and the wagon moves along the trail as the days pass.
+  Every trouble, crossing, death, and choice leaves a pin, and the ending shows the whole trip.
 - Content lives in `data/*.js` (plain data files, so the game works when opened from disk).
 - `js/vendor/three.min.js` is Three.js r149 (MIT), included so the game also runs offline.
 

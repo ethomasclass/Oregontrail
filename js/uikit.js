@@ -158,7 +158,7 @@
       var cx = x + w * R(), cy = y + h * R(), rr = 14 + R() * Math.min(w, h) * 0.25;
       out.push('<ellipse cx="' + f(cx) + '" cy="' + f(cy) + '" rx="' + f(rr) + '" ry="' + f(rr * (0.6 + R() * 0.5)) + '" fill="url(#' + st + ')"/>');
     }
-    for (var j = 0; j < w * h / 2500; j++) {
+    for (var j = 0; j < Math.min(90, w * h / 2500); j++) {
       var fx = x + w * R(), fy = y + h * R(), a = R() * 3.14, l = 3 + R() * 6;
       out.push('<line x1="' + f(fx) + '" y1="' + f(fy) + '" x2="' + f(fx + Math.cos(a) * l) + '" y2="' + f(fy + Math.sin(a) * l) + '" stroke="#9a7a50" stroke-opacity="0.18" stroke-width="0.6"/>');
     }
@@ -236,7 +236,7 @@
 
   // A red ribbon banner with folded tails.
   P.ribbon = function (w, h, R, o) {
-    var tail = h * 0.9, drop = h * 0.28, out = [];
+    var hh = Math.min(h, 46), tail = hh * 0.9, drop = hh * 0.28, out = [];
     var L = tail * 0.8, Rr = w - tail * 0.8;
     function tailPath(left) {
       var s = left ? 1 : -1, x0 = left ? 0 : w, xi = left ? L : Rr;
@@ -258,13 +258,15 @@
   };
 
   // A leather tag with stitching: who holds the mouse.
-  P.tag = function (w, h, R) {
+  var TAG = { leather: ["#8f5a34", "#7a4a2a", "#4e2d18"], red: ["#b0402f", "#8a2a1f", "#5a1610"], dark: ["#4a3a30", "#3a2c24", "#1f1712"], green: ["#5f7a4a", "#4a6238", "#2f4024"] };
+  P.tag = function (w, h, R, o) {
+    var tc = TAG[(o && o.tone) || "leather"] || TAG.leather;
     var d = "M2,2 L" + (w - h / 2) + ",2 L" + (w - 2) + "," + h / 2 + " L" + (w - h / 2) + "," + (h - 2) + " L2," + (h - 2) + " Z";
     var g = id("lt");
     return svg(w, h + 2, '<path d="' + d + '" transform="translate(1,2)" fill="#000" fill-opacity="0.3"/>' +
-      '<path d="' + d + '" fill="url(#' + g + ')" stroke="' + C.leatherDark + '" stroke-width="1.2"/>' +
+      '<path d="' + d + '" fill="url(#' + g + ')" stroke="' + tc[2] + '" stroke-width="1.2"/>' +
       '<path d="M6,6 L' + (w - h / 2 - 2) + ",6 L" + (w - 7) + "," + h / 2 + " L" + (w - h / 2 - 2) + "," + (h - 6) + " L6," + (h - 6) + ' Z" fill="none" stroke="' + C.stitch + '" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="3 2.5"/>',
-      '<linearGradient id="' + g + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f5a34"/><stop offset="1" stop-color="' + C.leather + '"/></linearGradient>');
+      '<linearGradient id="' + g + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + tc[0] + '"/><stop offset="1" stop-color="' + tc[1] + '"/></linearGradient>');
   };
 
   // A wax seal: a group vote.
@@ -440,5 +442,114 @@
     });
   }
 
-  window.UIKit = { paint: paint, pieces: P, icon: icon, colors: C, rng: rng };
+  // ------------------------------------------------------------------ the game skin
+  // When the page has body.ui-wood, every matching element gets its art as a CSS
+  // background (an SVG data URL), so the game's own markup stays plain HTML.
+  // Art is cached by kind and size, and redrawn only when an element changes size.
+  // Buttons get three backgrounds (--ui-bg, --ui-hover, --ui-press) for their states.
+  var RULES = [
+    [".card.sizeup, .teacher, .mg-card", "frame", { inner: "boards", border: 14 }],
+    [".map-board", "frame", { inner: "paper", border: 16 }],
+    [".map-title", "ribbon", {}],
+    [".family-card", "frame", { inner: "paper", border: 11, corners: false }, true],
+    [".card", "frame", { inner: "paper", border: 14 }],
+    [".poster", "frame", { inner: "paper", border: 16 }],
+    [".card:not(.question) > h2:not(.plain), .ledger h2", "ribbon", {}],
+    [".title-screen h1, .travel-box, .headline, .chapter-name", "sign", {}],
+    [".chip.vote", "tag", { tone: "red" }],
+    [".chip.year, .chip.draft", "tag", { tone: "dark" }],
+    [".chip.trail", "tag", { tone: "green" }],
+    [".chip", "tag", {}],
+    [".key", "key", {}],
+    [".sound-toggle", "medallion", {}],
+    ["button", "button", {}, true],
+    [".panel", "shelf", {}],
+    [".gauge", "plaque", {}],
+    [".mini .face, .portrait .face", "medallion", {}],
+    [".jline", "note", {}],
+    [".diary, .river-facts", "paper", { shadow: false }],
+    ["input", "field", {}]
+  ];
+  var cache = {}, cacheSize = 0;
+  function hash(str) { var h = 2166136261; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function url(kind, w, h, seed, o) {
+    var key = kind + "|" + w + "|" + h + "|" + seed + "|" + JSON.stringify(o);
+    if (!cache[key]) {
+      if (cacheSize > 400) { cache = {}; cacheSize = 0; }
+      cache[key] = 'url("data:image/svg+xml,' + encodeURIComponent(P[kind](w, h, rng(seed), o)) + '")';
+      cacheSize++;
+    }
+    return cache[key];
+  }
+  function ruleFor(el) {
+    for (var i = 0; i < RULES.length; i++) if (el.matches(RULES[i][0])) return RULES[i];
+    return null;
+  }
+  function optsFor(el, kind, base) {
+    var o = Object.assign({}, base);
+    if (kind === "plaque" && el.classList.contains("alert")) o.alert = true;
+    if (kind === "medallion") {
+      var m = el.closest(".mini, .portrait");
+      if (m && m.classList.contains("dead")) { o.dead = true; o.fill = "#b9a98c"; }
+      else if (m && m.classList.contains("sick")) o.fill = "#ecd7a0";
+    }
+    return o;
+  }
+  function decorate(el) {
+    var r = ruleFor(el);
+    if (!r) return;
+    var w = Math.round(el.offsetWidth), h = Math.round(el.offsetHeight);
+    if (w < 4 || h < 4) return;
+    var kind = r[1], o = optsFor(el, kind, r[2]);
+    var sib = el.parentNode ? Array.prototype.indexOf.call(el.parentNode.children, el) : 0;
+    var seed = hash(kind + w + "x" + h + ":" + sib);
+    var sig = kind + w + "x" + h + JSON.stringify(o) + (el.disabled ? "d" : "") + (el.classList.contains("primary") ? "p" : "") + (el.classList.contains("on") ? "o" : "");
+    if (el.__ui === sig) return;
+    el.__ui = sig;
+    el.classList.add("ui-" + kind);
+    if (kind === "button") {
+      var primary = el.classList.contains("primary") || el.matches(".choices.menu > button:first-child");
+      var bo = { kind: primary ? "primary" : "secondary", nails: w > 90 };
+      el.style.setProperty("--ui-bg", url("button", w, h, seed, Object.assign({}, bo, { state: el.disabled ? "disabled" : el.classList.contains("on") ? "pressed" : "normal" })));
+      el.style.setProperty("--ui-hover", url("button", w, h, seed, Object.assign({}, bo, { state: el.disabled ? "disabled" : "hover" })));
+      el.style.setProperty("--ui-press", url("button", w, h, seed, Object.assign({}, bo, { state: el.disabled ? "disabled" : "pressed" })));
+    } else if (r[3]) {
+      // a big clickable panel: the frame, and the same frame lit up on hover
+      el.style.setProperty("--ui-bg", url(kind, w, h, seed, o));
+      el.style.setProperty("--ui-hover", url(kind, w, h, seed + 1, Object.assign({}, o, { tone: "light" })));
+      el.style.setProperty("--ui-press", url(kind, w, h, seed + 1, Object.assign({}, o, { tone: "light" })));
+    } else {
+      el.style.setProperty("--ui-bg", url(kind, w, h, seed, o));
+    }
+  }
+  var queued = [], pending = false, ro = null;
+  function flush() {
+    pending = false;
+    var list = queued; queued = [];
+    list.forEach(function (el) { if (el.isConnected) decorate(el); });
+  }
+  function queue(el) { queued.push(el); if (!pending) { pending = true; requestAnimationFrame(flush); } }
+  var SELECTOR = RULES.map(function (r) { return r[0]; }).join(", ");
+  function scan(root) {
+    if (root.nodeType !== 1) return;
+    var els = root.matches(SELECTOR) ? [root] : [];
+    els = els.concat(Array.prototype.slice.call(root.querySelectorAll(SELECTOR)));
+    els.forEach(function (el) { if (!el.__uiWatched) { el.__uiWatched = true; if (ro) ro.observe(el); } queue(el); });
+  }
+  function skin() {
+    if (!document.body.classList.contains("ui-wood")) return;
+    ro = window.ResizeObserver ? new ResizeObserver(function (entries) { entries.forEach(function (e) { queue(e.target); }); }) : null;
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
+        m.addedNodes.forEach(scan);
+        if (m.type === "attributes") queue(m.target);
+      });
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["disabled", "class"] });
+    scan(document.body);
+    // the sound button shows a speaker icon
+    var sp = 'url("data:image/svg+xml,' + encodeURIComponent(icon("sound", 22).replace('class="icon" ', 'xmlns="http://www.w3.org/2000/svg" ')) + '")';
+    document.documentElement.style.setProperty("--ui-icon-sound", sp);
+  }
+
+  window.UIKit = { paint: paint, pieces: P, icon: icon, colors: C, rng: rng, skin: skin };
 })();

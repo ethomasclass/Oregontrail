@@ -45,6 +45,9 @@ WESTWARD.config = {
   // in assets/ and set its path here, for example "assets/american-progress.jpg".
   // It appears on the title screen and again at the end of the game.
   titleImage: null,
+  // The look of the screens: "wood" (wood and paper), or retro, glass, cinema, journal, minimal.
+  // Any page can override it with ?ui=name.
+  uiTheme: "wood",
 
   // Show a small "DRAFT" stamp on any text not yet checked against sources.
   showDraftStamps: true

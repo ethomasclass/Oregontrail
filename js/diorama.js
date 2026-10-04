@@ -1420,7 +1420,7 @@
       var done = 0, vel = 0, holding = false, switched = false, lastNow = null;
       travelAnim = function (now) {
         if (lastNow === null) lastNow = now;
-        var step = Math.min(100, now - lastNow); lastNow = now;
+        var step = Math.min(250, now - lastNow); lastNow = now;   // slow computers still finish on time
         var remain = ms - done;
         var target = holding ? 0 : Math.max(0.06, Math.min(1, remain / 1400));
         vel += (target - vel) * Math.min(1, step / (holding ? 380 : 700));
@@ -1638,7 +1638,7 @@
   }
 
   // ------------------------------------------------------------------ the loop
-  var raf = 0, last = 0, clock = 0, dustT = 0, paused3d = false;
+  var raf = 0, last = 0, clock = 0, dustT = 0, paused3d = false, covered = false;
   // Slow computer guard: if the first seconds run choppy, drop shadows and resolution.
   var perf = { frames: 0, time: 0, done: false };
   function checkPerf(rawDt) {
@@ -1656,6 +1656,8 @@
   function frame(now) {
     raf = requestAnimationFrame(frame);
     if (document.hidden || paused3d) { last = now; return; }
+    // covered by the travel map: keep the trip moving, but skip drawing
+    if (covered) { if (travelAnim) travelAnim(now); last = now; return; }
     if (last) checkPerf((now - last) / 1000);
     var dt = Math.min(0.05, (now - (last || now)) / 1000);
     last = now; clock += dt; view.t += dt;
@@ -1751,5 +1753,5 @@
   function start() { if (!raf) raf = requestAnimationFrame(frame); }
 
   W.scene2d = W.scene;
-  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, focus: focus, settle: settle, cross: cross, weather: function (k) { setWeather(k || (current.def && current.def.weather)); }, pause: function (p) { paused3d = !!p; }, preload: function () {}, is3d: true };
+  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, focus: focus, settle: settle, cross: cross, weather: function (k) { setWeather(k || (current.def && current.def.weather)); }, pause: function (p) { paused3d = !!p; }, cover: function (c) { covered = !!c; }, preload: function () {}, is3d: true };
 })();

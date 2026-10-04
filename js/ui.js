@@ -12,13 +12,14 @@
   var screenName = "title";
   var keyHandlers = {};
 
-  // UI skin: ?ui=retro|glass|cinema|journal|minimal, or config.uiTheme (see css/themes/).
+  // UI skin: ?ui=wood|retro|glass|cinema|journal|minimal, or config.uiTheme (see css/themes/).
   var uiTheme = params.get("ui") || W.config.uiTheme;
   if (uiTheme && /^[a-z]+$/.test(uiTheme)) {
     var themeLink = document.createElement("link");
     themeLink.rel = "stylesheet"; themeLink.href = "css/themes/" + uiTheme + ".css";
     document.head.appendChild(themeLink);
     document.body.classList.add("ui-" + uiTheme);
+    if (uiTheme === "wood" && window.UIKit) window.UIKit.skin();
   }
 
   var panel = document.createElement("div");
@@ -317,6 +318,7 @@
       { id: "rations", label: "Change rations (how much you eat)", role: "quartermaster" },
       { id: "rest", label: "Stop to rest", role: "doctor", hide: sea },
       { id: "talk", label: "Talk to people", role: "journal", hide: !voices.length },
+      { id: "map", label: "Look at the map", role: "navigator", hide: !W.travelMap },
       { id: "buy", label: "Buy 100 pounds of food ($" + Math.round((here.market || 0) * 100) + ")", role: "quartermaster", hide: !here.market }
     ].filter(function (o) { return !o.hide; });
     var panelHtml = "";
@@ -348,6 +350,7 @@
     on("#next-voice", function () { S.talk = (S.talk || 0) + 1; travelScreen(null, "talk"); });
     function pickOpt(id) {
       if (id === "go") return go();
+      if (id === "map") return lookAtMap().then(function () { travelScreen(null, null); });
       if (id === "buy") {
         var cost = Math.round(here.market * 100);
         if (S.money >= cost) { S.money -= cost; S.food += 100; } else if (S.money + S.gold >= cost) { S.gold -= cost - S.money; S.money = 0; S.food += 100; }
@@ -398,6 +401,11 @@
     })();
   }
 
+  // ------------------------------------------------------------ the map
+  var curTrip = null;
+  function pin(kind, label, trip) { if (W.travelMap) W.travelMap.pin(S, kind, label, trip || null); }
+  function lookAtMap(opts) { return W.travelMap ? W.travelMap.open(S, opts) : Promise.resolve(); }
+
   // ------------------------------------------------------------ drama helpers
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function sfx(name, arg) { if (W.sound) W.sound.play(name, arg); }
@@ -421,6 +429,7 @@
   // The family's journal: dated lines that stay on screen while traveling.
   function journal(text) {
     if (text) S.journal = (S.journal || []).concat([{ date: E.formatDate(E.dateOf(S)).replace(/, \d{4}$/, ""), text: text }]).slice(-4);
+    if (mapUI && text) mapUI.note(text);
     var box = document.getElementById("journal");
     if (!box) return;
     box.innerHTML = (S.journal || []).slice(-3).map(function (j, i, arr) {
@@ -429,7 +438,9 @@
   }
 
   // ------------------------------------------------------------ travel, day by day
-  var busy = false;
+  var busy = false, mapUI = null;
+  // Before the wagon stops for trouble, the map lifts away so the scene can play out.
+  function beforeHold(fn) { return mapUI && mapUI.visible ? mapUI.hide().then(fn) : fn(); }
   // How long the crossing takes on screen: longer legs take longer.
   function travelMs(trip) {
     var c = W.config.travelSeconds;
@@ -441,6 +452,7 @@
     busy = true;
     var trip = E.advance(S, Date.now());
     if (!trip) { busy = false; return; }
+    curTrip = trip;
     var events = E.pickTripEvents(S, Date.now());
     var eventDays = events.length === 1 ? [Math.ceil(trip.days * 0.45)] : events.length === 2 ? [Math.ceil(trip.days * 0.32), Math.ceil(trip.days * 0.68)] : [];
     var ms = travelMs(trip);
@@ -464,12 +476,12 @@
         if (d.weather.kind !== lastWeather && scene.weather) { lastWeather = d.weather.kind; scene.weather(d.weather.kind); }
         d.messages.forEach(function (m) { journal(m); });
         if (d.sick.length) sfx("sick");
-        if (d.deaths.length) { renderPanel(); return deathNotice(d.deaths).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); }); }
+        if (d.deaths.length) { renderPanel(); return beforeHold(function () { return deathNotice(d.deaths); }).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); }); }
         if (eventDays.length && trip.day >= eventDays[0]) {
           eventDays.shift();
           var ev = events.shift();
           renderPanel();
-          return tripEvent(ev).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); });
+          return beforeHold(function () { return tripEvent(ev); }).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); });
         }
       }
       renderPanel();
@@ -482,10 +494,17 @@
     }
     soundFor(E.place(S.place).scene, E.place(S.place).weather);
     if (W.sound) W.sound.travel(true);
+    // the map: the camera pulls up for the middle of the trip, and comes back down to arrive
+    mapUI = W.travelMap && trip.fromId !== trip.toId ? W.travelMap.overlay(S, trip) : null;
     var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(extra), ms, {
       onProgress: function (k) {
         var hold = liveUntil(Math.floor(k * trip.days));
         if (hold && W.sound) { W.sound.travel(false); hold = hold.then(function () { W.sound.travel(true); }); }
+        if (!hold && mapUI) {
+          if (k > 0.16 && k < 0.66 && !mapUI.visible) mapUI.show();
+          else if (k >= 0.8 && mapUI.visible) mapUI.hide();
+          mapUI.update();
+        }
         return hold;
       }
     });
@@ -494,16 +513,18 @@
       if (pause) return pause.then(finish);
       if (scene.weather) scene.weather(null);
       if (W.sound) W.sound.travel(false);
+      if (mapUI) { mapUI.remove(); mapUI = null; }
       if (trip.notes.length || (trip.skipped && trip.skipped.length)) S._trip = trip;
       app.innerHTML = "";
       chapter(trip.to.split(":")[0], E.formatDate(E.dateOf(S))).then(function () {
-        busy = false;
+        busy = false; curTrip = null;
         beatScreen();
       });
     });
   }
 
   function deathNotice(deaths) {
+    deaths.forEach(function (m) { pin("death", m.name + " died", curTrip); });
     scene.focus(true);
     sfx("death");
     return wait(900).then(function () {
@@ -552,6 +573,7 @@
       if (first) first.focus({ preventScroll: true });
       function decideEvent(index) {
         var r = E.resolveEvent(S, ev, index);
+        pin("event", ev.title, curTrip);
         renderPanel();
         app.querySelector(".choices").outerHTML =
           '<p class="result"><strong>' + esc(r.choice === "Continue" ? "" : r.choice) + "</strong> " + esc(r.result) + "</p>" +
@@ -583,6 +605,7 @@
   // ------------------------------------------------------------ beats
   function beatScreen() {
     var b = E.beat(S);
+    if (W.travelMap) W.travelMap.visit(S);
     setScene(S.place);
     if (b.type === "landmark") return landmark(b);
     if (b.type === "river") return riverScreen(b);
@@ -633,6 +656,7 @@
 
   function decide(c, index) {
     var ch = c.choices[index];
+    pin("choice", E.fill(S, c.title) + ": " + E.fill(S, ch.label), null);
     if (ch.minigame && W.minigames) {
       return W.minigames.run(ch.minigame, { pilot: ch.pilot, who: roleLabel(ch.who || c.lead) }).then(function (r) {
         var force = {};
@@ -701,6 +725,7 @@
       // the card slides away and the crossing plays out before the result
       dismissCard().then(function () { return scene.cross(id === "guideCash" ? "guide" : id, rep.upset); }).then(function () {
         renderPanel();
+        pin(rep.deaths && rep.deaths.length ? "death" : "river", (rep.upset ? "The wagon tipped crossing " : "Crossed ") + r.name, null);
         if (rep.upset) sfx("event", "storm");
         if (rep.deaths.length) sfx("death");
         result({ title: "Crossing " + r.name }, Object.assign(rep, { choice: list.filter(function (o) { return o.id === id; })[0].label }));
@@ -749,10 +774,12 @@
       '<div class="card question"><h2>' + esc(EN.question) + "</h2><p>" + esc(EN.handoutPrompt) + "</p>" +
       (W.config.titleImage ? "<p>" + esc(EN.gastPrompt) + '</p><div class="actions" style="justify-content:center">' +
         '<button id="painting">Show the painting again</button></div>' : "") +
+      (W.travelMap ? '<div class="actions" style="justify-content:center"><button id="journey">See your whole trip on the map</button></div>' : "") +
       '<p class="teaser">' + esc(EN.teaser) + "</p></div>",
       { top: true }
     );
     on("#painting", showPainting);
+    on("#journey", function () { lookAtMap({ title: "The " + L.family.name.replace(/^The /, "") + ": your whole trip", closeLabel: "Back to the ledger" }); });
   }
 
   function showPainting() {
