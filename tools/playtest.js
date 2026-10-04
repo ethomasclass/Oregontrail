@@ -10,7 +10,7 @@ var vm = require("vm");
 var root = path.join(__dirname, "..");
 globalThis.window = globalThis;
 ["data/config.js", "data/families.js", "data/route.js", "data/stores.js", "data/cards.js",
- "data/landmarks.js", "data/endings.js", "data/art.js", "js/engine.js"].forEach(function (f) {
+ "data/landmarks.js", "data/endings.js", "data/scenes.js", "js/engine.js"].forEach(function (f) {
   vm.runInThisContext(fs.readFileSync(path.join(root, f), "utf8"), { filename: f });
 });
 
@@ -42,13 +42,17 @@ Object.keys(W.routes).forEach(function (r) {
     if (b.landmark && !W.landmarks[b.landmark]) fail("Unknown landmark " + b.landmark);
   });
 });
+Object.keys(W.places).forEach(function (k) {
+  if (!W.scenes[W.places[k].scene]) fail("Place " + k + " uses unknown scene " + W.places[k].scene);
+});
+W.cards.forEach(function (c) { if (c.art && !W.scenes[c.art]) fail("Card " + c.id + " uses unknown scene " + c.art); });
 Object.keys(W.endings.family).forEach(function (k) {
   if (!W.families.some(function (f) { return k.indexOf(f.id + "-") === 0; })) fail("Ending for unknown family " + k);
 });
 
 // No em dashes in any shipped text.
 ["data", "js", "css"].forEach(function (dir) {
-  fs.readdirSync(path.join(root, dir)).forEach(function (f) {
+  fs.readdirSync(path.join(root, dir)).filter(function (f) { return /\.(js|css)$/.test(f); }).forEach(function (f) {
     var text = fs.readFileSync(path.join(root, dir, f), "utf8");
     if (text.indexOf("—") >= 0) fail("Em dash found in " + dir + "/" + f);
   });

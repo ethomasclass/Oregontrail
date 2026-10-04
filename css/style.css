@@ -147,7 +147,8 @@ button .key {
 .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
 
 /* ------------------------------------------------------------ title */
-.title-screen { text-align: center; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.45); }
+.title-screen { text-align: center; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.45); margin-top: 6vh; }
+.diorama { display: block; }
 .title-screen h1 { color: #fffaf0; }
 .title-screen .sub { font-size: 1.1em; margin: 0.5em 0 1.4em; }
 .title-screen button { text-shadow: none; }

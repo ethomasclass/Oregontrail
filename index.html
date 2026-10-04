@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- The scene sits behind every screen: painted layers, weather, and the wagon. -->
+  <!-- The scene sits behind every screen: the low-poly diorama, weather, and the wagon. -->
   <div id="scene" class="scene" aria-hidden="true"></div>
   <main id="app" class="app" aria-live="polite"></main>
   <aside id="teacher" class="teacher" hidden></aside>
@@ -24,10 +24,12 @@
   <script src="data/cards.js"></script>
   <script src="data/landmarks.js"></script>
   <script src="data/endings.js"></script>
-  <script src="data/art.js"></script>
+  <script src="data/scenes.js"></script>
   <!-- Game -->
+  <script src="js/vendor/three.min.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/scene.js"></script>
+  <script src="js/diorama.js"></script>
   <script src="js/ui.js"></script>
 </body>
 </html>

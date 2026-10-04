@@ -1,7 +1,7 @@
 // Westward: the living scene behind every screen.
 // Layers (sky, far, mid, near) move at different speeds while the wagon travels.
 // Clouds drift, light breathes, dust rises from the wheels, and weather falls.
-// Painted layers from assets/art/ replace the placeholder hills when they exist.
+// This is the 2D fallback for computers without WebGL; js/diorama.js is the main scene.
 (function () {
   "use strict";
   var W = window.WESTWARD;
@@ -45,8 +45,14 @@
       '<g filter="url(#p)">' + body + "</g></svg>");
   }
 
+  function artFor(key) {
+    var d = W.scenes[key] || W.scenes.prairie;
+    var water = (d.features || []).some(function (f) { return f[0] === "sea" || (f[0] === "river" && !(f[2] || {}).along); });
+    return { palette: [d.sky, d.ground2 || d.ground, d.ground, d.soil], water: water, honest: d.honest };
+  }
+
   function placeholder(key) {
-    var art = W.art.scenes[key] || W.art.scenes.prairie;
+    var art = artFor(key);
     var c = art.palette, r = seeded(hash(key));
     var far = "", mid = "", near = "";
 
@@ -144,26 +150,10 @@
   }
 
   // ------------------------------------------------------------ build a scene
-  function paintedPath(key, layer) { return "assets/art/" + key + "/" + layer + ".webp"; }
 
-  function layerSrc(key) {
-    var art = W.art.scenes[key] || W.art.scenes.prairie;
-    if (art.painted) return {
-      sky: art.palette[0], painted: true,
-      skyImg: paintedPath(key, "sky"), far: paintedPath(key, "far"), mid: paintedPath(key, "mid"), near: paintedPath(key, "near")
-    };
-    return placeholder(key);
-  }
+  function layerSrc(key) { return placeholder(key); }
 
-  // Load a scene's paintings ahead of time so travel never shows a blank layer.
-  var preloaded = {};
-  function preload(key) {
-    var art = W.art.scenes[key];
-    if (!art || !art.painted || preloaded[key]) return;
-    preloaded[key] = ["sky", "far", "mid", "near"].map(function (l) {
-      var img = new Image(); img.src = paintedPath(key, l); return img;
-    });
-  }
+  function preload() {}
 
   function sizeLayer(img) {
     var w = Math.max(window.innerWidth * 1.35, window.innerHeight * 2.4);
@@ -189,7 +179,7 @@
 
   function set(key, opts) {
     opts = opts || {};
-    var art = W.art.scenes[key] || W.art.scenes.prairie;
+    var art = artFor(key);
     if (current && current.key === key && current.vehicle === opts.vehicle && !opts.force) {
       setWeather(opts.weather, art.water);
       tint(opts.month, art.honest);
@@ -364,5 +354,10 @@
     resize();
   });
 
-  W.scene = { set: set, travel: travel, dim: dim, preload: preload };
+  function travelTo(key, opts, ms) {
+    set(key, Object.assign({}, opts, { force: true }));
+    return travel(ms);
+  }
+
+  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, preload: preload };
 })();

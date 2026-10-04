@@ -4,8 +4,9 @@ A 40-minute classroom game about westward expansion (1849 to 1854), built for
 Unit 4, Lesson 1 of 9th-grade US History. Four groups each play a different
 family on the same journey, then compare endings in the "Who Decided?" ledger.
 
-**Status: gray-box.** Every screen works from start to finish, with placeholder
-art and DRAFT text. Facts are still being verified (see `research/`).
+**Status: playable draft.** Every screen works from start to finish in a low-poly
+3D diorama style (matching the Lowell mill game). Text is still marked DRAFT
+until every fact is verified (see `research/`).
 
 ## Play it
 
@@ -23,6 +24,8 @@ art and DRAFT text. Facts are still being verified (see `research/`).
 | Change endings and the ledger | `data/endings.js` |
 | Change diary quotes and the poster | `data/landmarks.js` |
 | Change timing, death limit, travel speed | `data/config.js` |
+| Change how a place looks (trees, rivers, forts, colors, light) | `data/scenes.js` |
+| Add the title painting (Gast, *American Progress*) | Put the image in `assets/` and set `titleImage` in `data/config.js` |
 
 Keep text free of em dashes (project style rule). `node tools/playtest.js` checks this.
 
@@ -46,10 +49,16 @@ pretend the group is 5 minutes behind (to test the soft timer).
 Plain HTML, CSS, and JavaScript, with no build step.
 
 - `js/engine.js` holds the rules and state (no browser code, so it can be tested in Node).
-- `js/scene.js` draws the moving scene: parallax layers, wagon or ship, dust, clouds, rain, snow, and water glints.
+- `js/diorama.js` is the low-poly 3D world (Three.js, flat shaded, isometric camera). Each
+  place is a diorama slab built from `data/scenes.js`; the next one slides in under the
+  wagon as the group travels. The ox team walks, wheels turn, the family walks beside the
+  wagon (members who die are no longer there), cloud shadows drift, dust rises, smoke curls
+  from chimneys and fires, water moves, and rain or snow falls. On a slow computer it drops
+  shadows and resolution automatically.
+- `js/scene.js` is a simple 2D fallback for computers without WebGL.
 - `js/ui.js` holds the screens and the teacher panel.
 - Content lives in `data/*.js` (plain data files, so the game works when opened from disk).
-- Art goes in `assets/art/`. Each scene can have four painted layers (sky, far, mid, near) listed in `data/art.js`.
+- `js/vendor/three.min.js` is Three.js r149 (MIT), included so the game also runs offline.
 
 ## Tests
 

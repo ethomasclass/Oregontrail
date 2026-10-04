@@ -52,7 +52,7 @@
     state.familyId = familyId;
     var f = family(state);
     state.members = f.members.map(function (m) {
-      return { name: m.name, role: m.role, age: m.age, health: 3, alive: true, cause: null, epitaph: null };
+      return { name: m.name, role: m.role, age: m.age, look: m.look, color: m.color, health: 3, alive: true, cause: null, epitaph: null };
     });
     state.students = {};
     state.money = f.money;

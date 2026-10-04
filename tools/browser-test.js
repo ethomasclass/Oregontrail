@@ -12,7 +12,9 @@ var out = process.argv[2] || path.join(root, "tools", "screens");
 fs.mkdirSync(out, { recursive: true });
 
 (async function () {
-  var browser = await chromium.launch(fs.existsSync("/opt/pw-browsers/chromium") ? { executablePath: "/opt/pw-browsers/chromium" } : {});
+  var opts = { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] };
+  if (fs.existsSync("/opt/pw-browsers/chromium")) opts.executablePath = "/opt/pw-browsers/chromium";
+  var browser = await chromium.launch(opts);
   var errors = [];
   var families = ["ohio", "irish", "black", "chinese"];
   for (var f = 0; f < families.length; f++) {

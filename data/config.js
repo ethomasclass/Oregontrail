@@ -19,6 +19,11 @@ WESTWARD.config = {
   foodPerPersonPerDay: 2, // pounds
   minOxen: 4,
 
+  // Title painting (your version of Gast's "American Progress"). Put the image file
+  // in assets/ and set its path here, for example "assets/american-progress.jpg".
+  // It appears on the title screen and again at the end of the game.
+  titleImage: null,
+
   // Show a small "DRAFT" stamp on any text not yet checked against sources.
   showDraftStamps: true
 };

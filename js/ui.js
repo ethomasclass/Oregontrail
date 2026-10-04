@@ -50,10 +50,19 @@
     });
   }
   function month() { return S.startDate ? E.dateOf(S).getUTCMonth() : 4; }
-  function vehicle() { return E.family(S) && E.family(S).route === "sea" && ["hongkong", "pacific", "sanfrancisco"].indexOf(S.place) >= 0 ? "ship" : "wagon"; }
+  // What travels with the group: a wagon and ox team, the ship, or the cousins on foot.
+  function vehicle() {
+    var f = E.family(S);
+    if (!f) return "wagon";
+    if (f.route === "sea") return ["hongkong", "pacific", "sanfrancisco"].indexOf(S.place) >= 0 ? "ship" : "walkers";
+    return "wagon";
+  }
+  function sceneOpts(extra) {
+    var p = E.place(S.place) || {};
+    return Object.assign({ weather: p.weather, month: month(), vehicle: vehicle(), party: S.members, family: S.familyId }, extra || {});
+  }
   function setScene(placeId, opts) {
-    var p = E.place(placeId);
-    scene.set(p.scene, Object.assign({ weather: p.weather, month: month(), vehicle: vehicle() }, opts || {}));
+    scene.set(E.place(placeId).scene, sceneOpts(opts));
   }
 
   // ------------------------------------------------------------ save / resume
@@ -69,8 +78,8 @@
   function title() {
     screenName = "title";
     var saved = loadSave();
-    var img = W.art.title.image;
-    scene.set("prairie", { vehicle: "wagon", month: 4, force: true });
+    var img = W.config.titleImage;
+    scene.set("prairie", { vehicle: "wagon", month: 4, showcase: true, party: W.families[0].members, family: "ohio" });
     show(
       (img ? '<div class="title-art" style="background-image:url(\'' + img + '\')"></div>' : "") +
       '<div class="title-screen"><div class="stack">' +
@@ -80,7 +89,8 @@
       '<div class="actions" style="justify-content:center">' +
       '<button class="primary" id="start" data-autofocus>Start</button>' +
       (saved && saved.S && saved.S.familyId && saved.screen !== "ending" ? '<button id="resume">Continue saved game</button>' : "") +
-      "</div></div></div>"
+      "</div></div></div>",
+      { top: true }
     );
     on("#start", function () { clearSave(); S = E.create(params.get("seed")); families(); });
     on("#resume", function () { resume(saved); });
@@ -158,7 +168,7 @@
     screenName = "poster";
     var sea = E.family(S).route === "sea";
     var P = sea ? W.seaPoster : W.poster;
-    scene.set(sea ? "harbor" : "town", { vehicle: sea ? "ship" : "wagon", month: month() });
+    scene.set(sea ? "hongkong" : "town", sceneOpts({ vehicle: sea ? "ship" : "wagon" }));
     scene.dim("soft");
     show(
       '<div class="poster"><div class="chips" style="justify-content:center">' + draftChip(P) + "</div>" +
@@ -274,7 +284,7 @@
     var startMiles = S.miles;
     var trip = E.advance(S, Date.now());
     if (!trip) { busy = false; return; }
-    setScene(S.place, { force: true });
+    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), 3200);
     app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to) + "</h2></div>";
     renderPanel();
     // Count the miles up while the scenery rolls by.
@@ -284,7 +294,7 @@
       if (milesEl) milesEl.textContent = Math.round(startMiles + (S.miles - startMiles) * k);
       if (k < 1) requestAnimationFrame(count);
     })(t0);
-    scene.travel(ms).then(function () {
+    travelling.then(function () {
       busy = false;
       if (trip.notes.length || trip.skipped.length) S._trip = trip;
       beatScreen();
@@ -312,9 +322,8 @@
   function cardScreen(c) {
     screenName = "card";
     // A card can bring its own painting (the rancho, the evening camp).
-    var art = c.art && W.art.scenes[c.art];
-    if (art && art.painted && art !== W.art.scenes[E.place(S.place).scene]) {
-      scene.set(c.art, { month: month(), vehicle: vehicle() });
+    if (c.art && W.scenes[c.art] && c.art !== E.place(S.place).scene) {
+      scene.set(c.art, sceneOpts());
     }
     scene.dim("strong");
     var list = E.choices(S, c);
@@ -394,22 +403,23 @@
       '<div class="card"><div class="chips">' + draftChip(L.others) + '</div><div class="eyebrow">' + esc(L.others.title) + "</div><h2>Meanwhile</h2><ul>" +
       L.others.lines.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div></div>" +
       '<div class="card question"><h2>' + esc(EN.question) + "</h2><p>" + esc(EN.handoutPrompt) + "</p>" +
-      "<p>" + esc(EN.gastPrompt) + '</p><div class="actions" style="justify-content:center">' +
-      '<button id="painting">Show the painting again</button></div><p class="teaser">' + esc(EN.teaser) + "</p></div>",
+      (W.config.titleImage ? "<p>" + esc(EN.gastPrompt) + '</p><div class="actions" style="justify-content:center">' +
+        '<button id="painting">Show the painting again</button></div>' : "") +
+      '<p class="teaser">' + esc(EN.teaser) + "</p></div>",
       { top: true }
     );
     on("#painting", showPainting);
   }
 
   function showPainting() {
-    var img = W.art.title.image;
+    var img = W.config.titleImage;
     var back = function () { ending(); };
     if (img) {
       show('<div class="title-art" style="background-image:url(\'' + img + '\')"></div>' +
         '<div class="title-screen"><div class="stack"><button class="primary" id="back" data-autofocus>Back to the ledger</button></div></div>');
     } else {
-      scene.set("prairie", { vehicle: "wagon", month: 4, force: true });
-      show('<div class="card narrow"><p>The painting will appear here once it is finished.</p><button class="primary" id="back">Back to the ledger</button></div>');
+      scene.set("prairie", sceneOpts({ showcase: true }));
+      show('<div class="card narrow"><p>Your teacher will add the painting, John Gast\u2019s <em>American Progress</em> (1872), here.</p><button class="primary" id="back">Back to the ledger</button></div>');
     }
     on("#back", back);
   }
