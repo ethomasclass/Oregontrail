@@ -10,7 +10,7 @@ var vm = require("vm");
 var root = path.join(__dirname, "..");
 globalThis.window = globalThis;
 ["data/config.js", "data/families.js", "data/route.js", "data/stores.js", "data/cards.js",
- "data/landmarks.js", "data/endings.js", "data/scenes.js", "data/trail-events.js", "js/engine.js"].forEach(function (f) {
+ "data/landmarks.js", "data/endings.js", "data/scenes.js", "data/trail-events.js", "data/voices.js", "js/engine.js"].forEach(function (f) {
   vm.runInThisContext(fs.readFileSync(path.join(root, f), "utf8"), { filename: f });
 });
 
@@ -75,7 +75,7 @@ if (fs.readFileSync(path.join(root, "index.html"), "utf8").indexOf("—") >= 0) 
 // ---------------------------------------------------------------- simulated runs
 var stats = {};
 W.families.forEach(function (fam) {
-  var s = stats[fam.id] = { runs: 0, decisions: 0, deaths: 0, oregon: 0, california: 0, maxDecisions: 0, minDecisions: 99, events: 0, minutes: 0, maxMinutes: 0 };
+  var s = stats[fam.id] = { deathsDaily: 0, hungry: 0, runs: 0, decisions: 0, deaths: 0, oregon: 0, california: 0, maxDecisions: 0, minDecisions: 99, events: 0, minutes: 0, maxMinutes: 0 };
   for (var seed = 1; seed <= runs; seed++) {
     var state = E.create(seed);
     var t0 = 0;
@@ -87,6 +87,7 @@ W.families.forEach(function (fam) {
       now += (1.75 + E.rand(state) * 1.25) * 60000;
       var trip = E.advance(state, now);
       if (!trip) { fail(fam.id + " seed " + seed + ": ran out of beats without an ending"); break; }
+      var trip = state.trip;
       E.pickTripEvents(state, now).forEach(function (ev) {
         if (/\{\w+\}/.test(ev.title + ev.text + JSON.stringify(ev.choices))) fail("Unfilled slot in trail event " + ev.id);
         var okc = E.choices(state, ev).filter(function (x) { return x.ok; });
@@ -94,6 +95,12 @@ W.families.forEach(function (fam) {
         s.events++;
         now += (0.3 + E.rand(state) * 0.2) * 60000;
       });
+      // live the days of the trip; a cautious group switches to meager when food runs low
+      while (trip && trip.day < trip.days) {
+        if (E.settings(state).foodDays < 40) state.rations = "meager";
+        var d = E.stepDay(state, trip);
+        s.deathsDaily += d.deaths.length;
+      }
       var b = E.beat(state);
       if (b.type === "store") {
         var store = E.storeFor(state), cart = {};
@@ -123,6 +130,8 @@ W.families.forEach(function (fam) {
     var L = E.ledger(state);
     if (!L.ending) fail(fam.id + " seed " + seed + ": no ending text for branch " + state.branch);
     s.runs++; s.decisions += decisions; s.deaths += state.deaths;
+    if (state.food === 0) s.hungry++;
+    s.days = (s.days || 0) + state.days;
     s[state.branch]++;
     s.maxDecisions = Math.max(s.maxDecisions, decisions);
     s.minDecisions = Math.min(s.minDecisions, decisions);
@@ -134,7 +143,7 @@ Object.keys(stats).forEach(function (k) {
   console.log(k.padEnd(8) + " runs " + s.runs + "  decisions " + s.minDecisions + "-" + s.maxDecisions +
     " (avg " + (s.decisions / s.runs).toFixed(1) + ")  deaths/run " + (s.deaths / s.runs).toFixed(2) +
     "  oregon " + s.oregon + "  california " + s.california +
-    "  trail events/run " + (s.events / s.runs).toFixed(1) + "  ending reached at min "  + (s.minutes / s.runs).toFixed(1) + " max " + s.maxMinutes.toFixed(1));
+    "  trip days " + Math.round(s.days / s.runs) + "  out of food at end " + s.hungry + "  trail events/run " + (s.events / s.runs).toFixed(1) + "  ending reached at min "  + (s.minutes / s.runs).toFixed(1) + " max " + s.maxMinutes.toFixed(1));
 });
 if (failures.length) {
   var uniq = Array.from(new Set(failures));

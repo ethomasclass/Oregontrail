@@ -225,58 +225,150 @@
   }
   function focusSame(sel) { var el = app.querySelector(sel); if (el) el.focus({ preventScroll: true }); }
 
-  // ------------------------------------------------------------ panel
-  function healthWord(m) { return !m.alive ? "Died" : m.health >= 3 ? "Good" : m.health === 2 ? "Fair" : "Sick"; }
-  function weatherWord() {
-    var p = E.place(S.place) || {};
-    if (p.weather === "rain") return "Rain";
-    if (p.weather === "snow") return "Snow";
-    if (p.weather === "heat") return "Very hot";
-    var mo = month();
-    return mo >= 10 || mo <= 1 ? "Cold" : mo >= 6 && mo <= 8 ? "Hot" : "Fair";
+  // ------------------------------------------------------------ panel: one gauge per role
+  // Each student watches their own gauge; it glows when it needs attention.
+  function cap(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
+  function healthWord(m) { return !m.alive ? "Died" : m.sick ? "Sick" : cap(E.settings(S).health); }
+  function nextStopMiles() {
+    if (busy && S.trip) {
+      var to = E.place(S.trip.toId);
+      return { name: to.name.split(":")[0].split(",")[0], miles: Math.max(0, S.trip.endMiles - S.miles) };
+    }
+    var next = S.beats[S.index + 1], here = E.place(S.place) || {};
+    if (!next) return null;
+    var p = E.place(next.at);
+    return { name: p.name.split(":")[0].split(",")[0], miles: typeof p.miles === "number" && typeof here.miles === "number" ? Math.max(0, p.miles - here.miles) : null };
+  }
+  function gauge(roleId, alert, rows) {
+    return '<div class="gauge' + (alert ? " alert" : "") + '"><div class="gauge-role">' + roleLabel(roleId) + "</div>" +
+      '<div class="gauge-rows">' + rows.map(function (r) {
+        return '<div class="stat"><span class="label">' + r[0] + '</span><span class="val">' + r[1] + "</span></div>";
+      }).join("") + "</div></div>";
   }
   function renderPanel() {
-    if (!S.familyId) return;
-    var sea = E.family(S).route === "sea";
-    var stats = [
-      ["Date", E.formatDate(E.dateOf(S))],
-      [sea ? "Place" : "Miles", sea ? E.place(S.place).name.split(",")[0] : '<span id="miles">' + S.miles + "</span>"],
-      ["Weather", weatherWord()],
-      ["Food", S.food + " lb"],
-      sea ? ["Gold", "$" + S.gold] : ["Oxen", S.oxen],
-      ["Money", "$" + (S.money + (sea ? 0 : S.gold))]
-    ];
-    panel.innerHTML = stats.map(function (s) {
-      return '<div class="stat"><span class="label">' + s[0] + '</span><span class="val">' + s[1] + "</span></div>";
-    }).join("") +
+    if (!S.familyId || !S.members) return;
+    var sea = E.family(S).route === "sea", st = E.settings(S), next = nextStopMiles();
+    var sickCount = st.sick.length;
+    panel.innerHTML =
+      gauge("navigator", S.pace === "grueling", [
+        sea ? ["Place", esc(E.place(S.place).name.split(",")[0])] : ["Miles", '<span id="miles">' + S.miles + "</span>"],
+        ["Pace", st.pace],
+        ["Next", next ? esc(next.name) + (next.miles != null ? " (" + next.miles + " mi)" : "") : "None"]
+      ]) +
+      gauge("quartermaster", st.foodDays < 15, [
+        ["Food", '<span id="food">' + S.food + "</span> lb", ],
+        ["Lasts", st.foodDays + " days"],
+        sea ? ["Money", "$" + S.money + " + $" + S.gold + " gold"] : ["Oxen / $", S.oxen + " / $" + (S.money + S.gold)]
+      ]) +
+      gauge("doctor", st.health === "poor" || st.health === "very poor" || sickCount > 0, [
+        ["Health", '<span id="health">' + cap(st.health) + "</span>"],
+        ["Sick", sickCount ? esc(st.sick.map(function (m) { return m.name; }).join(", ")) : "Nobody"]
+      ]) +
+      gauge("journal", false, [
+        ["Date", '<span id="date">' + E.formatDate(E.dateOf(S)) + "</span>"],
+        ["Weather", '<span id="weather">' + cap(st.weather) + "</span>"]
+      ]) +
       '<div class="family">' + S.members.map(function (m) {
-        return '<div class="mini' + (!m.alive ? " dead" : m.health < 3 ? " sick" : "") + '"><div class="face">' + esc(m.name[0]) + "</div>" +
+        return '<div class="mini' + (!m.alive ? " dead" : m.sick ? " sick" : "") + '" title="' + esc(m.sick ? m.sick.cause : "") + '"><div class="face">' + esc(m.name[0]) + "</div>" +
           esc(m.name) + '<div class="health">' + healthWord(m) + "</div></div>";
       }).join("") + "</div>";
   }
 
-  // ------------------------------------------------------------ travel
+  // ------------------------------------------------------------ size up the situation
+  // Between stops: continue, or stop to change pace, rations, rest, talk, or buy food.
   function nextBeatPreview() { return S.beats[S.index + 1]; }
 
-  function travelScreen(trip) {
+  function travelScreen(trip, sub) {
     screenName = "travel";
     var next = nextBeatPreview();
     setScene(S.place);
     if (next) scene.preload(E.place(next.at).scene);
-    scene.dim(null);
-    var sea = E.family(S).route === "sea";
-    var notes = trip ? trip.notes.concat(trip.skipped.length ? ["Running behind: the wagon presses on past " + trip.skipped.join(" and ") + "."] : []) : [];
+    scene.dim("soft");
+    var sea = vehicle() === "ship";
+    var notes = trip ? trip.notes.concat(trip.skipped && trip.skipped.length ? ["Running behind: the wagon presses on past " + trip.skipped.join(" and ") + "."] : []) : [];
+    var here = E.place(S.place) || {};
+    var voices = (W.voices || {})[S.place] || [];
+    var st = E.settings(S);
+    var opts = [
+      { id: "go", label: sea ? "Continue the voyage" : "Continue on the trail", role: null },
+      { id: "pace", label: "Change pace", role: "navigator", hide: sea },
+      { id: "rations", label: "Change food rations", role: "quartermaster" },
+      { id: "rest", label: "Stop to rest", role: "doctor", hide: sea },
+      { id: "talk", label: "Talk to people", role: "journal", hide: !voices.length },
+      { id: "buy", label: "Buy 100 lb of food ($" + Math.round((here.market || 0) * 100) + ")", role: "quartermaster", hide: !here.market }
+    ].filter(function (o) { return !o.hide; });
+    var panelHtml = "";
+    if (sub === "pace") panelHtml = setting("pace", E.PACES, S.pace);
+    if (sub === "rations") panelHtml = setting("rations", E.RATIONS, S.rations);
+    if (sub === "rest") panelHtml = '<div class="sub"><p>How many days? Resting lets health recover, and nobody new falls sick, but the food keeps going.</p>' +
+      '<div class="actions">' + [1, 2, 3].map(function (n) { return '<button data-rest="' + n + '">' + n + " day" + (n > 1 ? "s" : "") + "</button>"; }).join("") + "</div></div>";
+    if (sub === "talk") panelHtml = voiceHtml(voices);
     show(
-      '<div class="travel-box">' +
-      notes.map(function (n) { return '<div class="note">' + esc(n) + "</div><br>"; }).join("") +
-      '<div class="next">Next stop</div><h2>' + esc(next ? E.place(next.at).name : "") + "</h2>" +
-      '<button class="primary" id="go" data-autofocus>' + (sea && vehicle() === "ship" ? "Continue the voyage" : "Continue on the trail") + "</button></div>",
-      { panel: true }
+      '<div class="card sizeup">' +
+      '<div class="eyebrow">' + esc((here.name || "").split(":")[0]) + " · " + E.formatDate(E.dateOf(S)) + "</div>" +
+      "<h2>Size up the situation</h2>" +
+      notes.map(function (n) { return '<p class="problem">' + esc(n) + "</p>"; }).join("") +
+      '<p class="status">Health: <strong>' + cap(st.health) + "</strong> · Pace: <strong>" + st.pace + "</strong> · Rations: <strong>" + st.rations +
+      "</strong> · Food lasts <strong>" + st.foodDays + " days</strong>" +
+      (next ? " · Next: <strong>" + esc(E.place(next.at).name.split(":")[0]) + "</strong>" : "") + "</p>" +
+      '<div class="choices menu">' + opts.map(function (o, i) {
+        return '<button data-opt="' + o.id + '"' + (o.id === "go" ? " data-autofocus" : "") + (sub === o.id ? ' class="on"' : "") + '><span class="key">' + (i + 1) + "</span>" + esc(o.label) +
+          (o.role ? '<span class="who">' + esc(role(o.role).name) + "</span>" : "") + "</button>";
+      }).join("") + "</div>" + panelHtml + "</div>",
+      { panel: true, top: true }
     );
-    on("#go", go);
-    keyHandlers = { Enter: go };
+    on("[data-opt]", function (el) { pickOpt(el.getAttribute("data-opt")); });
+    on("[data-set]", function (el) {
+      S[el.getAttribute("data-set")] = el.getAttribute("data-val");
+      renderPanel(); travelScreen(null, null);
+    });
+    on("[data-rest]", function (el) { restDays(Number(el.getAttribute("data-rest"))); });
+    on("#next-voice", function () { S.talk = (S.talk || 0) + 1; travelScreen(null, "talk"); });
+    function pickOpt(id) {
+      if (id === "go") return go();
+      if (id === "buy") {
+        var cost = Math.round(here.market * 100);
+        if (S.money >= cost) { S.money -= cost; S.food += 100; } else if (S.money + S.gold >= cost) { S.gold -= cost - S.money; S.money = 0; S.food += 100; }
+        renderPanel(); return travelScreen(null, null);
+      }
+      travelScreen(null, sub === id ? null : id);
+    }
+    keyHandlers = {};
+    opts.forEach(function (o, i) { keyHandlers[String(i + 1)] = function () { pickOpt(o.id); }; });
+    keyHandlers.Enter = go;
   }
 
+  function setting(key, table, current) {
+    return '<div class="sub"><div class="actions">' + Object.keys(table).map(function (k) {
+      return '<button data-set="' + key + '" data-val="' + k + '"' + (k === current ? ' class="on"' : "") + "><strong>" + table[k].name + "</strong>" +
+        '<span class="why">' + esc(table[k].text) + "</span></button>";
+    }).join("") + "</div></div>";
+  }
+
+  function voiceHtml(voices) {
+    var v = voices[(S.talk || 0) % voices.length];
+    return '<div class="sub voice"><div class="chips"><span class="chip lead">Read aloud: ' + roleLabel("journal") + "</span>" +
+      (v.quote ? '<span class="chip trail">Real words, ' + v.year + "</span>" : '<span class="chip">A voice based on historical accounts</span>') + "</div>" +
+      '<div class="diary">“' + esc(v.text) + '”<div class="who">' + esc(v.who) + (v.quote ? " · " + esc(v.source) : "") + "</div></div>" +
+      (voices.length > 1 ? '<div class="actions"><button id="next-voice">Talk to someone else</button></div>' : "") + "</div>";
+  }
+
+  // Resting: days tick by with the wagon stopped.
+  function restDays(n) {
+    var i = 0;
+    app.querySelector(".sizeup").insertAdjacentHTML("beforeend", '<p class="ticker" id="ticker">Resting…</p>');
+    (function tick() {
+      if (i++ >= n) { save(); return travelScreen(null, null); }
+      var d = E.rest(S, 1)[0];
+      renderPanel();
+      var t = document.getElementById("ticker");
+      if (t) t.textContent = "Resting: day " + i + ". " + d.messages.join(" ");
+      var after = d.deaths.length ? deathNotice(d.deaths) : new Promise(function (r) { setTimeout(r, 600); });
+      after.then(tick);
+    })();
+  }
+
+  // ------------------------------------------------------------ travel, day by day
   var busy = false;
   // How long the crossing takes on screen: longer legs take longer.
   function travelMs(trip) {
@@ -287,38 +379,67 @@
   function go() {
     if (busy) return;
     busy = true;
-    var startMiles = S.miles;
     var trip = E.advance(S, Date.now());
     if (!trip) { busy = false; return; }
     var events = E.pickTripEvents(S, Date.now());
-    var stops = events.length === 1 ? [0.45] : events.length === 2 ? [0.32, 0.68] : [];
+    var eventDays = events.length === 1 ? [Math.ceil(trip.days * 0.45)] : events.length === 2 ? [Math.ceil(trip.days * 0.32), Math.ceil(trip.days * 0.68)] : [];
     var ms = travelMs(trip);
     screenName = "travel";
-    function rolling() {
+    var lastWeather = null;
+    function rolling(msg) {
       app.className = "app";
-      app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to) + "</h2></div>";
+      app.innerHTML = '<div class="travel-box"><div class="next">Traveling to</div><h2>' + esc(trip.to.split(":")[0]) + "</h2>" +
+        '<div class="ticker" id="ticker">' + esc(msg || "") + "</div></div>";
     }
     rolling();
+    scene.dim(null);
     renderPanel();
-    var milesEl = function () { return document.getElementById("miles"); };
-    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), ms, {
-      stops: stops,
-      onProgress: function (k) {
-        var el = milesEl();
-        if (el) el.textContent = Math.round(startMiles + (S.miles - startMiles) * k);
-      },
-      onStop: function (i) {
-        return tripEvent(events[i]).then(function () {
-          scene.party(sceneOpts());
-          rolling();
+    // Live the days up to day "target"; stop for a death or a trail event.
+    function liveUntil(target) {
+      while (trip.day < target) {
+        var d = E.stepDay(S, trip);
+        if (d.weather.kind !== lastWeather && scene.weather) { lastWeather = d.weather.kind; scene.weather(d.weather.kind); }
+        if (d.messages.length) {
+          var t = document.getElementById("ticker");
+          if (t) { t.textContent = d.messages.join(" "); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash"); }
+        }
+        if (d.deaths.length) { renderPanel(); return deathNotice(d.deaths).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); }); }
+        if (eventDays.length && trip.day >= eventDays[0]) {
+          eventDays.shift();
+          var ev = events.shift();
           renderPanel();
-        });
+          return tripEvent(ev).then(function () { scene.party(sceneOpts()); rolling(); renderPanel(); });
+        }
       }
+      renderPanel();
+      return null;
+    }
+    var travelling = scene.travelTo(E.place(S.place).scene, sceneOpts(), ms, {
+      onProgress: function (k) { return liveUntil(Math.floor(k * trip.days)); }
     });
-    travelling.then(function () {
+    travelling.then(function finish() {
+      var pause = liveUntil(trip.days);
+      if (pause) return pause.then(finish);
       busy = false;
-      if (trip.notes.length || trip.skipped.length) S._trip = trip;
+      if (scene.weather) scene.weather(null);
+      if (trip.notes.length || (trip.skipped && trip.skipped.length)) S._trip = trip;
       beatScreen();
+    });
+  }
+
+  function deathNotice(deaths) {
+    return new Promise(function (resolve) {
+      scene.react("grave");
+      app.className = "app top";
+      app.innerHTML = '<div class="card event"><h2>' + esc(deaths.map(function (m) { return m.name; }).join(" and ")) + " has died.</h2>" +
+        deaths.map(function (m) { return '<div class="epitaph">' + esc(m.epitaph) + "</div>"; }).join("") +
+        '<div class="actions"><button class="primary" id="roll">Continue</button></div></div>';
+      var btn = document.getElementById("roll");
+      btn.focus({ preventScroll: true });
+      function done() { keyHandlers = {}; resolve(); }
+      btn.addEventListener("click", done);
+      keyHandlers = { Enter: done };
+      save();
     });
   }
 

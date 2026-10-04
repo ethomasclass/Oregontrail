@@ -52,7 +52,7 @@
     state.familyId = familyId;
     var f = family(state);
     state.members = f.members.map(function (m) {
-      return { name: m.name, role: m.role, age: m.age, look: m.look, color: m.color, health: 3, alive: true, cause: null, epitaph: null };
+      return { name: m.name, role: m.role, age: m.age, look: m.look, color: m.color, alive: true, sick: null, cause: null, epitaph: null };
     });
     state.students = {};
     state.money = f.money;
@@ -63,6 +63,10 @@
     state.flags = {};
     state.branch = f.route === "sea" ? "california" : null;
     state.deaths = 0;
+    state.pace = "steady";
+    state.rations = "filling";
+    state.H = 0;            // hidden party health: 0 is best, 140 is the threshold of death
+    state.FS = 0;           // starvation and exposure build-up
     state.used = {};
     state.log = [];
     state.beats = beatsFor(state, f.route);
@@ -124,38 +128,177 @@
     var trip = travel(state, state.beats[next].at);
     state.index = next;
     state.place = state.beats[next].at;
+    state.trip = trip;
     trip.skipped = skipped;
     return trip;
   }
 
+  // ---------------------------------------------------------------- the daily model
+  // After the 1985 Oregon Trail (R. Philip Bouchard's design; see research/oregon-trail-teardown.md):
+  // one hidden party health number H, 0 (best) to 140 (death). Every day H recovers 10%,
+  // then takes on loads from pace, rations, weather, sickness, and hardship. A steady
+  // daily load S settles H at about 10 x S, so choices show up a few days later.
+  var PACES = {
+    steady: { speed: 1, load: 2, name: "Steady", text: "About 8 hours a day, with frequent rests." },
+    strenuous: { speed: 1.5, load: 4, name: "Strenuous", text: "About 12 hours a day. Everyone ends the day very tired." },
+    grueling: { speed: 2, load: 6, name: "Grueling", text: "About 16 hours a day, before sunrise until dark. Health suffers." }
+  };
+  var RATIONS = {
+    filling: { lb: 3, load: 0, name: "Filling", text: "Meals are large and generous. 3 lb of food per person a day." },
+    meager: { lb: 2, load: 2, name: "Meager", text: "Meals are small, but adequate. 2 lb per person a day." },
+    bare: { lb: 1, load: 4, name: "Bare bones", text: "Meals are very small; everyone stays hungry. 1 lb per person a day." }
+  };
+  var ILLNESS = {
+    trail: ["exhaustion", "typhoid", "cholera", "measles", "dysentery", "a fever"],
+    sea: ["a fever", "dysentery", "exhaustion"],
+    walk: ["a fever", "dysentery", "exhaustion"]
+  };
+  var TEMPS = ["very cold", "cold", "cool", "warm", "hot", "very hot"];
+
+  function healthLabel(H) { return H < 35 ? "good" : H < 70 ? "fair" : H < 105 ? "poor" : "very poor"; }
+
+  // Weather for one day: temperature class from month and land, plus rain or snow.
+  function weatherFor(state) {
+    var month = dateOf(state).getUTCMonth(), terrain = terrainOf(state.place);
+    var base = [1, 1, 2, 2, 3, 4, 4, 4, 3, 2, 1, 0][month];
+    if (terrain === "mountains") base -= 1;
+    if (terrain === "desert" || terrain === "goldfields") base += 1;
+    if (terrain === "sea" || terrain === "valley") base = Math.min(base, 3);
+    var t = Math.max(0, Math.min(5, base + (rand(state) < 0.2 ? (rand(state) < 0.5 ? -1 : 1) : 0)));
+    var wetChance = [0.1, 0.1, 0.15, 0.25, 0.25, 0.15, 0.08, 0.06, 0.08, 0.12, 0.15, 0.1][month];
+    if (terrain === "desert") wetChance *= 0.2;
+    var r = rand(state), wet = r < wetChance * 0.3 ? 2 : r < wetChance ? 1 : 0;
+    var snow = wet && t <= 1;
+    var label = wet ? (wet === 2 ? (snow ? "very snowy" : "very rainy") : (snow ? "snowy" : "rainy")) : TEMPS[t];
+    return { temp: t, wet: wet, snow: snow, label: label, kind: wet ? (snow ? "snow" : "rain") : null };
+  }
+
+  // Set up a trip; the days are lived one at a time with stepDay().
   function travel(state, toId) {
     var from = place(state.place), to = place(toId);
-    var trip = { from: from.name, to: to.name, miles: 0, days: 0, notes: [] };
+    var trip = { from: from.name, to: to.name, toId: toId, miles: 0, days: 0, day: 0, notes: [], mpd: 0, provisioned: !!to.rations };
     if (state.index < 0) return trip; // the first beat is where you start
     if (from === to) {
-      trip.days = 7;
+      trip.days = 3;
     } else if (typeof from.miles === "number" && typeof to.miles === "number") {
       trip.miles = Math.max(0, to.miles - from.miles);
-      var speed = W.config.milesPerDay * (state.oxen >= W.config.minOxen ? 1 : 0.75);
-      trip.days = Math.ceil(trip.miles / speed);
+      trip.mpd = speed(state, to);
+      trip.days = Math.max(1, Math.ceil(trip.miles / trip.mpd));
       if (state.oxen < W.config.minOxen) trip.notes.push("Too few oxen. The wagon moves slowly.");
     } else {
       trip.days = to.days || 3;
     }
-    state.miles += trip.miles;
-    state.days += trip.days;
-
-    // Food and recovery along the way.
-    var need = to.rations ? 0 : trip.days * alive(state).length * W.config.foodPerPersonPerDay;
-    if (state.food >= need) {
-      state.food -= need;
-      alive(state).forEach(function (m) { if (m.health < 3) m.health++; });
-    } else {
-      state.food = 0;
-      trip.notes.push("Food ran out. You traded and foraged, but everyone is weaker.");
-      alive(state).forEach(function (m) { if (m.health > 1) m.health--; });
-    }
+    trip.startMiles = state.miles;
+    trip.endMiles = state.miles + trip.miles;
     return trip;
+  }
+
+  // Miles a day: 20 on the plains, 12 in the mountains and beyond (the 1985 game's
+  // numbers), times pace, oxen (4 needed for full speed), and 10% off per sick person.
+  function speed(state, to) {
+    var base = (to.miles || 0) <= 650 ? W.config.milesPerDayPlains : W.config.milesPerDayMountains;
+    var oxen = Math.min(1, state.oxen / 4);
+    var sick = alive(state).filter(function (m) { return m.sick; }).length;
+    return Math.max(4, base * PACES[state.pace].speed * oxen * (1 - 0.1 * sick));
+  }
+
+  // Live one day. Returns what happened: weather, messages, and any deaths.
+  function stepDay(state, trip, resting) {
+    var day = { messages: [], deaths: [], sick: [] };
+    var w = weatherFor(state);
+    day.weather = w;
+    state.weather = w.label;
+    state.days += 1;
+    if (trip && !resting) {
+      trip.day += 1;
+      var m = trip.days ? Math.round(trip.startMiles + (trip.endMiles - trip.startMiles) * trip.day / trip.days) : state.miles;
+      state.miles = Math.min(trip.endMiles, m);
+    }
+    // food
+    var living = alive(state);
+    var need = (trip && trip.provisioned) ? 0 : living.length * RATIONS[state.rations].lb;
+    if (state.food < need && W.places[state.place] && W.places[state.place].market) buyFood(state, need - state.food, day);
+    var fed = state.food >= need;
+    state.food = Math.max(0, state.food - need);
+    // health
+    var load = (resting ? 0 : PACES[state.pace].load) + (fed ? RATIONS[state.rations].load : 8);
+    load += [2, 1, 0, 0, 1, 2][w.temp] + w.wet;
+    state.FS = fed ? state.FS / 2 : state.FS + 0.8;
+    load += state.FS;
+    living.forEach(function (p) {
+      if (!p.sick) return;
+      load += 1;
+      p.sick.days -= 1;
+      if (p.sick.days <= 0) { day.messages.push(p.name + " is well again."); p.sick = null; }
+    });
+    state.H = 0.9 * state.H + load;
+    // illness: about 1% a day in good health, 10% in very poor health
+    var c = W.config;
+    if (!resting && rand(state) < c.illnessBase + Math.min(state.H, 139) / c.illnessPerH) illness(state, day);
+    if (state.H >= 140) illness(state, day);
+    state.H = Math.min(state.H, 139);
+    day.health = healthLabel(state.H);
+    return day;
+  }
+
+  function buyFood(state, lb, day) {
+    var price = W.places[state.place].market, pounds = Math.ceil(lb / 10) * 10 + 40;
+    var cost = Math.ceil(pounds * price);
+    var pay = Math.min(cost, state.money + state.gold);
+    if (pay <= 0) return;
+    var fromGold = Math.min(state.gold, pay);
+    state.gold -= fromGold; state.money -= pay - fromGold;
+    state.food += Math.floor(pay / price);
+    day.messages.push("Out of food. You buy " + Math.floor(pay / price) + " lb at " + place(state.place).name.split(",")[0] + " prices: $" + pay + ".");
+  }
+
+  function routeIllness(state) { return ILLNESS[routeKind(state, state.place)] || ILLNESS.trail; }
+
+  // Someone falls ill; anyone who falls ill while already sick may die.
+  function illness(state, day, cause) {
+    var living = alive(state);
+    var who = pick(state, living);
+    state.H += W.config.illnessHardship;
+    if (who.sick) {
+      if (state.deaths < W.config.maxDeaths && living.length > 2) {
+        die(state, who, who.sick.cause, day);
+        state.H = Math.min(state.H, 105); // the original's mercy rule
+        return;
+      }
+      who.sick.days = 10;
+      return;
+    }
+    who.sick = { cause: cause || pick(state, routeIllness(state)), days: 10 };
+    day.sick.push(who);
+    day.messages.push(who.name + " has " + who.sick.cause + ".");
+  }
+
+  function die(state, who, cause, report) {
+    who.alive = false;
+    who.sick = null;
+    who.cause = cause;
+    state.deaths++;
+    who.epitaph = "Here lies " + who.name + (surname(state) ? " " + surname(state) : "") + ", age " + who.age +
+      ". Died of " + cause + " near " + place(state.place).name.split(":")[0] + ", " + formatDate(dateOf(state)) + ".";
+    report.deaths.push(who);
+  }
+
+  // Stop to rest: no travel, no new illness, the pace load disappears.
+  function rest(state, days) {
+    var out = [];
+    for (var i = 0; i < days; i++) out.push(stepDay(state, null, true));
+    return out;
+  }
+
+  function settings(state) {
+    var living = alive(state);
+    var perDay = living.length * RATIONS[state.rations].lb;
+    return {
+      pace: PACES[state.pace].name, rations: RATIONS[state.rations].name,
+      health: healthLabel(state.H), weather: state.weather || "cool",
+      foodDays: perDay ? Math.floor(state.food / perDay) : 99,
+      sick: living.filter(function (m) { return m.sick; })
+    };
   }
 
   function beat(state) { return state.beats[state.index]; }
@@ -231,28 +374,19 @@
       });
     }
     if (fx.heal) {
-      var sickest = alive(state).sort(function (a, b) { return a.health - b.health; })[0];
-      if (sickest && sickest.health < 3) sickest.health++;
+      var sickOne = alive(state).filter(function (m) { return m.sick; })[0];
+      if (sickOne) sickOne.sick.days = Math.max(1, sickOne.sick.days - 5);
+      state.H = Math.max(0, state.H - 10);
     }
     if (fx.sick && rand(state) < fx.sick.chance) sicken(state, fx.sick.cause, report);
     return report;
   }
 
   function sicken(state, cause, report) {
-    var who = pick(state, alive(state));
-    var canDie = state.deaths < W.config.maxDeaths && alive(state).length > 2;
-    if (canDie && (who.health < 3 || rand(state) < 0.3)) {
-      who.alive = false;
-      who.health = 0;
-      who.cause = cause;
-      state.deaths++;
-      who.epitaph = "Here lies " + who.name + " " + surname(state) + ", age " + who.age +
-        ". Died of " + cause + " near " + place(state.place).name + ", " + formatDate(dateOf(state)) + ".";
-      report.deaths.push(who);
-    } else {
-      who.health = 1;
-      report.sick.push(who);
-    }
+    var day = { messages: [], deaths: [], sick: [] };
+    illness(state, day, cause);
+    day.deaths.forEach(function (d) { report.deaths.push(d); });
+    day.sick.forEach(function (d) { report.sick.push(d); });
   }
 
   function surname(state) {
@@ -385,6 +519,8 @@
     advance: advance, beat: beat, cardFor: cardFor, choices: choices, choose: choose,
     elapsedMinutes: elapsedMinutes, dateOf: dateOf, formatDate: formatDate,
     jumpTo: jumpTo, ledger: ledger, rand: rand, card: card,
-    pickTripEvents: pickTripEvents, resolveEvent: resolveEvent
+    pickTripEvents: pickTripEvents, resolveEvent: resolveEvent,
+    stepDay: stepDay, rest: rest, settings: settings, healthLabel: healthLabel,
+    PACES: PACES, RATIONS: RATIONS
   };
 })(typeof window !== "undefined" ? window : globalThis);

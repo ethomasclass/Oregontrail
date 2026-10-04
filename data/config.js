@@ -22,12 +22,20 @@ WESTWARD.config = {
   // How long the wagon takes to cross between stops on screen (seconds).
   travelSeconds: { min: 4, max: 8, per100Miles: 0.8 },
 
+  // Illness, after the 1985 Oregon Trail: the daily chance is illnessBase plus
+  // health / illnessPerH (the original used 0.01 and 1500, and +20 health load per
+  // illness). Gentler here, because a class plays once instead of restarting.
+  illnessBase: 0.006,
+  illnessPerH: 2200,
+  illnessHardship: 12,
+
   // No early game over: at most this many family members can die in one run.
   maxDeaths: 2,
 
-  // Travel and supplies (DRAFT numbers, verify against the fact sheet).
-  milesPerDay: 15,
-  foodPerPersonPerDay: 2, // pounds
+  // Travel (the 1985 Oregon Trail's numbers): miles a day at a steady pace,
+  // 20 on the plains and 12 from Fort Laramie on. Pace multiplies it.
+  milesPerDayPlains: 20,
+  milesPerDayMountains: 12,
   minOxen: 4,
 
   // Title painting (your version of Gast's "American Progress"). Put the image file

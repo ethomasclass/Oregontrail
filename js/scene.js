@@ -357,13 +357,23 @@
   function travelTo(key, opts, ms, hooks) {
     hooks = hooks || {};
     set(key, Object.assign({}, opts, { force: true }));
-    var stops = (hooks.stops || []).slice().sort(), chain = Promise.resolve(), last = 0;
-    stops.forEach(function (k, i) {
-      chain = chain.then(function () { var seg = (k - last) * ms; last = k; return travel(seg); })
-        .then(function () { if (hooks.onProgress) hooks.onProgress(k); return hooks.onStop && hooks.onStop(i); });
+    travel(Math.min(ms, 3200));
+    return new Promise(function (resolve) {
+      var done = 0, last = null, paused = false;
+      (function frame(now) {
+        if (last === null) last = now;
+        var dt = now - last; last = now;
+        if (!paused) {
+          done = Math.min(ms, done + dt);
+          var k = done / ms;
+          var hold = hooks.onProgress && hooks.onProgress(k);
+          if (hold && hold.then) { paused = true; hold.then(function () { paused = false; last = null; }); }
+          else if (k >= 1) return resolve();
+        }
+        requestAnimationFrame(frame);
+      })(performance.now());
     });
-    return chain.then(function () { return travel((1 - last) * ms); }).then(function () { if (hooks.onProgress) hooks.onProgress(1); });
   }
 
-  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, react: function () {}, party: function () {}, preload: preload };
+  W.scene = { set: set, travel: travel, travelTo: travelTo, dim: dim, react: function () {}, party: function () {}, weather: function () {}, preload: preload };
 })();

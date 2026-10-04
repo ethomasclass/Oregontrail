@@ -5,11 +5,11 @@ window.WESTWARD = window.WESTWARD || {};
 WESTWARD.stores = {
   independence: {
     title: "Outfitting in Independence",
-    intro: "Your wagon is bought. Now the Quartermaster spends the rest. Guidebooks say to buy plenty of food and at least two yoke of oxen.",
+    intro: "Your wagon is bought. Now the Quartermaster spends the rest. Guidebooks say to bring three or four yoke of oxen and, for each person, 200 pounds of flour and 150 pounds of bacon. Four people eat 12 pounds a day on filling rations.",
     items: [
       { id: "oxen", name: "Yoke of oxen (2 oxen)", price: 50, stat: "oxen", per: 2, min: 2, recommended: 3, max: 4 },
-      { id: "flour", name: "Flour, 100 lb sack", price: 4, stat: "food", per: 100, recommended: 6, max: 10 },
-      { id: "bacon", name: "Bacon, 50 lb", price: 5, stat: "food", per: 50, recommended: 6, max: 10 },
+      { id: "flour", name: "Flour, 100 lb sack", price: 4, stat: "food", per: 100, recommended: 8, max: 12 },
+      { id: "bacon", name: "Bacon, 50 lb", price: 5, stat: "food", per: 50, recommended: 12, max: 16 },
       { id: "parts", name: "Spare wheel and axle", price: 15, stat: "parts", per: 1, recommended: 1, max: 3 },
       { id: "medicine", name: "Medicine chest", price: 10, stat: "medicine", per: 1, recommended: 1, max: 2 },
       { id: "trade", name: "Trade goods (cloth, tools)", price: 10, stat: "trade", per: 1, recommended: 2, max: 4 }

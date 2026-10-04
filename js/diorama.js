@@ -1015,7 +1015,13 @@
         next.position.x = -SLAB_L - 1.5 + dx;
         current.dx = dx;
         moving = paused ? moving : Math.min(1, moving + step / 300, k < 0.95 ? 1 : (1 - k) * 20);
-        if (hooks.onProgress) hooks.onProgress(k);
+        if (hooks.onProgress) {
+          var hold = hooks.onProgress(k);
+          if (hold && hold.then) {
+            paused = true;
+            hold.then(function () { clearReact(); paused = false; lastNow = null; });
+          }
+        }
         if (!switched && k > 0.5) { switched = true; placeRig(def); applyLight(def, opts.month); setWeather(opts.weather || def.weather); }
         if (k >= 1 && !paused) {
           if (old) disposeSlab(old);
@@ -1214,5 +1220,5 @@
   function start() { if (!raf) raf = requestAnimationFrame(frame); }
 
   W.scene2d = W.scene;
-  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, preload: function () {}, is3d: true };
+  W.scene = { set: set, travelTo: travelTo, travel: travel, dim: dim, react: react, party: updateParty, weather: function (k) { setWeather(k || (current.def && current.def.weather)); }, preload: function () {}, is3d: true };
 })();

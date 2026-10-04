@@ -13,6 +13,8 @@
 // "byFamily" swaps in a different card for one family at that stop.
 // "families" limits a beat to the listed families.
 // Places with "rations: true" feed travelers on the way (ship passage included food).
+// Places with "market" sell food (dollars a pound) when a group runs out: forts charge
+// about three times Independence prices, mining camps far more.
 // "target" is the minute (from family pick) a group should reach this beat.
 window.WESTWARD = window.WESTWARD || {};
 
@@ -20,12 +22,12 @@ WESTWARD.places = {
   independence: { name: "Independence, Missouri", miles: 0, scene: "town" },
   kansasriver: { name: "Kansas River crossing", miles: 100, scene: "river", weather: "rain" },
   platte: { name: "Platte River valley", miles: 250, scene: "prairie" },
-  fortkearny: { name: "Fort Kearny", miles: 320, scene: "fort" },
+  fortkearny: { market: 0.12, name: "Fort Kearny", miles: 320, scene: "fort" },
   chimneyrock: { name: "Chimney Rock", miles: 570, scene: "chimneyrock" },
-  fortlaramie: { name: "Fort Laramie", miles: 650, scene: "fort" },
+  fortlaramie: { market: 0.12, name: "Fort Laramie", miles: 650, scene: "fort" },
   independencerock: { name: "Independence Rock", miles: 830, scene: "independencerock" },
   southpass: { name: "South Pass", miles: 930, scene: "mountains" },
-  forthall: { name: "Fort Hall", miles: 1260, scene: "fort" },
+  forthall: { market: 0.12, name: "Fort Hall", miles: 1260, scene: "fort" },
 
   // Oregon branch
   thedalles: { name: "The Dalles: Columbia River or Barlow Road", miles: 1830, scene: "river" },
@@ -34,13 +36,13 @@ WESTWARD.places = {
   // California branch
   fortymile: { name: "Humboldt River and the Forty Mile Desert", miles: 1700, scene: "desert", weather: "heat" },
   sierra: { name: "Sierra Nevada", miles: 1900, scene: "mountains", weather: "snow" },
-  goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields", days: 5 },
+  goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields", days: 5, market: 0.5 },
 
   // Sea route (the Chan cousins)
   hongkong: { name: "Hong Kong harbor", scene: "hongkong", days: 0 },
   pacific: { name: "The Pacific crossing", scene: "sea", days: 50, rations: true },
-  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10 },
-  sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4 }
+  sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10, market: 0.5 },
+  sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4, market: 0.4 }
 };
 
 WESTWARD.routes = {
