@@ -14,10 +14,11 @@ WESTWARD.config = {
   // Trail events between stops (data/trail-events.js). Each one takes a group about
   // eventMinutes; a group only meets them when it is ahead of schedule.
   maxTripEvents: 2,
-  maxEventsPerRun: 8,
+  maxEventsPerRun: 6,
   eventMinutes: 0.4,
   eventReserveMinutes: 1.0,
-  minutesPerStop: 2.8,   // how long a group usually spends on one stop
+  // How long a group usually spends at each kind of stop (minutes).
+  minutesByType: { store: 3, card: 2.4, draw: 2.4, fork: 2, river: 1.6, landmark: 1.2, ending: 0 },
   eventChance: 0.85,
   // How long the wagon takes to cross between stops on screen (seconds).
   travelSeconds: { min: 4, max: 8, per100Miles: 0.8 },

@@ -208,6 +208,7 @@
     var w = weatherFor(state);
     day.weather = w;
     state.weather = w.label;
+    state.rain = (state.rain || 0) * 0.8 + w.wet;
     state.days += 1;
     if (trip && !resting) {
       trip.day += 1;
@@ -290,6 +291,73 @@
     return out;
   }
 
+  // ---------------------------------------------------------------- rivers
+  function riverDepth(state, r) { return Math.round((r.depth + r.rainRise * (state.rain || 0)) * 10) / 10; }
+
+  function riverOptions(state, r) {
+    var o = [
+      { id: "ford", label: "Ford the river", role: "navigator" },
+      { id: "float", label: "Caulk the wagon and float it", role: "navigator" }
+    ];
+    if (r.ferry) o.push({ id: "ferry", label: "Take " + r.ferry.by, role: "quartermaster", requires: { money: r.ferry.cost } });
+    if (r.guide) {
+      o.push({ id: "guide", label: "Hire " + r.guide.by + " (trade goods)", role: "quartermaster", requires: r.guide.cost });
+      if (r.guide.alt) o.push({ id: "guideCash", label: "Hire " + r.guide.by + " ($" + r.guide.alt.money + ")", role: "quartermaster", requires: r.guide.alt });
+    }
+    o.push({ id: "wait", label: "Wait a day to see if the river drops", role: "doctor" });
+    return o.map(function (x) { x.ok = meets(state, x.requires); return x; });
+  }
+
+  // Cross (or wait). Returns { result, changes, deaths, sick, crossed }.
+  function crossRiver(state, r, how) {
+    var depth = riverDepth(state, r), report = { changes: [], deaths: [], sick: [], crossed: true };
+    function pay(cost) { Object.keys(cost).forEach(function (k) { state[k] -= cost[k]; report.changes.push({ stat: k, amount: -cost[k] }); }); }
+    function waitDays(n) { for (var i = 0; i < n; i++) { var d = stepDay(state, null, true); d.deaths.forEach(function (m) { report.deaths.push(m); }); } if (n) report.changes.push({ stat: "days", amount: n }); }
+    function upset(scale) {
+      var lost = Math.round(state.food * (0.15 + 0.25 * rand(state)) * scale);
+      state.food -= lost; report.changes.push({ stat: "food", amount: -lost });
+      var text = "The wagon tips in the current. You lose " + lost + " lb of food";
+      if (rand(state) < 0.4 * scale && state.oxen > 2) { state.oxen--; report.changes.push({ stat: "oxen", amount: -1 }); text += " and an ox is swept away"; }
+      if (rand(state) < 0.3 * scale && state.parts > 0) { state.parts--; report.changes.push({ stat: "parts", amount: -1 }); }
+      text += ".";
+      if (rand(state) < 0.3 * scale) {
+        var living = alive(state);
+        var who = pick(state, living);
+        if (state.deaths < W.config.maxDeaths && living.length > 2) { die(state, who, "drowning", report); text += " " + who.name + " is pulled under by the current."; }
+        else { who.sick = { cause: "a near drowning", days: 10 }; report.sick.push(who); text += " " + who.name + " is pulled out of the water half-drowned."; }
+      }
+      return text;
+    }
+    var tip;
+    if (how === "wait") {
+      waitDays(1);
+      report.crossed = false;
+      report.result = "You camp on the bank for a day. The river is now " + riverDepth(state, r) + " feet deep.";
+      return report;
+    }
+    if (how === "ford") {
+      if (depth < 2.5) report.result = "The water barely reaches the wagon bed. You ford easily.";
+      else if (depth < 3) { waitDays(1); report.result = "Water slops into the wagon. You lose a day drying everything out."; }
+      else { tip = Math.min(0.85, 0.25 + (depth - 3) * 0.25); report.result = rand(state) < tip ? upset(1) : "The water is over the wheels, but the oxen keep their footing. You make it across."; }
+    } else if (how === "float") {
+      tip = Math.min(0.7, 0.08 + r.current * 0.25 + r.width / 8000);
+      report.result = depth < 1.5 ? "Too shallow to float; you drag the wagon across." : rand(state) < tip ? upset(0.8) : "Sealed with tar, the wagon floats like a boat. You pole across safely.";
+      waitDays(1);
+    } else if (how === "ferry") {
+      pay({ money: r.ferry.cost });
+      var wait = r.ferry.wait[0] + Math.floor(rand(state) * (r.ferry.wait[1] - r.ferry.wait[0] + 1));
+      waitDays(wait);
+      report.result = (wait ? "You wait " + wait + " day" + (wait > 1 ? "s" : "") + " for your turn. " : "") + "The ferry carries you across safely.";
+    } else if (how === "guide" || how === "guideCash") {
+      pay(how === "guide" ? r.guide.cost : r.guide.alt);
+      tip = Math.min(0.7, 0.08 + r.current * 0.25 + r.width / 8000) * 0.2;
+      report.result = rand(state) < tip ? upset(0.5) : "Your guide leads the wagon from island to island on the shallow gravel bars. You cross safely.";
+      waitDays(1);
+    }
+    state.log.push({ kind: "river", river: r.name, how: how, result: report.result });
+    return report;
+  }
+
   function settings(state) {
     var living = alive(state);
     var perDay = living.length * RATIONS[state.rations].lb;
@@ -332,14 +400,27 @@
 
   function choices(state, c) {
     return c.choices.map(function (ch, i) {
-      return { index: i, label: ch.label, ok: meets(state, ch.requires) };
+      return { index: i, label: fill(state, ch.label), ok: meets(state, ch.requires) };
     });
   }
 
-  function choose(state, c, index) {
+  // Card text can name the player's own family by role: {navigator}, {doctor}...
+  function fill(state, str) {
+    if (str == null || !state.members) return str;
+    return String(str).replace(/\{(navigator|quartermaster|journal|doctor)\}/g, function (m, r) {
+      var who = state.members.filter(function (x) { return x.role === r; })[0];
+      if (who && !who.alive) who = alive(state)[0] || who;
+      return who ? who.name : m;
+    });
+  }
+
+  // force (from a minigame): { outcome: index into outcomes, effects: extra effects }
+  function choose(state, c, index, force) {
     var ch = c.choices[index];
     var outcome = ch;
-    if (ch.outcomes) {
+    if (ch.outcomes && force && force.outcome != null) {
+      outcome = ch.outcomes[Math.min(force.outcome, ch.outcomes.length - 1)];
+    } else if (ch.outcomes) {
       var r = rand(state), acc = 0;
       outcome = ch.outcomes[ch.outcomes.length - 1];
       for (var i = 0; i < ch.outcomes.length; i++) {
@@ -347,9 +428,11 @@
         if (r < acc) { outcome = ch.outcomes[i]; break; }
       }
     }
-    var report = applyEffects(state, outcome.effects || {});
-    report.result = outcome.result;
-    report.choice = ch.label;
+    var fx = Object.assign({}, outcome.effects || {});
+    if (force && force.effects) Object.keys(force.effects).forEach(function (k) { fx[k] = (fx[k] || 0) + force.effects[k]; });
+    var report = applyEffects(state, fx);
+    report.result = fill(state, outcome.result) + (force && force.note ? " " + force.note : "");
+    report.choice = fill(state, ch.label);
     state.log.push({ kind: c.slots ? "event" : "card", card: c.id, choice: ch.label, result: outcome.result });
     return report;
   }
@@ -419,10 +502,10 @@
     // minus the stops still required. Only the true surplus becomes trail life.
     var end = state.beats[state.beats.length - 1];
     var endTarget = end.type === "ending" ? end.target : W.routes.california[W.routes.california.length - 1].target;
-    var required = state.beats.slice(state.index).filter(function (x) { return !x.optional && x.type !== "ending"; }).length;
-    if (end.type !== "ending") required += 4; // the branch after the fork is not added yet
+    var needed = state.beats.slice(state.index).reduce(function (sum, x) { return sum + (c.minutesByType[x.type] || 0); }, 0);
+    if (end.type !== "ending") needed += 4 * c.minutesByType.card; // the branch after the fork is not added yet
     var elapsed = elapsedMinutes(state, now);
-    var slack = Math.min(b.target - elapsed, endTarget - elapsed - required * c.minutesPerStop) - c.eventReserveMinutes;
+    var slack = Math.min(b.target - elapsed, endTarget - elapsed - needed) - c.eventReserveMinutes;
     var left = c.maxEventsPerRun - Object.keys(state.eventsSeen || {}).length;
     var n = Math.max(0, Math.min(c.maxTripEvents, left, Math.floor(slack / c.eventMinutes)));
     var out = 0;
@@ -521,6 +604,7 @@
     jumpTo: jumpTo, ledger: ledger, rand: rand, card: card,
     pickTripEvents: pickTripEvents, resolveEvent: resolveEvent,
     stepDay: stepDay, rest: rest, settings: settings, healthLabel: healthLabel,
-    PACES: PACES, RATIONS: RATIONS
+    PACES: PACES, RATIONS: RATIONS,
+    fill: fill, riverDepth: riverDepth, riverOptions: riverOptions, crossRiver: crossRiver
   };
 })(typeof window !== "undefined" ? window : globalThis);

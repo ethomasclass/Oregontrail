@@ -4,7 +4,12 @@
 //   id, title, lead (which role holds the mouse), vote (true = group vote),
 //   text (read aloud), choices, pools (for random draws), families (optional limit),
 //   requires (optional: a choice only shows if the family has this flag or stat),
-//   art (optional: the painted scene shown behind the card; see data/art.js).
+//   year (optional: shown on the card when it happens after 1849),
+//   teacherNote (optional: shown in the teacher panel, e.g. that a scene is invented),
+// Text can name the player's own family by role: {navigator}, {quartermaster},
+// {journal}, {doctor} (students type their own names for the family).
+//   art (optional: the scene shown behind the card; see data/scenes.js),
+//   minigame on a choice ("raft" or "pan"): a short skill break decides the outcome.
 // Each choice has "result" text and "effects", or "outcomes" (a list with chance,
 // result, effects) when luck decides.
 //
@@ -20,29 +25,6 @@ window.WESTWARD = window.WESTWARD || {};
 WESTWARD.cards = [
   // ---------------------------------------------------------------- trail
   {
-    id: "kansas-crossing",
-    title: "The Kansas River",
-    lead: "navigator",
-    vote: true,
-    art: "river",
-    text: "The river is wide and running high from spring rain. A ferry runs here, owned by local traders, and the ferrymen want cash. Upstream, wagons are trying to ford.",
-    choices: [
-      { label: "Pay for the ferry ($8)", requires: { money: 8 },
-        result: "The ferrymen pole your wagon across in an hour. Expensive, but everyone stays dry.",
-        effects: { money: -8 } },
-      { label: "Caulk the wagon and float it", outcomes: [
-        { chance: 0.7, result: "You seal the wagon bed with tar and float it across. It takes all day, but it works.", effects: { days: 1 } },
-        { chance: 0.3, result: "Water leaks in halfway across. You lose some flour to the river.", effects: { days: 1, food: -100 } }
-      ] },
-      { label: "Ford the river", outcomes: [
-        { chance: 0.5, result: "The oxen find their footing. You are across before noon.", effects: {} },
-        { chance: 0.5, result: "The current shoves the wagon sideways. You save the family, but not the bacon.", effects: { food: -150, sick: { chance: 0.25, cause: "drowning" } } }
-      ] }
-    ],
-    sources: ["kansas-river-ferries"],
-    draft: true
-  },
-  {
     id: "cholera",
     title: "Cholera in camp",
     lead: "doctor",
@@ -52,7 +34,7 @@ WESTWARD.cards = [
     text: "Fresh graves line the trail. Someone in the next camp has cholera, the disease that killed more emigrants than anything else. It spreads through dirty water.",
     choices: [
       { label: "Stop a day and boil all your water",
-        result: "You lose a day, but boiling the water protects you better than anything else you could do.",
+        result: "Nobody in 1849 knows what causes cholera, but some emigrants blame bad water. Boiling it protects you more than you could know.",
         effects: { days: 1, sick: { chance: 0.15, cause: "cholera" } } },
       { label: "Use the medicine chest", requires: { medicine: 1 },
         result: "The medicines of 1849 could not cure cholera, but rest and care help a little.",
@@ -136,13 +118,13 @@ WESTWARD.cards = [
     vote: true,
     pools: ["plains"],
     art: "prairie",
-    text: "A herd of bison grazes across the river. For the Lakota, Cheyenne, and Pawnee, bison are food, clothing, shelter, and sacred. Emigrants often shot them for sport and left them.",
+    text: "A herd of bison grazes across the river. For the Lakota, Cheyenne, and Pawnee, bison are food, clothing, shelter, and sacred. Emigrants hunted them for food, and often for sport.",
     choices: [
       { label: "Hunt one bison for meat and use all of it",
         result: "You take only what you can carry. Fresh meat for a week.",
         effects: { food: 60, days: 1 } },
       { label: "Leave the herd alone",
-        result: "Ruth writes about the herd in the journal. Within forty years, the great herds would be nearly gone.",
+        result: "{journal} writes about the herd in the journal. Within forty years, the great herds would be nearly gone.",
         effects: { flags: { sparedBison: true } } }
     ],
     sources: ["bison-decline"],
@@ -155,7 +137,7 @@ WESTWARD.cards = [
     vote: false,
     pools: ["mountains"],
     art: "camp",
-    text: "A rifle stored loaded in the wagon goes off when someone pulls it out. Accidental gunshots hurt far more emigrants than any attack did.",
+    text: "A rifle stored loaded in the wagon goes off when someone pulls it out. Almost every wagon carried guns. Accidental shootings were common; attacks were rare.",
     choices: [
       { label: "Treat the wound and rest two days",
         result: "With rest and care, the wound starts to heal.",
@@ -174,13 +156,13 @@ WESTWARD.cards = [
     vote: false,
     pools: ["mountains"],
     art: "river",
-    text: "A Shoshone family offers dried salmon and fresh horses. They also know where the next good water is.",
+    text: "A Shoshone family offers dried meat and fresh horses. They also know where the next good water is.",
     choices: [
-      { label: "Trade goods for salmon and advice", requires: { trade: 1 },
-        result: "You trade cloth for salmon, and they show you a spring the guidebooks miss.",
+      { label: "Trade goods for meat and advice", requires: { trade: 1 },
+        result: "You trade cloth for dried meat, and they show you a spring the guidebooks miss.",
         effects: { trade: -1, food: 80, days: -1 } },
-      { label: "Trade flour for salmon",
-        result: "A fair trade. The salmon keeps better than your flour.",
+      { label: "Trade flour for dried meat",
+        result: "A fair trade. The dried meat keeps better than your flour.",
         effects: { food: 20 } },
       { label: "Decline politely",
         result: "You move on with what you have.",
@@ -199,7 +181,7 @@ WESTWARD.cards = [
     text: "A Shoshone guide offers to lead the train along a safer path with better grass, for a price.",
     choices: [
       { label: "Hire the guide ($10)", requires: { money: 10 },
-        result: "The guide's route is longer on the map but faster in practice. Native guides saved many emigrant trains.",
+        result: "The guide's route is longer on the map but faster in practice. Emigrants often paid Native guides to show them fords and trails.",
         effects: { money: -10, days: -2 } },
       { label: "Follow the guidebook instead",
         outcomes: [
@@ -235,10 +217,10 @@ WESTWARD.cards = [
     lead: "quartermaster",
     vote: false,
     art: "fort",
-    text: "Fort Laramie is a trading post where emigrants, traders, and Lakota and Cheyenne families all meet. Prices here are high.",
+    text: "Fort Laramie has been a trading post for fifteen years, where emigrants, traders, and Lakota and Cheyenne families all meet. This June, the U.S. Army bought it. Prices here are high.",
     choices: [
       { label: "Buy 100 lb of flour ($12)", requires: { money: 12 },
-        result: "Flour costs three times what it did in Independence. You pay it.",
+        result: "Flour costs far more than it did in Independence. You pay it.",
         effects: { money: -12, food: 100 } },
       { label: "Trade goods with Lakota families for moccasins and meat", requires: { trade: 1 },
         result: "The trade goes well. Your worn-out shoes are replaced.",
@@ -254,6 +236,7 @@ WESTWARD.cards = [
   // --------------------------------------------- family-specific (trail)
   {
     id: "nativist-company",
+    teacherNote: "Invented scene. No documented case of a wagon company voting out an Irish Catholic family; it is built on real 1840s nativist attitudes.",
     title: "Not welcome",
     lead: "navigator",
     vote: true,
@@ -286,7 +269,7 @@ WESTWARD.cards = [
     text: "A man at the fort says he is looking for people who escaped slavery. He demands to see your free papers. Without them, a Black family could be kidnapped and sold.",
     choices: [
       { label: "Show the papers",
-        result: "He reads them slowly, hands them back, and walks away. You keep the papers sewn into Hannah's coat after this.",
+        result: "He reads them slowly, hands them back, and walks away. You keep the papers sewn into {doctor}'s coat after this.",
         effects: { days: 1, flags: { showedPapers: true } } },
       { label: "Ask the wagon captain to vouch for you",
         outcomes: [
@@ -301,6 +284,7 @@ WESTWARD.cards = [
   // ------------------------------------------- crossovers (meet the others)
   {
     id: "cross-ohio-doyles",
+    teacherNote: "Invented scene. No documented case of a wagon company voting out an Irish Catholic family; it is built on real 1840s nativist attitudes.",
     title: "The Doyles",
     lead: "journal",
     vote: true,
@@ -328,10 +312,10 @@ WESTWARD.cards = [
     vote: false,
     families: ["ohio"],
     art: "mountains",
-    text: "At South Pass you camp beside the Bells, a free Black family from Missouri. Isaac Bell says they are headed to Oregon for land. Another emigrant laughs: \"Oregon won't let you stay.\"",
+    text: "At South Pass you camp beside the Bells, a free Black family from Missouri. Isaac Bell says they are headed to Oregon for land. Another emigrant says: \"Oregon doesn't want Black settlers. They passed a law against it once, and they'll do it again.\"",
     choices: [
       { label: "Ask Isaac Bell what he means to do",
-        result: "Isaac says they will find a way, or go somewhere that will have them. Ruth writes his words in the journal.",
+        result: "Isaac says they will find a way, or go somewhere that will have them. {journal} writes his words in the journal.",
         effects: { flags: { metBells: true } } },
       { label: "Say nothing",
         result: "The Bells pull out early the next morning.",
@@ -342,12 +326,13 @@ WESTWARD.cards = [
   },
   {
     id: "cross-irish-bells",
+    teacherNote: "Invented scene. No documented case of a wagon company voting out an Irish Catholic family; it is built on real 1840s nativist attitudes.",
     title: "The Bells",
     lead: "journal",
     vote: false,
     families: ["irish"],
     art: "fort",
-    text: "At Fort Laramie you share a campfire with the Bells, a free Black family from Missouri. Daniel Bell asks Michael if Irish families get treated as Americans out here.",
+    text: "At Fort Laramie you share a campfire with the Bells, a free Black family from Missouri. Daniel Bell asks {quartermaster} if Irish families get treated as Americans out here.",
     choices: [
       { label: "Tell the truth: \"Not always.\"",
         result: "The two families trade stories late into the night. Both know what it is like to be watched.",
@@ -361,18 +346,19 @@ WESTWARD.cards = [
   },
   {
     id: "cross-bell-doyles",
+    teacherNote: "Invented scene. No documented case of a wagon company voting out an Irish Catholic family; it is built on real 1840s nativist attitudes.",
     title: "The Doyles",
     lead: "journal",
     vote: false,
     families: ["black"],
     art: "fort",
-    text: "An Irish family, the Doyles, camps at the edge of the train like you do. Bridget Doyle's youngest is sick, and she asks Hannah for help.",
+    text: "An Irish family, the Doyles, camps at the edge of the train like you do. Bridget Doyle's youngest is sick, and she asks {doctor} for help.",
     choices: [
       { label: "Share medicine", requires: { medicine: 1 },
-        result: "The child recovers. Patrick Doyle helps Isaac fix a wheel the next week.",
+        result: "The child recovers. Patrick Doyle helps {navigator} fix a wheel the next week.",
         effects: { medicine: -1, parts: 1, flags: { helpedDoyles: true } } },
       { label: "Share advice and broth",
-        result: "Hannah sits up with the child all night. The Doyles never forget it.",
+        result: "{doctor} sits up with the child all night. The Doyles never forget it.",
         effects: { food: -20, flags: { helpedDoyles: true } } }
     ],
     sources: [],
@@ -386,7 +372,7 @@ WESTWARD.cards = [
     lead: "navigator",
     vote: true,
     art: "fort",
-    text: "News of gold in California has reached Fort Hall. Some wagons turn southwest toward the gold fields. Others keep west toward Oregon's farmland. Everyone votes.",
+    text: "Past Fort Hall, at the Raft River, the trail splits. This year almost everyone is bound for the gold fields; only a few hundred families keep west toward Oregon's farmland. Everyone votes.",
     choices: [
       { label: "Oregon: farmland in the Willamette Valley",
         result: "You keep west, toward the Columbia River and the land you came for.",
@@ -406,17 +392,23 @@ WESTWARD.cards = [
     lead: "navigator",
     vote: true,
     art: "river",
-    text: "At The Dalles, the trail ends at the Columbia River. You can raft down the river, or pay a toll for the Barlow Road over the shoulder of Mount Hood.",
+    text: "At The Dalles, the wagon road ends at the Columbia River. You can raft down the river through the rapids, or pay the toll for Barlow's road over the shoulder of Mount Hood.",
     choices: [
-      { label: "Raft down the Columbia with a Native pilot", outcomes: [
-        { chance: 0.75, result: "The pilot reads the rapids perfectly. You reach the valley fast.", effects: { money: -5 } },
-        { chance: 0.25, result: "A raft ahead overturns in the rapids. Yours survives, but you lose supplies.", effects: { money: -5, food: -100, sick: { chance: 0.2, cause: "drowning" } } }
-      ] },
-      { label: "Pay the Barlow Road toll ($5)", requires: { money: 5 },
-        result: "The road is steep and muddy, but it is solid ground. It takes a week.",
-        effects: { money: -5, days: 7 } }
+      { label: "Raft down with Chinookan pilots ($8)", requires: { money: 8 }, minigame: "raft", pilot: true, who: "navigator",
+        outcomes: [
+          { chance: 0.75, result: "The pilots know every rock. You reach the Willamette Valley fast.", effects: { money: -8 } },
+          { chance: 0.25, result: "A rapid swamps the raft. You save the family, but lose supplies to the river.", effects: { money: -8, food: -100, sick: { chance: 0.3, cause: "drowning" } } }
+        ] },
+      { label: "Build your own raft and run the river", minigame: "raft", pilot: false, who: "navigator",
+        outcomes: [
+          { chance: 0.5, result: "Somehow you make it through the rapids. Everyone is soaked and shaking.", effects: { parts: -1 } },
+          { chance: 0.5, result: "The raft slams into the rocks. You lose much of what you own.", effects: { parts: -1, food: -200, sick: { chance: 0.5, cause: "drowning" } } }
+        ] },
+      { label: "Pay the Barlow Road toll ($5 and 10 cents a head of stock)", requires: { money: 6 },
+        result: "The road is steep, especially down Laurel Hill, but it is solid ground. It takes about a week.",
+        effects: { money: -6, days: 7 } }
     ],
-    sources: ["barlow-road"],
+    sources: ["barlow-road", "columbia-pilots"],
     draft: true
   },
   {
@@ -426,14 +418,14 @@ WESTWARD.cards = [
     vote: false,
     families: ["ohio", "irish"],
     art: "valley",
-    text: "The Willamette Valley is green and wide. You mark out a claim of hundreds of acres, free to white settlers who farm it. This is the promise that brought you west.",
+    text: "The Willamette Valley is green and wide. A married couple can claim 640 acres, free to white settlers who live on it and farm it for four years. Half is in {doctor}'s name, one of the first U.S. laws to let married women own land. This is the promise that brought you west.",
     choices: [
       { label: "Claim land near the river",
         result: "You drive stakes into rich black soil. The land is yours on paper.",
-        effects: { land: 320, flags: { claimedLand: true } } },
+        effects: { land: 640, flags: { claimedLand: true } } },
       { label: "Claim land in the hills where nobody else is",
         result: "Poorer soil, but nobody disputes your stakes.",
-        effects: { land: 320, flags: { claimedLand: true } } }
+        effects: { land: 640, flags: { claimedLand: true } } }
     ],
     sources: ["donation-land-claim"],
     draft: true
@@ -445,13 +437,13 @@ WESTWARD.cards = [
     vote: true,
     families: ["black"],
     art: "valley",
-    text: "In Oregon City, a clerk tells Isaac that Oregon law forbids Black people from settling here. You traveled 2,000 miles, and the land you were promised is closed to you by law.",
+    text: "In Oregon City, a clerk tells {navigator} that Oregon law forbids Black people from settling here. You traveled 2,000 miles, and the land you were promised is closed to you by law.",
     choices: [
       { label: "Ask white neighbors to let you farm quietly on their land",
         result: "A neighbor agrees, but you own nothing, and the law could be used against you any day.",
         effects: { flags: { stayedQuietly: true } } },
       { label: "Keep going north of the Columbia River",
-        result: "You hear that north of the river, the law is less often enforced. You pack up again.",
+        result: "North of the river is still Oregon Territory, so the law applies there too, but it is rarely enforced. George Washington Bush settled there in 1845. You pack up again.",
         effects: { days: 10, flags: { wentNorth: true } } }
     ],
     sources: ["oregon-exclusion-laws"],
@@ -463,7 +455,7 @@ WESTWARD.cards = [
     lead: "journal",
     vote: false,
     art: "valley",
-    text: "A Kalapuya family walks past your stakes. For generations, they burned this valley each fall to grow camas and keep the meadows open. Now settlers are fencing it.",
+    text: "A Kalapuya family walks past your stakes. For generations, they burned this valley each late summer to grow camas and keep the meadows open. Now settlers are fencing it.",
     choices: [
       { label: "Ask them about the land",
         result: "Through a neighbor who speaks Chinook Jargon, you learn this meadow was a camas field. Disease had already killed most of the Kalapuya before you arrived.",
@@ -504,7 +496,7 @@ WESTWARD.cards = [
     text: "You hear about George Washington Bush, a Black farmer who came over the trail in 1844. Oregon's law barred him, so he settled north of the Columbia, where neighbors grew to depend on him.",
     choices: [
       { label: "Hold on to his story",
-        result: "Clara copies his name into the journal. It helps to know others found a way.",
+        result: "{journal} copies his name into the journal. It helps to know others found a way.",
         effects: { flags: { heardBush: true } } }
     ],
     sources: ["george-bush"],
@@ -560,27 +552,26 @@ WESTWARD.cards = [
     lead: "quartermaster",
     vote: true,
     art: "goldfields",
-    text: "Everyone came for gold. A pan of gravel might hold a few dollars of gold, or none. A shovel costs ten times what it did back east.",
+    text: "Everyone came for gold. A pan of gravel might hold a few dollars of gold, or none. Boots, shovels, and food cost many times what they did back east.",
     choices: [
-      { label: "Work a claim on the river", outcomes: [
-        { chance: 0.7, result: "Weeks of freezing river work. You earn enough to eat, and not much more.", effects: { gold: 40, sick: { chance: 0.15, cause: "fever" } } },
-        { chance: 0.2, result: "A good week! Then the claim plays out.", effects: { gold: 150 } },
-        { chance: 0.1, result: "Nothing but sand. You sell your tools to buy food.", effects: { gold: 5, parts: -1 } }
-      ] },
+      { label: "Work a claim on the river", minigame: "pan", who: "quartermaster",
+        result: "Weeks of cold river work. Gold-mining, one miner's wife wrote, is \"nature's great lottery scheme.\"",
+        effects: { sick: { chance: 0.15, cause: "fever" } } },
       { label: "Sell supplies to miners instead",
         result: "You sell flour, shovels, and boots at gold-rush prices. Quietly, this pays better than mining.",
-        effects: { gold: 250, flags: { merchant: true } } }
+        effects: { gold: 150, flags: { merchant: true } } }
     ],
-    sources: ["miner-earnings", "merchants"],
+    sources: ["miner-earnings", "merchants", "shirley-lottery"],
     draft: true
   },
   {
     id: "californio-rancho",
+    year: "1851",
     title: "The rancho",
     lead: "journal",
     vote: false,
     art: "rancho",
-    text: "Don Ignacio, a Californio ranchero, watches squatters build cabins on land his family has held for decades. Under the Land Act of 1851, he must prove his title in an American court, in English.",
+    text: "Don Ignacio, a Californio ranchero, watches squatters build cabins on land his family has held for decades. Soon a federal law, the Land Act of 1851, will make him prove his title before a land commission and the courts. With appeals, cases took 17 years on average.",
     choices: [
       { label: "Ask him what will happen",
         result: "He says the case could take years and cost him the land in lawyers' fees. Many Californio families lost their ranchos this way.",
@@ -594,11 +585,12 @@ WESTWARD.cards = [
   },
   {
     id: "militia-news",
+    year: "1850",
     title: "News from the hills",
     lead: "journal",
     vote: false,
     art: "goldfields",
-    text: "Miners in camp talk about militia companies paid by the state to attack Native villages in the foothills. California's Native population is collapsing from disease, starvation, and violence.",
+    text: "By 1850, miners in camp talk about militia companies paid by the state to attack Native villages in the foothills. California's Native population is collapsing from disease, starvation, and violence.",
     choices: [
       { label: "Listen and write it down",
         result: "The journal entry is short. Some things are hard to write.",
@@ -612,12 +604,13 @@ WESTWARD.cards = [
   },
   {
     id: "cross-chan-tax",
+    year: "1852",
     title: "The tax collector",
     lead: "journal",
     vote: false,
     families: ["ohio", "irish", "black"],
     art: "goldfields",
-    text: "A tax collector rides up to a camp of Chinese miners downstream. He demands the Foreign Miners' Tax. One of them, Chan Ah Sing, has already paid, but the collector demands more.",
+    text: "Three years later, in 1852, a tax collector rides up to a camp of Chinese miners downstream. He demands the new Foreign Miners' Tax. One of them, Chan Ah Sing, has already paid, but the collector demands more.",
     choices: [
       { label: "Speak up for the Chan cousins",
         result: "The collector tells you to mind your business. But he leaves without collecting twice.",
@@ -637,10 +630,10 @@ WESTWARD.cards = [
     lead: "doctor",
     vote: false,
     art: "sea",
-    text: "The ship is crowded below deck. The voyage to San Francisco takes about two months. Fever spreads among the passengers.",
+    text: "The ship is crowded below deck. The voyage to San Francisco takes two to three months. Fever spreads among the passengers.",
     choices: [
       { label: "Use your herbal medicines", requires: { medicine: 1 },
-        result: "Yau's medicines help. The cousins stay well.",
+        result: "{doctor}'s medicines help. The cousins stay well.",
         effects: { medicine: -1, sick: { chance: 0.1, cause: "fever at sea" } } },
       { label: "Stay on deck in the fresh air as much as allowed",
         result: "The crew drives you below at night. You hope for the best.",
@@ -655,7 +648,7 @@ WESTWARD.cards = [
     lead: "navigator",
     vote: true,
     art: "harbor",
-    text: "San Francisco is a forest of ship masts. Men from your home district meet the ship. Their district association offers help finding work, and keeps track of your debt.",
+    text: "San Francisco is a forest of ship masts. Men from your home district meet the ship. Their district association, the Sze Yup company, offers lodging, help finding work, and tools for the mines.",
     choices: [
       { label: "Join a mining company from your district",
         result: "You head for the mines with men who speak your dialect. There is safety in numbers.",
@@ -669,12 +662,13 @@ WESTWARD.cards = [
   },
   {
     id: "tax-collector",
+    year: "1852",
     title: "The Foreign Miners' Tax",
     lead: "quartermaster",
     vote: true,
     families: ["chinese"],
     art: "goldfields",
-    text: "A tax collector rides into camp. Every foreign miner must pay a monthly license tax. American-born miners pay nothing.",
+    text: "A tax collector rides into camp. Since May 1852, every miner who is not a U.S. citizen must buy a license for $3 a month. U.S. law lets only white immigrants become citizens, so Chinese miners can never stop paying.",
     choices: [
       { label: "Pay the tax", requires: { gold: 3 },
         result: "You pay. The collector writes a receipt. Some collectors came back and demanded payment again.",
@@ -696,7 +690,7 @@ WESTWARD.cards = [
     text: "Wagon families come down from the Sierra, thin and worn out from the trail. Some are kind. Others shout that California's gold belongs to Americans.",
     choices: [
       { label: "Sell them food",
-        result: "The Carvers buy your rice and thank you. Their daughter Ruth asks Fook to teach her a word of Cantonese.",
+        result: "The Carvers, who came overland three years ago, buy your rice and thank you. Their daughter asks {journal} to teach her a word of Cantonese.",
         effects: { gold: 15, flags: { metCarvers: true } } },
       { label: "Keep your distance",
         result: "You watch from upstream as the camp fills with newcomers.",
@@ -707,12 +701,13 @@ WESTWARD.cards = [
   },
   {
     id: "no-testimony",
+    year: "1854",
     title: "Robbed",
     lead: "navigator",
     vote: true,
     families: ["chinese"],
     art: "goldfields",
-    text: "Two men take your gold at gunpoint. You saw their faces. But after People v. Hall in 1854, California courts will not accept testimony from Chinese witnesses against white men.",
+    text: "Two men take your gold at gunpoint. You saw their faces. In 1854 the California Supreme Court will rule in People v. Hall that Chinese witnesses cannot testify against white people. By then, cases like yours go nowhere.",
     choices: [
       { label: "Report it anyway",
         result: "The sheriff writes nothing down. Without your testimony, there is no case.",

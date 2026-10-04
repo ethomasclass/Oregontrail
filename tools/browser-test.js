@@ -62,10 +62,17 @@ fs.mkdirSync(out, { recursive: true });
     await shot("05-store-filled");
     await page.click("#done");
     var n = 0, endedShot = false;
-    var evShots = 0;
+    var evShots = 0, shotMg = 0;
     while (n++ < 1500) {
       await page.waitForTimeout(150);
       if (await page.$(".ledger")) { await shot("99-ending"); endedShot = true; break; }
+      var mg = await page.$(".mg-start:not([disabled])");
+      if (mg) {
+        await mg.click();
+        if (!shotMg++) { await page.waitForTimeout(4000); await shot("60-minigame"); }
+        await page.waitForSelector(".minigame", { state: "detached", timeout: 90000 });
+        continue;
+      }
       var roll = await page.$("#roll");
       if (roll) { await roll.click(); await page.waitForTimeout(300); continue; }
       var ev = await page.$(".card.event [data-choice]:not([disabled])");

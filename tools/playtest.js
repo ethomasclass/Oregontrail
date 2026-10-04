@@ -10,7 +10,7 @@ var vm = require("vm");
 var root = path.join(__dirname, "..");
 globalThis.window = globalThis;
 ["data/config.js", "data/families.js", "data/route.js", "data/stores.js", "data/cards.js",
- "data/landmarks.js", "data/endings.js", "data/scenes.js", "data/trail-events.js", "data/voices.js", "js/engine.js"].forEach(function (f) {
+ "data/landmarks.js", "data/endings.js", "data/scenes.js", "data/trail-events.js", "data/voices.js", "data/rivers.js", "js/engine.js"].forEach(function (f) {
   vm.runInThisContext(fs.readFileSync(path.join(root, f), "utf8"), { filename: f });
 });
 
@@ -53,6 +53,7 @@ Object.keys(W.routes).forEach(function (r) {
       if (!ids[id]) fail("Route " + r + " uses unknown card " + id);
     });
     if (b.landmark && !W.landmarks[b.landmark]) fail("Unknown landmark " + b.landmark);
+    if (b.type === "river" && !W.rivers[b.river]) fail("Unknown river " + b.river);
   });
 });
 Object.keys(W.places).forEach(function (k) {
@@ -61,6 +62,15 @@ Object.keys(W.places).forEach(function (k) {
 W.cards.forEach(function (c) { if (c.art && !W.scenes[c.art]) fail("Card " + c.id + " uses unknown scene " + c.art); });
 Object.keys(W.endings.family).forEach(function (k) {
   if (!W.families.some(function (f) { return k.indexOf(f.id + "-") === 0; })) fail("Ending for unknown family " + k);
+});
+
+// Card text slots fill for every family.
+W.families.forEach(function (fam) {
+  var st = E.create(1); E.chooseFamily(st, fam.id, 0);
+  W.cards.forEach(function (c) {
+    var all = [c.title, c.text].concat(c.choices.map(function (ch) { return ch.label + " " + (ch.result || "") + (ch.outcomes || []).map(function (o) { return o.result; }).join(" "); }));
+    all.forEach(function (t) { if (/\{\w+\}/.test(E.fill(st, t))) fail("Unfilled slot in card " + c.id + ": " + t.slice(0, 60)); });
+  });
 });
 
 // No em dashes in any shipped text.
@@ -83,8 +93,10 @@ W.families.forEach(function (fam) {
     var decisions = 0, guard = 0, ended = false;
     var now = t0;
     while (!ended && guard++ < 100) {
-      // Simulate a group: 1.75 to 3 minutes per stop, about 0.4 per trail event.
-      now += (1.75 + E.rand(state) * 1.25) * 60000;
+      // Simulate a group: time at the last stop by its kind, about 0.4 min per trail event.
+      var lastBeat = state.beats[state.index] || { type: "store" };
+      var span = { store: [2.5, 3.5], river: [1.25, 2], landmark: [0.8, 1.5], fork: [1.5, 2.5] }[lastBeat.type] || [1.75, 3];
+      now += (span[0] + E.rand(state) * (span[1] - span[0])) * 60000;
       var trip = E.advance(state, now);
       if (!trip) { fail(fam.id + " seed " + seed + ": ran out of beats without an ending"); break; }
       var trip = state.trip;
@@ -117,7 +129,18 @@ W.families.forEach(function (fam) {
         if (c.families && c.families.indexOf(fam.id) < 0) fail(fam.id + " drew card meant for others: " + c.id);
         var ok = E.choices(state, c).filter(function (x) { return x.ok; });
         if (!ok.length) { fail(fam.id + " seed " + seed + ": no available choice on " + c.id); break; }
-        E.choose(state, c, ok[Math.floor(E.rand(state) * ok.length)].index);
+        var pickC = ok[Math.floor(E.rand(state) * ok.length)].index, chc = c.choices[pickC];
+        if (chc.minigame === "raft") E.choose(state, c, pickC, { outcome: E.rand(state) < 0.6 ? 0 : 1 });
+        else if (chc.minigame === "pan") E.choose(state, c, pickC, { effects: { gold: Math.round(E.rand(state) * 60) } });
+        else E.choose(state, c, pickC);
+        decisions++;
+      } else if (b.type === "river") {
+        var rv = W.rivers[b.river], tries = 0, rr;
+        do {
+          var ro = E.riverOptions(state, W.rivers[b.river]).filter(function (x) { return x.ok; });
+          rr = E.crossRiver(state, rv, ro[Math.floor(E.rand(state) * ro.length)].id);
+        } while (!rr.crossed && tries++ < 3);
+        if (!rr.crossed) E.crossRiver(state, rv, "ford");
         decisions++;
       } else if (b.type === "ending") {
         ended = true;

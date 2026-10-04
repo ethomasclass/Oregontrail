@@ -9,25 +9,25 @@ WESTWARD.landmarks = {
     title: "Chimney Rock",
     art: "chimneyrock",
     text: "A spire of clay and sandstone rises above the North Platte. Emigrants could see it for days before they reached it, and many wrote about it.",
-    quote: null,
-    speaker: null,
-    sources: [],
+    quote: "Passed Court House Rock and Chimney Rock, both situated on the lower side of the river, and have been in sight for several days.",
+    speaker: "Amelia Stewart Knight, June 2, 1853",
+    sources: ["chimney-rock-knight"],
     draft: true
   },
   "independence-rock": {
     title: "Independence Rock",
     art: "independencerock",
     text: "Emigrants hoped to reach this granite dome by the Fourth of July to stay on schedule. Thousands carved or painted their names on it.",
-    quote: null,
-    speaker: null,
-    sources: [],
+    quote: "Came 19 miles today; passed Independence Rock this afternoon, and crossed Sweetwater River on a bridge. Paid 3 dollars a wagon and swam the stock across.",
+    speaker: "Amelia Stewart Knight, June 15, 1853",
+    sources: ["independence-rock-knight"],
     draft: true
   },
   "sacramento-letter": {
     title: "Sacramento",
     art: "river",
-    text: "Steamboats carry miners up the river to Sacramento, the gateway to the gold fields. In 1852 a San Francisco merchant named Norman Asing wrote an open letter to the governor defending Chinese immigrants.",
-    quote: null,
+    text: "Steamboats carry miners up the river to Sacramento, the gateway to the gold fields. In 1852 a San Francisco restaurant owner named Norman Asing wrote an open letter to the governor defending Chinese immigrants.",
+    quote: "The declaration of your independence, and all the acts of your government, your people, and your history are all against you.",
     speaker: "Norman Asing, 1852",
     sources: [],
     draft: true
@@ -53,9 +53,9 @@ WESTWARD.poster = {
 WESTWARD.seaPoster = {
   headline: "Gam Saan: Gold Mountain",
   lines: [
-    "Floods and war have left your district in Guangdong poor.",
+    "Crop failures and hard times have left your district in Guangdong poor.",
     "Ships' agents in Hong Kong promise gold in California.",
-    "Your passage can be paid on credit, to be repaid from your earnings."
+    "Families borrow, or brokers lend, to pay your passage. You will repay it from your earnings."
   ],
   question: "What pulled people from China to California? What pushed them?",
   sources: ["chinese-voyage"],

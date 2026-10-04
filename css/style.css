@@ -118,6 +118,9 @@ body.has-panel .scene { bottom: var(--panel-h); }
 .chip.vote { background: var(--blue); color: #fff; }
 .chip.draft { background: var(--terracotta); color: #fff; }
 .chip.trail { background: var(--teal); color: #fff; }
+.chip.year { background: var(--ink); color: var(--paper); }
+.field-label { display: block; font-family: var(--head); font-size: 0.75em; color: var(--muted); margin: 8px 0 2px; text-align: left; }
+.note-t { font-size: 13px; background: #f6e1b0; padding: 6px 8px; border-radius: 4px; }
 .card.event { max-width: 680px; margin-top: 2vh; animation: drop 0.35s cubic-bezier(.2,.8,.2,1); }
 .card.event h2 { font-size: clamp(22px, 2vw, 32px); }
 .card.event .result { margin-top: 12px; }
@@ -218,6 +221,12 @@ button .key {
 .travel-box h2 { font-size: clamp(28px, 3.4vw, 54px); }
 .travel-box .note { background: rgba(34,38,46,0.75); display: inline-block; padding: 8px 14px; border-radius: 6px; font-size: 0.75em; margin-bottom: 14px; }
 
+/* ------------------------------------------------------------ rivers */
+.river-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: baseline; margin: 10px 0 4px; padding: 10px 14px; background: #e7eef0; border: 2px solid var(--ink); border-radius: var(--radius); }
+.river-facts .label { display: block; font-family: var(--head); font-size: 0.55em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.river-facts strong { font-family: var(--head); font-size: 0.85em; }
+.river-note { font-size: 0.75em; margin-left: auto; }
+
 /* ------------------------------------------------------------ size up the situation */
 .card.sizeup { max-width: 760px; padding: clamp(16px, 1.8vw, 26px); }
 .card.sizeup h2 { margin-bottom: 0.2em; }
@@ -293,3 +302,14 @@ button.on { outline: 3px solid var(--blue); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+
+/* ------------------------------------------------------------ minigames */
+.minigame { position: fixed; inset: 0; z-index: 40; background: rgba(34,38,46,0.6); display: grid; place-items: center; padding: 16px; }
+.mg-card { background: var(--card); border: 2px solid var(--ink); border-radius: var(--radius); box-shadow: 6px 6px 0 var(--ink); padding: 16px 18px; width: min(860px, 100%); }
+.mg-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.mg-head h2 { margin: 0; }
+.mg-timer { font-family: var(--head); font-size: 1.4em; }
+.minigame canvas { display: block; width: 100%; height: auto; max-height: 56vh; object-fit: contain; border: 2px solid var(--ink); border-radius: 4px; margin: 10px 0; touch-action: none; }
+.mg-how { font-size: 0.7em; margin: 0 0 8px; }
+.mg-controls { display: flex; justify-content: center; gap: 12px; }
+.mg-controls button { font-size: 1em; min-width: 70px; text-align: center; }

@@ -6,6 +6,7 @@
 //   card      a fixed event card (see cards.js)
 //   draw      a random card from a pool (pools are listed on each card)
 //   landmark  a painting plus a diary excerpt (see landmarks.js)
+//   river     a river crossing (see rivers.js)
 //   fork      the Fort Hall vote: Oregon or California
 //   ending    the "Who Decided?" ledger
 //
@@ -27,9 +28,11 @@ WESTWARD.places = {
   fortlaramie: { market: 0.12, name: "Fort Laramie", miles: 650, scene: "fort" },
   independencerock: { name: "Independence Rock", miles: 830, scene: "independencerock" },
   southpass: { name: "South Pass", miles: 930, scene: "mountains" },
+  greenriver: { name: "Green River crossing", miles: 1000, scene: "greenriver" },
   forthall: { market: 0.12, name: "Fort Hall", miles: 1260, scene: "fort" },
 
   // Oregon branch
+  threeisland: { name: "Three Island Crossing, Snake River", miles: 1450, scene: "snake" },
   thedalles: { name: "The Dalles: Columbia River or Barlow Road", miles: 1830, scene: "river" },
   willamette: { name: "Willamette Valley", miles: 1950, scene: "valley" },
 
@@ -48,7 +51,7 @@ WESTWARD.places = {
 WESTWARD.routes = {
   trail: [
     { type: "store", at: "independence", target: 4 },
-    { type: "card", at: "kansasriver", card: "kansas-crossing", target: 9 },
+    { type: "river", at: "kansasriver", river: "kansas", target: 9 },
     { type: "draw", at: "fortkearny", pool: "plains", target: 14,
       byFamily: { irish: "nativist-company", black: "free-papers" } },
     { type: "landmark", at: "chimneyrock", landmark: "chimney-rock", target: 16, optional: true },
@@ -57,11 +60,13 @@ WESTWARD.routes = {
     { type: "landmark", at: "independencerock", landmark: "independence-rock", target: 21, optional: true },
     { type: "draw", at: "southpass", pool: "mountains", target: 23.5,
       byFamily: { ohio: "cross-ohio-bells" } },
+    { type: "river", at: "greenriver", river: "green", target: 24.5, optional: true },
     { type: "fork", at: "forthall", target: 26 }
   ],
 
   oregon: [
-    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 28.5 },
+    { type: "river", at: "threeisland", river: "snake", target: 27.5, optional: true },
+    { type: "card", at: "thedalles", card: "columbia-or-barlow", target: 29 },
     { type: "card", at: "willamette", card: "oregon-land-claim", target: 31,
       byFamily: { black: "oregon-exclusion" } },
     { type: "card", at: "willamette", card: "kalapuya-neighbors", target: 33 },

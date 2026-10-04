@@ -143,13 +143,15 @@
     screenName = "roles";
     show(
       '<div class="card wide"><div class="eyebrow">Step 2</div><h2>Claim your jobs</h2>' +
-      "<p>One laptop, four jobs. The mouse moves to whoever's job is up. Big decisions need a group vote.</p>" +
+      "<p>One laptop, four jobs. Each of you plays one member of the family: name your character, and the game will call on you by job. Big decisions need a group vote.</p>" +
       '<div class="portraits">' + S.members.map(function (m) {
         var r = role(m.role);
         return '<div class="portrait"><div class="face">' + esc(m.name[0]) + '</div><div class="role-name">' + esc(r.name) + "</div>" +
-          "<div>" + esc(m.name) + "</div><p style=\"font-size:0.9em;color:var(--muted)\">" + esc(r.job) + "</p>" +
-          '<label class="sr-only" for="st-' + m.role + '">Student name for ' + esc(r.name) + "</label>" +
-          '<input id="st-' + m.role + '" placeholder="Student name" value="' + esc(S.students[m.role] || "") + '"></div>';
+          '<p style="font-size:0.9em;color:var(--muted)">' + esc(r.job) + "</p>" +
+          '<label class="field-label" for="nm-' + m.role + '">Character name</label>' +
+          '<input id="nm-' + m.role + '" maxlength="16" value="' + esc(m.name) + '">' +
+          '<label class="field-label" for="st-' + m.role + '">Student</label>' +
+          '<input id="st-' + m.role + '" maxlength="20" placeholder="Your name" value="' + esc(S.students[m.role] || "") + '"></div>';
       }).join("") + "</div>" +
       '<div class="actions"><button class="primary" id="go">We are ready</button></div></div>',
       { top: true }
@@ -158,6 +160,8 @@
       S.members.forEach(function (m) {
         var v = document.getElementById("st-" + m.role).value.trim();
         if (v) S.students[m.role] = v.slice(0, 20);
+        var n = document.getElementById("nm-" + m.role).value.trim();
+        if (n) m.name = n.slice(0, 16);
       });
       poster();
     });
@@ -490,6 +494,7 @@
     var b = E.beat(S);
     setScene(S.place);
     if (b.type === "landmark") return landmark(b);
+    if (b.type === "river") return riverScreen(b);
     if (b.type === "ending") return ending();
     if (b.type === "store") return store();
     return cardScreen(E.cardFor(S));
@@ -513,9 +518,9 @@
     var list = E.choices(S, c);
     show(
       '<div class="card"><div class="chips"><span class="chip lead">Mouse: ' + roleLabel(c.lead) + "</span>" +
-      (c.vote ? '<span class="chip vote">Group vote</span>' : "") + draftChip(c) + "</div>" +
-      '<div class="eyebrow">' + esc(E.place(S.place).name) + "</div><h2>" + esc(c.title) + "</h2>" +
-      tripNotes() + "<p>" + esc(c.text) + "</p>" +
+      (c.vote ? '<span class="chip vote">Group vote</span>' : "") + (c.year ? '<span class="chip year">' + esc(c.year) + "</span>" : "") + draftChip(c) + "</div>" +
+      '<div class="eyebrow">' + esc(E.place(S.place).name) + "</div><h2>" + esc(E.fill(S, c.title)) + "</h2>" +
+      tripNotes() + "<p>" + esc(E.fill(S, c.text)) + "</p>" +
       '<div class="choices">' + list.map(function (ch, i) {
         return '<button data-choice="' + ch.index + '"' + (ch.ok ? "" : " disabled") + '><span class="key">' + (i + 1) + "</span>" + esc(ch.label) +
           (ch.ok ? "" : '<span class="why">You don’t have what this needs.</span>') + "</button>";
@@ -528,8 +533,22 @@
   }
 
   function decide(c, index) {
-    var report = E.choose(S, c, index);
-    result(c, report);
+    var ch = c.choices[index];
+    if (ch.minigame && W.minigames) {
+      return W.minigames.run(ch.minigame, { pilot: ch.pilot, who: roleLabel(ch.who || c.lead) }).then(function (r) {
+        var force = {};
+        if (ch.minigame === "raft") {
+          force.outcome = r.hits <= (ch.pilot ? 1 : 0) ? 0 : 1;
+          force.note = "Rocks hit: " + r.hits + ".";
+        } else {
+          var earned = r.gold * 3;
+          force.effects = { gold: earned };
+          force.note = "Your best day of panning made $" + r.gold + ". Over the weeks, you earn about $" + earned + ". Food here costs 50 cents a pound.";
+        }
+        result(c, E.choose(S, c, index, force));
+      });
+    }
+    result(c, E.choose(S, c, index));
   }
 
   var STAT_NAMES = { money: "dollars", food: "lb food", oxen: "oxen", parts: "spare parts", medicine: "medicine", trade: "trade goods", gold: "dollars in gold", land: "acres", days: "days" };
@@ -549,6 +568,40 @@
     );
     on("#go", function () { travelScreen(); });
     keyHandlers = { Enter: function () { travelScreen(); } };
+  }
+
+  // A river crossing: the river's width and depth, and the group's choices.
+  function riverScreen(b, note) {
+    screenName = "card";
+    var r = W.rivers[b.river];
+    scene.dim("soft");
+    var list = E.riverOptions(S, r), depth = E.riverDepth(S, r);
+    var danger = depth >= 3 ? "Too deep to ford safely." : depth >= 2.5 ? "Fording will soak the supplies." : "Shallow enough to ford.";
+    show(
+      '<div class="card"><div class="chips"><span class="chip lead">Mouse: ' + roleLabel("navigator") + '</span><span class="chip vote">Group vote</span>' + draftChip(r) + "</div>" +
+      '<div class="eyebrow">' + esc(E.place(S.place).name) + " \u00b7 " + E.formatDate(E.dateOf(S)) + "</div>" +
+      "<h2>Crossing " + esc(r.name) + "</h2>" + tripNotes() + (note ? '<p class="result">' + esc(note) + "</p>" : "") +
+      "<p>" + esc(r.text) + "</p>" +
+      '<div class="river-facts"><div><span class="label">Width</span><strong>' + r.width + ' feet</strong></div>' +
+      '<div><span class="label">Depth</span><strong>' + depth + ' feet</strong></div>' +
+      '<div><span class="label">Weather</span><strong>' + cap(E.settings(S).weather) + "</strong></div>" +
+      '<div class="river-note">' + danger + "</div></div>" +
+      '<div class="choices">' + list.map(function (o, i) {
+        return '<button data-choice="' + o.id + '"' + (o.ok ? "" : " disabled") + '><span class="key">' + (i + 1) + "</span>" + esc(o.label) +
+          (o.ok ? "" : '<span class="why">You don\u2019t have what this needs.</span>') + "</button>";
+      }).join("") + "</div></div>",
+      { panel: true }
+    );
+    function cross(id) {
+      var rep = E.crossRiver(S, r, id);
+      renderPanel();
+      if (!rep.crossed) return riverScreen(b, rep.result);
+      scene.react(rep.deaths.length || /tips/.test(rep.result) ? "storm" : "stop");
+      result({ title: "Crossing " + r.name }, Object.assign(rep, { choice: list.filter(function (o) { return o.id === id; })[0].label }));
+    }
+    on("[data-choice]", function (el) { cross(el.getAttribute("data-choice")); });
+    keyHandlers = {};
+    list.forEach(function (o, i) { if (o.ok) keyHandlers[String(i + 1)] = function () { cross(o.id); }; });
   }
 
   function landmark(b) {
@@ -623,6 +676,7 @@
       '<button data-t="restart">Restart same seed</button>' +
       '<button data-t="new">New random seed</button>' +
       '<button data-t="close">Close (Ctrl+Shift+T)</button></div>' +
+      (b && b._card && E.card(b._card).teacherNote ? '<p class="note-t"><strong>Note:</strong> ' + esc(E.card(b._card).teacherNote) + "</p>" : "") +
       (S.beats ? '<h3>Jump to</h3><div class="beat-list">' + S.beats.map(function (x, i) {
         return '<button data-jump="' + i + '" class="' + (i === S.index ? "current" : "") + '">' + (i + 1) + ". " +
           esc(E.place(x.at).name) + " · " + x.type + (x.optional ? " (optional)" : "") + "</button>";
