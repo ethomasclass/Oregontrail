@@ -1,0 +1,48 @@
+/* Westward UI skin: "Cinematic letterbox". Black bars top and bottom hold all the
+   UI; cards read like subtitles with choices in a row; the middle is never covered. */
+body.ui-cinema { --bar-top: 46px; --panel-h: 0px; background: #0d0f13; }
+body.ui-cinema .scene { top: var(--bar-top) !important; bottom: 210px !important; }
+body.ui-cinema::before { content: ""; position: fixed; left: 0; right: 0; top: 0; height: var(--bar-top); background: #0d0f13; z-index: 3; }
+body.ui-cinema .panel {
+  top: 0; bottom: auto; height: var(--bar-top); min-height: 0; background: transparent; border: 0; color: #d9d4c7; z-index: 6; padding: 4px 14px; font-size: 0.56em;
+}
+body.ui-cinema .gauge { background: transparent; border: 0; padding: 0 12px 0 0; }
+body.ui-cinema .gauge-role { display: none; }
+body.ui-cinema .gauge-rows { gap: 10px; }
+body.ui-cinema .stat { flex-direction: row; gap: 5px; align-items: baseline; }
+body.ui-cinema .stat .label { color: #8f8a7e; }
+body.ui-cinema .stat .val { color: #f2ede3; font-size: 1.15em; }
+body.ui-cinema .gauge.alert { background: transparent; box-shadow: none; animation: none; }
+body.ui-cinema .gauge.alert .val { color: #f0a58f; }
+body.ui-cinema .mini { color: #d9d4c7; }
+body.ui-cinema .mini .face { width: 28px; height: 28px; font-size: 0.8em; border-color: #d9d4c7; background: #22262e; color: #fff; }
+body.ui-cinema .mini .health { color: #8f8a7e; }
+/* the bottom bar: cards become subtitles */
+body.ui-cinema .app { top: auto; height: 210px; justify-content: flex-start !important; padding: 12px 24px; background: #0d0f13; }
+body.ui-cinema .card, body.ui-cinema .card.event, body.ui-cinema .card.sizeup, body.ui-cinema .card.river-card {
+  max-width: 1100px; width: 100%; margin: 0 auto; background: transparent; border: 0; box-shadow: none; color: #f2ede3; padding: 0; align-self: center; animation: fadein 0.6s ease;
+}
+body.ui-cinema .card h2 { color: #fff; font-size: 1.15em; margin: 0 0 4px; }
+body.ui-cinema .card p, body.ui-cinema .status { color: #d9d4c7; font-size: 0.8em; margin: 0 0 6px; }
+body.ui-cinema .eyebrow { color: #8f8a7e; }
+body.ui-cinema .chips { margin-bottom: 4px; }
+body.ui-cinema .chip { background: transparent; color: #c9a54e; border-color: #4a4a4a; }
+body.ui-cinema .choices, body.ui-cinema .choices.menu { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+body.ui-cinema .card button, body.ui-cinema .choices.menu button, body.ui-cinema .choices.menu button:first-child {
+  background: #22262e; color: #f2ede3; border: 1px solid #5a5f6b; box-shadow: none; font-size: 0.62em; padding: 8px 12px; width: auto;
+}
+body.ui-cinema .choices.menu button:first-child, body.ui-cinema button.primary { background: #c9a54e; color: #22262e; border-color: #c9a54e; }
+body.ui-cinema .card button .key { background: transparent; color: inherit; border-color: currentColor; }
+body.ui-cinema .diary { background: transparent; color: #f2ede3; border-left-color: #c9a54e; font-size: 0.8em; }
+body.ui-cinema .river-facts { background: transparent; border-color: #5a5f6b; color: #f2ede3; padding: 4px 10px; margin: 4px 0; }
+body.ui-cinema .river-facts .label { color: #8f8a7e; }
+body.ui-cinema .sub { border-top-color: #3a3a3a; margin-top: 6px; padding-top: 6px; }
+body.ui-cinema .travel-box { color: #f2ede3; text-align: left; margin: 0; }
+body.ui-cinema .journal { bottom: 220px; }
+body.ui-cinema .headline { top: 45%; }
+body.ui-cinema .panel { overflow: hidden; }
+body.ui-cinema .gauge { flex-shrink: 0; min-width: auto; }
+body.ui-cinema .mini .face { width: 22px; height: 22px; margin: 0 auto; }
+body.ui-cinema .mini { font-size: 0; }
+body.ui-cinema .mini .face { font-size: 11px; }
+body.ui-cinema .sound-toggle { top: 54px; }

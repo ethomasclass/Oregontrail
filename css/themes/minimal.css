@@ -1,0 +1,25 @@
+/* Westward UI skin: "Minimal HUD". Small corner widgets: status collapses to one
+   line, cards are compact and anchored low on the right, out of the wagon's way. */
+body.ui-minimal { --panel-h: 0px; }
+body.ui-minimal .panel {
+  left: auto; right: 12px; top: 12px; bottom: auto; min-height: 0; width: auto; max-width: 70vw; border: 2px solid var(--ink); border-radius: 999px;
+  padding: 4px 12px; font-size: 0.52em; box-shadow: 2px 2px 0 var(--ink); gap: 8px;
+}
+body.ui-minimal .gauge { border: 0; background: transparent; padding: 0 6px 0 0; }
+body.ui-minimal .gauge-role { display: none; }
+body.ui-minimal .gauge-rows { gap: 8px; }
+body.ui-minimal .stat { flex-direction: row; gap: 4px; align-items: baseline; }
+body.ui-minimal .stat .label { font-size: 0.85em; }
+body.ui-minimal .gauge.alert { box-shadow: none; animation: none; background: transparent; }
+body.ui-minimal .gauge.alert .val { color: #a5402f; }
+body.ui-minimal .panel .family { display: none; }
+body.ui-minimal .app { align-items: flex-end; justify-content: flex-end !important; padding: 70px 16px 16px; }
+body.ui-minimal .card, body.ui-minimal .card.event, body.ui-minimal .card.sizeup, body.ui-minimal .card.river-card {
+  max-width: 440px; padding: 14px 16px; margin: 0; align-self: flex-end; font-size: 0.9em;
+}
+body.ui-minimal .card h2 { font-size: 1.05em; }
+body.ui-minimal .choices.menu { grid-template-columns: 1fr; gap: 6px; }
+body.ui-minimal .choices button, body.ui-minimal .choices.menu button { font-size: 0.6em; padding: 8px 10px; }
+body.ui-minimal .travel-box { align-self: flex-start; text-align: left; margin: 0 auto 0 0; }
+body.ui-minimal .panel { flex-wrap: wrap; justify-content: flex-end; border-radius: 22px; }
+body.ui-minimal .gauge { flex-shrink: 0; min-width: auto; }

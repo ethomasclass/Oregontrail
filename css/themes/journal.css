@@ -1,0 +1,31 @@
+/* Westward UI skin: "Field journal". The scene fills most of the screen; every card,
+   menu, and gauge lives on a ruled journal page docked at the right edge. */
+body.ui-journal { --page-w: min(400px, 34vw); --panel-h: 0px; }
+body.ui-journal .scene { right: var(--page-w) !important; bottom: 0 !important; }
+body.ui-journal .app {
+  left: auto; right: 0; width: var(--page-w); padding: 18px 16px 230px; justify-content: flex-start !important; align-items: stretch;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 27px, rgba(107, 143, 179, 0.25) 27px 28px),
+    linear-gradient(to right, transparent 0 34px, rgba(194, 113, 90, 0.35) 34px 36px, transparent 36px),
+    #f4ecd8;
+  border-left: 2px solid var(--ink); box-shadow: -6px 0 0 rgba(34, 38, 46, 0.25);
+}
+body.ui-journal .card, body.ui-journal .card.event, body.ui-journal .card.sizeup, body.ui-journal .card.river-card, body.ui-journal .poster {
+  background: transparent; border: 0; box-shadow: none; padding: 4px 4px 4px 30px; max-width: none; margin: 0; align-self: stretch; animation: fadein 0.5s ease;
+}
+body.ui-journal .card h2, body.ui-journal .chapter-name { font-family: "IM Fell English", Georgia, serif; font-weight: 400; }
+body.ui-journal .card h2 { font-size: 1.35em; }
+body.ui-journal .card p, body.ui-journal .status { font-family: "IM Fell English", Georgia, serif; font-size: 0.82em; line-height: 1.32; }
+body.ui-journal .choices, body.ui-journal .choices.menu { grid-template-columns: 1fr; gap: 6px; }
+body.ui-journal .card button, body.ui-journal .choices.menu button { font-size: 0.6em; padding: 8px 10px; background: rgba(255, 255, 255, 0.6); }
+body.ui-journal .choices.menu button:first-child { font-size: 0.66em; }
+body.ui-journal .river-facts { padding: 6px 8px; }
+body.ui-journal .panel {
+  left: auto; right: 0; width: var(--page-w); bottom: 0; min-height: 0; flex-wrap: wrap; gap: 6px; padding: 8px 10px 10px 40px;
+  background: rgba(244, 236, 216, 0.96); border-top: 2px dashed rgba(34, 38, 46, 0.4); border-left: 2px solid var(--ink); font-size: 0.55em;
+}
+body.ui-journal .gauge { flex: 1 1 45%; background: rgba(255, 255, 255, 0.55); border-width: 1px; }
+body.ui-journal .panel .family { margin-left: 0; width: 100%; justify-content: space-between; }
+body.ui-journal .journal { left: 12px; bottom: 12px; }
+body.ui-journal .travel-box { color: var(--ink); text-shadow: none; text-align: left; margin: 0; padding-left: 30px; }
+body.ui-journal .travel-box h2 { font-family: "IM Fell English", Georgia, serif; font-weight: 400; }

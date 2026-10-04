@@ -12,6 +12,15 @@
   var screenName = "title";
   var keyHandlers = {};
 
+  // UI skin: ?ui=retro|glass|cinema|journal|minimal, or config.uiTheme (see css/themes/).
+  var uiTheme = params.get("ui") || W.config.uiTheme;
+  if (uiTheme && /^[a-z]+$/.test(uiTheme)) {
+    var themeLink = document.createElement("link");
+    themeLink.rel = "stylesheet"; themeLink.href = "css/themes/" + uiTheme + ".css";
+    document.head.appendChild(themeLink);
+    document.body.classList.add("ui-" + uiTheme);
+  }
+
   var panel = document.createElement("div");
   panel.className = "panel";
   panel.hidden = true;

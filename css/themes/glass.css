@@ -1,0 +1,26 @@
+/* Westward UI skin: "Glass". Frosted, see-through panels that blur the diorama
+   instead of hiding it, and a slim floating status bar. */
+body.ui-glass .card, body.ui-glass .poster {
+  background: rgba(251, 249, 244, 0.42); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.75); border-radius: 18px; box-shadow: 0 10px 40px rgba(34, 38, 46, 0.18);
+}
+body.ui-glass .card p, body.ui-glass .card h2, body.ui-glass .status { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+body.ui-glass .card button, body.ui-glass .choices.menu button {
+  background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 2px 8px rgba(34, 38, 46, 0.12); border-radius: 12px;
+}
+body.ui-glass .card button:hover { background: rgba(255, 255, 255, 0.78); }
+body.ui-glass .choices.menu button:first-child, body.ui-glass button.primary { background: rgba(201, 165, 78, 0.75); }
+body.ui-glass .chip { border: 1px solid rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.45); }
+body.ui-glass .chip.lead { background: rgba(201, 165, 78, 0.8); }
+body.ui-glass .diary, body.ui-glass .river-facts { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 12px; }
+body.ui-glass .panel {
+  left: 12px; right: 12px; bottom: 10px; border-radius: 16px; min-height: 0;
+  background: rgba(251, 249, 244, 0.35); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.75); box-shadow: 0 8px 30px rgba(34, 38, 46, 0.15);
+}
+body.ui-glass { --panel-h: 0px; }
+body.ui-glass .app { padding-bottom: 100px; }
+body.ui-glass .gauge { background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px; }
+body.ui-glass .gauge.alert { background: rgba(246, 225, 176, 0.75); box-shadow: 0 0 0 2px rgba(194, 113, 90, 0.8); }
+body.ui-glass .jline { background: rgba(251, 249, 244, 0.55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: none; border-radius: 10px; }
+body.ui-glass .journal { bottom: 104px; }

@@ -1,0 +1,51 @@
+/* Westward UI skin: "Old school", a nod to MECC's The Oregon Trail (1985, 1990).
+   Black boxes with rounded double-line frames, pixel type, inverse title bars,
+   numbered menus, and plain "Label: value" status lines. */
+:root { --retro-font: "VT323", "Courier New", monospace; --retro-ink: #ffffff; --retro-bg: #000000; --retro-hi: #f6d365; --panel-h: 92px; }
+body.ui-retro .card, body.ui-retro .poster, body.ui-retro .mg-card {
+  background: var(--retro-bg); color: var(--retro-ink); font-family: var(--retro-font); font-size: 1.15em; line-height: 1.15;
+  border: 6px double var(--retro-ink); border-radius: 14px; box-shadow: none; padding: 16px 20px;
+}
+body.ui-retro .card h2, body.ui-retro .mg-card h2 {
+  font-family: var(--retro-font); font-weight: 400; font-size: 1.35em; display: inline-block;
+  background: var(--retro-ink); color: var(--retro-bg); padding: 0 10px; margin-bottom: 10px;
+}
+body.ui-retro .eyebrow, body.ui-retro .status, body.ui-retro .card p { font-family: var(--retro-font); color: var(--retro-ink); letter-spacing: 0; text-transform: none; font-size: 1em; }
+body.ui-retro .status strong { color: var(--retro-hi); }
+body.ui-retro .chips { gap: 6px; }
+body.ui-retro .chip { font-family: var(--retro-font); font-size: 0.85em; border: 0; border-radius: 0; background: transparent; color: var(--retro-hi); padding: 0 6px 0 0; }
+body.ui-retro .chip.draft { color: #ff8a7a; }
+body.ui-retro .choices { gap: 2px; margin-top: 8px; }
+body.ui-retro .choices.menu { grid-template-columns: 1fr; }
+body.ui-retro .card button, body.ui-retro .choices button, body.ui-retro .choices.menu button, body.ui-retro .choices.menu button:first-child {
+  font-family: var(--retro-font); font-weight: 400; font-size: 1.05em; background: transparent; color: var(--retro-ink);
+  border: 0; box-shadow: none; padding: 2px 8px; border-radius: 0; text-align: left;
+}
+body.ui-retro .card button:hover, body.ui-retro .card button:focus-visible { background: var(--retro-ink); color: var(--retro-bg); outline: none; }
+body.ui-retro .card button .key { border: 0; background: transparent; color: inherit; min-width: 0; margin-right: 6px; padding: 0; }
+body.ui-retro .card button .key::after { content: "."; }
+body.ui-retro .choices::after { content: "What is your choice?"; display: block; margin-top: 8px; padding-left: 8px; color: var(--retro-ink); }
+body.ui-retro .choices .who, body.ui-retro .choices .why { color: #9a9a9a; font-family: var(--retro-font); }
+body.ui-retro .diary { background: transparent; border-left: 3px solid var(--retro-hi); font-family: var(--retro-font); color: var(--retro-ink); }
+body.ui-retro .river-facts { background: transparent; border: 2px solid var(--retro-ink); color: var(--retro-ink); }
+body.ui-retro .river-facts .label, body.ui-retro .river-facts strong { font-family: var(--retro-font); color: var(--retro-ink); }
+body.ui-retro .change { font-family: var(--retro-font); background: transparent; color: var(--retro-hi); border-color: var(--retro-hi); }
+body.ui-retro .epitaph { background: #111; color: #fff; border-color: #fff; font-family: var(--retro-font); }
+/* the status band: plain lines of text, like the travel screen */
+body.ui-retro .panel { background: var(--retro-bg); color: var(--retro-ink); border-top: 4px double var(--retro-ink); font-family: var(--retro-font); font-size: 1.05em; padding: 6px 14px; }
+body.ui-retro .gauge { background: transparent; border: 0; padding: 0 10px 0 0; border-right: 1px dashed #555; border-radius: 0; }
+body.ui-retro .gauge-role { font-family: var(--retro-font); color: #8a8a8a; font-size: 0.8em; }
+body.ui-retro .gauge-rows { flex-direction: column; gap: 0; }
+body.ui-retro .stat { flex-direction: row; gap: 6px; }
+body.ui-retro .stat .label { font-family: var(--retro-font); color: var(--retro-ink); text-transform: none; letter-spacing: 0; font-size: 1em; }
+body.ui-retro .stat .label::after { content: ":"; }
+body.ui-retro .stat .val { font-family: var(--retro-font); font-size: 1em; color: var(--retro-hi); }
+body.ui-retro .gauge.alert { background: transparent; box-shadow: none; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.45; } }
+body.ui-retro .mini .face { background: #000; color: #fff; border-color: #fff; font-family: var(--retro-font); border-radius: 0; }
+body.ui-retro .mini { font-family: var(--retro-font); color: #fff; }
+body.ui-retro .travel-box h2, body.ui-retro .travel-box .next, body.ui-retro .headline, body.ui-retro .chapter-name, body.ui-retro .chapter-date { font-family: var(--retro-font); font-weight: 400; }
+body.ui-retro .headline { background: #000; border: 6px double #fff; border-radius: 14px; padding: 6px 22px; text-shadow: none; color: #fff; }
+body.ui-retro .jline { background: #000; color: #fff; border: 2px solid #fff; box-shadow: none; font-family: var(--retro-font); font-size: 0.8em; }
+body.ui-retro .jline span { font-family: var(--retro-font); color: var(--retro-hi); }
+body.ui-retro .card.sizeup, body.ui-retro .card.event, body.ui-retro .card.river-card { max-width: 520px; }
