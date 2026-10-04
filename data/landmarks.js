@@ -7,7 +7,7 @@ window.WESTWARD = window.WESTWARD || {};
 WESTWARD.landmarks = {
   "chimney-rock": {
     title: "Chimney Rock",
-    art: "rock",
+    art: "chimneyrock",
     text: "A spire of clay and sandstone rises above the North Platte. Emigrants could see it for days before they reached it, and many wrote about it.",
     quote: null,
     speaker: null,
@@ -16,7 +16,7 @@ WESTWARD.landmarks = {
   },
   "independence-rock": {
     title: "Independence Rock",
-    art: "rock",
+    art: "independencerock",
     text: "Emigrants hoped to reach this granite dome by the Fourth of July to stay on schedule. Thousands carved or painted their names on it.",
     quote: null,
     speaker: null,

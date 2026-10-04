@@ -8,7 +8,7 @@
   var root = document.getElementById("scene");
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var DEPTH = { far: 0.18, mid: 0.5, near: 1 };
+  var DEPTH = { sky: 0.05, far: 0.18, mid: 0.5, near: 1 };
   var current = null;      // { key, layers: {far, mid, near}, rig }
   var moving = false;
   var particles = [];
@@ -62,8 +62,9 @@
 
     // mid: rolling land and landmarks
     mid += '<path d="' + ridge(r, flat ? 660 : 690, flat ? 8 : 45, [1, 0.5], flat ? 4 : 14) + '" fill="' + c[2] + '"/>';
-    if (key === "rock") mid += '<path d="M1180,700 C1190,560 1230,520 1236,330 L1252,330 C1262,520 1300,560 1320,700 Z" fill="' + c[1] + '"/>' +
+    if (key === "chimneyrock") mid += '<path d="M1180,700 C1190,560 1230,520 1236,330 L1252,330 C1262,520 1300,560 1320,700 Z" fill="' + c[1] + '"/>' +
       '<ellipse cx="1250" cy="700" rx="230" ry="70" fill="' + c[2] + '"/>';
+    if (key === "independencerock") mid += '<ellipse cx="1250" cy="700" rx="420" ry="150" fill="' + c[1] + '"/>';
     if (key === "fort") mid += '<rect x="1050" y="560" width="420" height="140" fill="' + c[3] + '"/>' +
       '<rect x="1020" y="530" width="70" height="170" fill="' + c[3] + '"/><rect x="1430" y="530" width="70" height="170" fill="' + c[3] + '"/>';
     if (key === "town") for (var i = 0; i < 7; i++) {
@@ -143,10 +144,25 @@
   }
 
   // ------------------------------------------------------------ build a scene
+  function paintedPath(key, layer) { return "assets/art/" + key + "/" + layer + ".webp"; }
+
   function layerSrc(key) {
     var art = W.art.scenes[key] || W.art.scenes.prairie;
-    if (art.layers) return { far: art.layers.far, mid: art.layers.mid, near: art.layers.near, skyImg: art.layers.sky, sky: art.palette[0] };
+    if (art.painted) return {
+      sky: art.palette[0], painted: true,
+      skyImg: paintedPath(key, "sky"), far: paintedPath(key, "far"), mid: paintedPath(key, "mid"), near: paintedPath(key, "near")
+    };
     return placeholder(key);
+  }
+
+  // Load a scene's paintings ahead of time so travel never shows a blank layer.
+  var preloaded = {};
+  function preload(key) {
+    var art = W.art.scenes[key];
+    if (!art || !art.painted || preloaded[key]) return;
+    preloaded[key] = ["sky", "far", "mid", "near"].map(function (l) {
+      var img = new Image(); img.src = paintedPath(key, l); return img;
+    });
   }
 
   function sizeLayer(img) {
@@ -183,7 +199,11 @@
     root.innerHTML = "";
     root.style.background = "linear-gradient(to bottom, " + src.sky + ", #fff6e0 70%)";
 
-    if (src.skyImg) { var sk = new Image(); sk.src = src.skyImg; sk.className = "layer sky"; sk.alt = ""; root.appendChild(sk); }
+    var layers = {};
+    if (src.skyImg) {
+      var sk = new Image(); sk.src = src.skyImg; sk.className = "layer sky"; sk.alt = "";
+      sizeLayer(sk); root.appendChild(sk); layers.sky = sk;
+    }
     var glow = document.createElement("div");
     glow.className = "glow";
     glow.style.left = "62%"; glow.style.top = "-18vmax";
@@ -191,9 +211,9 @@
     var clouds = document.createElement("div");
     clouds.className = "clouds";
     clouds.style.backgroundImage = "url(\"" + cloudTile + "\")";
+    if (src.painted) { clouds.style.opacity = "0.35"; glow.style.opacity = "0.6"; }
     root.appendChild(clouds);
 
-    var layers = {};
     ["far", "mid", "near"].forEach(function (k) {
       var img = new Image();
       img.alt = "";
@@ -344,5 +364,5 @@
     resize();
   });
 
-  W.scene = { set: set, travel: travel, dim: dim };
+  W.scene = { set: set, travel: travel, dim: dim, preload: preload };
 })();

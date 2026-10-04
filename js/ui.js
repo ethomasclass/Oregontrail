@@ -252,6 +252,7 @@
     screenName = "travel";
     var next = nextBeatPreview();
     setScene(S.place);
+    if (next) scene.preload(E.place(next.at).scene);
     scene.dim(null);
     var sea = E.family(S).route === "sea";
     var notes = trip ? trip.notes.concat(trip.skipped.length ? ["Running behind: the wagon presses on past " + trip.skipped.join(" and ") + "."] : []) : [];
@@ -310,6 +311,11 @@
 
   function cardScreen(c) {
     screenName = "card";
+    // A card can bring its own painting (the rancho, the evening camp).
+    var art = c.art && W.art.scenes[c.art];
+    if (art && art.painted && art !== W.art.scenes[E.place(S.place).scene]) {
+      scene.set(c.art, { month: month(), vehicle: vehicle() });
+    }
     scene.dim("strong");
     var list = E.choices(S, c);
     show(

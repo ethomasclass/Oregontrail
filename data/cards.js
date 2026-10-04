@@ -3,7 +3,8 @@
 // Each card:
 //   id, title, lead (which role holds the mouse), vote (true = group vote),
 //   text (read aloud), choices, pools (for random draws), families (optional limit),
-//   requires (optional: a choice only shows if the family has this flag or stat).
+//   requires (optional: a choice only shows if the family has this flag or stat),
+//   art (optional: the painted scene shown behind the card; see data/art.js).
 // Each choice has "result" text and "effects", or "outcomes" (a list with chance,
 // result, effects) when luck decides.
 //
@@ -69,7 +70,7 @@ WESTWARD.cards = [
     lead: "quartermaster",
     vote: false,
     pools: ["plains", "mountains"],
-    art: "trail",
+    art: "prairie",
     text: "The wagon drops into a rut and the axle cracks. Accidents like this, and people falling under wagon wheels, were among the most common dangers on the trail.",
     choices: [
       { label: "Use your spare parts", requires: { parts: 1 },

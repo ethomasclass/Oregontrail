@@ -52,7 +52,6 @@ body.has-panel .scene { bottom: var(--panel-h); }
   pointer-events: none;
   user-select: none;
 }
-.scene .sky { height: 100%; width: 100%; }
 .scene .tint { position: absolute; inset: 0; mix-blend-mode: multiply; pointer-events: none; transition: background 2s; }
 .scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .scene .glow {

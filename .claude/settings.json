@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tools/paint/setup.sh)",
+      "Bash(tools/paint/setup.sh:*)",
+      "Bash(./tools/paint/setup.sh:*)",
+      "Bash(tools/paint/render.sh:*)",
+      "Bash(./tools/paint/render.sh:*)",
+      "Bash(python3 tools/paint/render.py:*)",
+      "Bash(node tools/playtest.js:*)",
+      "Bash(node tools/browser-test.js:*)"
+    ]
+  }
+}

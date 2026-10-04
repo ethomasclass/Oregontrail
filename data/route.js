@@ -21,9 +21,9 @@ WESTWARD.places = {
   kansasriver: { name: "Kansas River crossing", miles: 100, scene: "river", weather: "rain" },
   platte: { name: "Platte River valley", miles: 250, scene: "prairie" },
   fortkearny: { name: "Fort Kearny", miles: 320, scene: "fort" },
-  chimneyrock: { name: "Chimney Rock", miles: 570, scene: "rock" },
+  chimneyrock: { name: "Chimney Rock", miles: 570, scene: "chimneyrock" },
   fortlaramie: { name: "Fort Laramie", miles: 650, scene: "fort" },
-  independencerock: { name: "Independence Rock", miles: 830, scene: "rock" },
+  independencerock: { name: "Independence Rock", miles: 830, scene: "independencerock" },
   southpass: { name: "South Pass", miles: 930, scene: "mountains" },
   forthall: { name: "Fort Hall", miles: 1260, scene: "fort" },
 
@@ -37,7 +37,7 @@ WESTWARD.places = {
   goldfields: { name: "California gold fields", miles: 2000, scene: "goldfields", days: 5 },
 
   // Sea route (the Chan cousins)
-  hongkong: { name: "Hong Kong harbor", scene: "harbor", days: 0 },
+  hongkong: { name: "Hong Kong harbor", scene: "hongkong", days: 0 },
   pacific: { name: "The Pacific crossing", scene: "sea", days: 50, rations: true },
   sanfrancisco: { name: "San Francisco", scene: "harbor", days: 10 },
   sacramento: { name: "Sacramento, on the way to the mines", scene: "river", days: 4 }
